@@ -17,6 +17,7 @@ body{
     margin:auto;
 }
 
+/* NAV */
 nav{
     width:100%;
     background:white;
@@ -28,10 +29,28 @@ nav{
 }
 
 .nav-container{
+    height:78px;
     display:flex;
-    justify-content:space-between;
     align-items:center;
-    height:70px;
+    justify-content:space-between;
+}
+
+.menu-toggle{
+    width:46px;
+    height:34px;
+    border:0;
+    background:none;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+}
+
+.menu-toggle span{
+    width:46px;
+    height:3px;
+    background:#222;
+    border-radius:10px;
 }
 
 .logo{
@@ -46,50 +65,53 @@ nav{
     display:block;
 }
 
-@media(max-width:768px){
-    .logo img{
-        width:140px;
-    }
-}
-
-.menu{
+/* SIDE MENU */
+.side-menu{
+    position:fixed;
+    top:78px;
+    left:-320px;
+    width:280px;
+    height:calc(100vh - 78px);
+    background:white;
+    padding:36px 28px;
     display:flex;
-    gap:30px;
-    list-style:none;
+    flex-direction:column;
+    gap:26px;
+    box-shadow:10px 0 30px rgba(0,0,0,0.12);
+    transition:0.35s ease;
+    z-index:9999;
 }
 
-.menu a{
-    text-decoration:none;
+.side-menu.active{
+    left:0;
+}
+
+.side-menu a{
     color:#222;
-    font-weight:600;
+    text-decoration:none;
+    font-size:22px;
+    font-weight:700;
 }
 
+/* HERO */
 header{
     position:relative;
-
-    margin-top:70px;
-
+    margin-top:78px;
     height:92vh;
-
     background:
     linear-gradient(
         rgba(0,0,0,0.55),
         rgba(0,0,0,0.55)
     ),
     url("images/hero.jpg");
-
     background-size:cover;
     background-position:center;
     background-repeat:no-repeat;
-
     color:white;
-
     display:flex;
     align-items:center;
     justify-content:center;
-
     text-align:center;
-
     padding:20px;
 }
 
@@ -117,6 +139,7 @@ header p{
     font-weight:bold;
 }
 
+/* SECTION */
 section{
     padding:80px 20px;
 }
@@ -134,6 +157,7 @@ li{
     margin-bottom:10px;
 }
 
+/* PROGRAM */
 .programs{
     background:#f8f8f8;
 }
@@ -157,6 +181,7 @@ li{
     color:#ff7a00;
 }
 
+/* EVENT */
 .event{
     background:#111;
     color:white;
@@ -167,34 +192,27 @@ li{
     margin-top:30px;
 }
 
+/* FIXED RESERVE BUTTON */
 .fixed-reserve{
     position:fixed;
     left:50%;
     bottom:24px;
     transform:translateX(-50%);
-
     width:85%;
     max-width:900px;
     height:72px;
-
     background:#ff7a00;
     color:white;
-
     display:flex;
     align-items:center;
     justify-content:center;
     gap:18px;
-
     border-radius:18px;
-
     font-size:22px;
     font-weight:800;
     text-decoration:none;
-
     z-index:9999;
-
     box-shadow:0 12px 30px rgba(0,0,0,0.22);
-
     transition:0.3s ease;
 }
 
@@ -210,11 +228,9 @@ li{
     border-radius:50%;
     background:#4fdcff;
     flex-shrink:0;
-
     box-shadow:
         0 0 10px rgba(79,220,255,0.9),
         0 0 20px rgba(79,220,255,0.6);
-
     animation:liveDot 2.2s ease-in-out infinite;
 }
 
@@ -244,14 +260,68 @@ li{
     }
 }
 
+/* MOBILE */
 @media(max-width:768px){
-    .menu{
-        display:none;
+
+    .nav-container{
+        height:70px;
     }
-    
+
+   .menu-toggle{
+    width:60px;
+    height:48px;
+
+    border:0;
+    background:none;
+
+    cursor:pointer;
+
+    display:flex;
+    flex-direction:column;
+
+    justify-content:center;
+    gap:8px;
+
+    padding:0;
+}
+
+.menu-toggle span{
+    display:block;
+
+    width:60px;
+    height:4px;
+
+    background:#222;
+
+    border-radius:999px;
+}
+
+    .logo img{
+        width:140px;
+    }
+
+    .side-menu{
+        top:70px;
+        width:250px;
+        height:calc(100vh - 70px);
+        padding:32px 24px;
+    }
+
+    .side-menu a{
+        font-size:18px;
+    }
+
+    header{
+        margin-top:70px;
+        height:78vh;
+    }
 
     header h1{
-        font-size:34px;
+        font-size:42px;
+    }
+
+    header p{
+        font-size:16px;
     }
 
     .card-wrap{
@@ -271,15 +341,4 @@ li{
         width:8px;
         height:8px;
     }
-    header{
-    height:78vh;
-}
-
-header h1{
-    font-size:42px;
-}
-
-header p{
-    font-size:16px;
-}
 }

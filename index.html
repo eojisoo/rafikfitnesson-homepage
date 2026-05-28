@@ -11,17 +11,24 @@
 
 <nav>
     <div class="container nav-container">
-        <a href="#" class="logo">
-    <img src="images/logo.png" alt="RAFIK FITNESS ON 로고">
-</a>
 
-        <ul class="menu">
-            <li><a href="#">홈</a></li>
-            <li><a href="#program">프로그램</a></li>
-            <li><a href="#branch">지점안내</a></li>
-            <li><a href="#event">이벤트</a></li>
-            <li><a href="#contact">문의</a></li>
-        </ul>
+        <button class="menu-toggle" type="button">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <a href="index.html" class="logo">
+            <img src="images/logo.png" alt="RAFIK FITNESS ON 로고">
+        </a>
+
+    </div>
+
+    <div class="side-menu">
+        <a href="branches.html">지점안내</a>
+        <a href="#program">프로그램</a>
+        <a href="#event">이벤트</a>
+        <a href="#contact">문의</a>
     </div>
 </nav>
 
@@ -98,6 +105,13 @@
     <span class="reserve-dot"></span>
     <span class="reserve-text">프로그램 상담 · 체험수업 예약</span>
 </a>
+<script>
+    const menuToggle = document.querySelector(".menu-toggle");
+    const sideMenu = document.querySelector(".side-menu");
 
+    menuToggle.addEventListener("click", function(){
+        sideMenu.classList.toggle("active");
+    });
+</script>
 </body>
 </html>
