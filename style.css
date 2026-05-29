@@ -36,14 +36,30 @@ nav{
 }
 
 .menu-toggle{
-    width:46px;
-    height:34px;
+    width:60px;
+    height:48px;
+
     border:0;
     background:none;
+
     cursor:pointer;
+
     display:flex;
     flex-direction:column;
-    justify-content:space-between;
+
+    justify-content:center;
+    gap:8px;
+
+    padding:0;
+}
+
+.menu-toggle span{
+    width:60px;
+    height:4px;
+
+    background:#222;
+
+    border-radius:999px;
 }
 
 .menu-toggle span{
@@ -52,13 +68,13 @@ nav{
     background:#222;
     border-radius:10px;
 }
-
+/* 로고 */
 .logo{
     display:flex;
     align-items:center;
     text-decoration:none;
 }
-
+/* 로고 이미지 */
 .logo img{
     width:180px;
     height:auto;
@@ -76,7 +92,7 @@ nav{
     padding:36px 28px;
     display:flex;
     flex-direction:column;
-    gap:26px;
+    gap:14px;
     box-shadow:10px 0 30px rgba(0,0,0,0.12);
     transition:0.35s ease;
     z-index:9999;
@@ -89,8 +105,47 @@ nav{
 .side-menu a{
     color:#222;
     text-decoration:none;
+}
+
+.menu-main,
+.menu-title{
     font-size:22px;
-    font-weight:700;
+    font-weight:800;
+    color:#222;
+}
+
+.menu-main{
+    text-decoration:none;
+}
+
+.menu-divider{
+    width:100%;
+    height:1px;
+    background:#e5e5e5;
+    margin:8px 0 4px;
+}
+
+.branch-menu{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+
+    margin-top:-10px;
+
+    padding-left:20px;
+}
+.branch-menu a{
+    font-size:18px;
+    font-weight:600;
+    color:#444;
+    text-decoration:none;
+
+    transition:0.25s ease;
+}
+
+.branch-menu a:hover,
+.menu-main:hover{
+    color:#ff7a00;
 }
 
 /* HERO */
@@ -127,7 +182,7 @@ header p{
     font-size:22px;
     opacity:0.9;
     margin-bottom:10px;
-    line-height:0.9;
+    line-height:1.1;
 }
 
 .btn{
@@ -302,12 +357,19 @@ li{
         width:140px;
     }
 
+
     .side-menu{
         top:70px;
         width:250px;
         height:calc(100vh - 70px);
         padding:32px 24px;
     }
+    .side-logo{
+    width:160px;
+    height:auto;
+
+    margin-bottom:28px;
+}
 
     .side-menu a{
         font-size:18px;
