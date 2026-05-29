@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>라피끄 길동점</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<nav>
+    <div class="container nav-container">
+        <button class="menu-toggle" type="button">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <a href="index.html" class="logo">
+            <img src="images/logo.png" alt="RAFIK FITNESS ON 로고">
+        </a>
+    </div>
+
+    <div class="side-menu">
+        <img src="images/logo.png" alt="RAFIK FITNESS ON" class="side-logo">
+
+        <a href="index.html" class="menu-main">라피끄 & 피트니스 소개</a>
+
+        <div class="menu-divider"></div>
+
+        <div class="menu-title">지점안내</div>
+
+        <div class="branch-menu">
+            <a href="gildong.html">길동점</a>
+            <a href="cheonho.html">천호역점</a>
+            <a href="dunchon.html">둔촌동역점</a>
+        </div>
+    </div>
+</nav>
+
+<header>
+    <div class="container">
+        <h1>길동점</h1>
+        <p>24시간 헬스 · PT · 요가 · 필라테스</p>
+        <p>라피끄 & 피트니스온 길동점</p>
+    </div>
+</header>
+
+<section>
+    <div class="container">
+        <h2>라피끄 길동점</h2>
+        <p>쾌적한 운동 환경과 체계적인 관리 시스템으로 회원님의 운동 루틴을 함께합니다.</p>
+    </div>
+</section>
+
+<a href="https://m.booking.naver.com/booking/13/bizes/952749?theme=place&entry=pll&lang=ko&area=pll" class="fixed-reserve" target="_blank">
+    <span class="reserve-dot"></span>
+    <span class="reserve-text">길동점 상담 · 체험수업 예약</span>
+</a>
+
+<script>
+const menuToggle = document.querySelector(".menu-toggle");
+const sideMenu = document.querySelector(".side-menu");
+
+menuToggle.addEventListener("click", function(){
+    sideMenu.classList.toggle("active");
+});
+</script>
+
+</body>
+</html>

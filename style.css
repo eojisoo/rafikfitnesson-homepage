@@ -62,12 +62,6 @@ nav{
     border-radius:999px;
 }
 
-.menu-toggle span{
-    width:46px;
-    height:3px;
-    background:#222;
-    border-radius:10px;
-}
 /* 로고 */
 .logo{
     display:flex;
@@ -128,19 +122,24 @@ nav{
 .branch-menu{
     display:flex;
     flex-direction:column;
+    align-items:flex-start;
+
     gap:6px;
-
     margin-top:-10px;
-
     padding-left:20px;
 }
+
 .branch-menu a{
+    display:block;
+    width:100%;
+
     font-size:18px;
     font-weight:600;
+
     color:#444;
     text-decoration:none;
 
-    transition:0.25s ease;
+    line-height:1.4;
 }
 
 .branch-menu a:hover,
@@ -316,6 +315,12 @@ li{
             0 0 0 0 rgba(79,220,255,0);
     }
 }
+.side-logo{
+    width:160px;
+    height:auto;
+
+    margin-bottom:28px;
+}
 
 /* MOBILE */
 @media(max-width:768px){
@@ -364,13 +369,7 @@ li{
         height:calc(100vh - 70px);
         padding:32px 24px;
     }
-    .side-logo{
-    width:160px;
-    height:auto;
-
-    margin-bottom:28px;
-}
-
+    
     .side-menu a{
         font-size:18px;
     }
