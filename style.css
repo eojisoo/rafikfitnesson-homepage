@@ -436,10 +436,16 @@ li{
 }
 
 .branch-image{
-    min-height:360px;
-    border-radius:24px;
-    overflow:hidden;
-    background:#ddd;
+        min-height:unset;
+        height:auto;
+    }
+
+    .branch-image img{
+        width:100%;
+        height:auto;
+        display:block;
+    }
+
 }
 
 .branch-image.small{
