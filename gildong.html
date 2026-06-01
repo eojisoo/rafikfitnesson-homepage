@@ -63,8 +63,8 @@
         <h2>헬스 소개</h2>
 
         <div class="branch-grid">
-            <div class="branch-image placeholder">
-                헬스장 사진 영역
+            <div class="branch-image">
+                <img src="images/gildong-health.jpg" alt="길동점 헬스">
             </div>
 
             <div class="branch-text">
@@ -190,8 +190,8 @@
         <h2>필라테스 소개</h2>
 
         <div class="branch-grid">
-            <div class="branch-image placeholder">
-                필라테스 수업 사진 영역
+            <div class="branch-image">
+                <img src="images/gildong-pilates.jpg" alt="길동점 필라테스">
             </div>
 
             <div class="branch-text">
@@ -303,6 +303,15 @@ const sideMenu = document.querySelector(".side-menu");
 
 menuToggle.addEventListener("click", function(){
     sideMenu.classList.toggle("active");
+});
+
+document.addEventListener("click", function(e){
+    if(
+        !sideMenu.contains(e.target) &&
+        !menuToggle.contains(e.target)
+    ){
+        sideMenu.classList.remove("active");
+    }
 });
 
 const teacherSections = document.querySelectorAll(".teacher-section");
