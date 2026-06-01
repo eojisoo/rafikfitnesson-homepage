@@ -736,41 +736,49 @@ li{
     position:relative;
 }
 
-.teacher-section h3::after{
-    content:"  → 옆으로 넘겨보세요";
-    font-size:14px;
-    font-weight:600;
-    color:#ff7a00;
-}
+/* 모바일 강사진 좌우 안내 화살표 */
+@media(max-width:768px){
 
-.teacher-slider{
-    position:relative;
-}
+    .teacher-section{
+        position:relative;
+    }
 
-/* 왼쪽 화살표 */
-.teacher-slider::before{
-    content:"‹";
-    position:absolute;
-    left:0;
-    top:50%;
-    transform:translateY(-50%);
-    font-size:40px;
-    font-weight:700;
-    color:#ff7a00;
-    z-index:10;
-    pointer-events:none;
-}
+    .teacher-slider{
+        position:relative;
+        padding-left:34px;
+        padding-right:34px;
+    }
 
-/* 오른쪽 화살표 */
-.teacher-slider::after{
-    content:"›";
-    position:absolute;
-    right:0;
-    top:50%;
-    transform:translateY(-50%);
-    font-size:40px;
-    font-weight:700;
-    color:#ff7a00;
-    z-index:10;
-    pointer-events:none;
+    .teacher-section::before,
+    .teacher-section::after{
+        position:absolute;
+        top:132px;
+        transform:translateY(-50%);
+        font-size:42px;
+        font-weight:800;
+        color:#ff7a00;
+        z-index:20;
+        pointer-events:none;
+        animation:teacherArrow 1.4s ease-in-out infinite;
+    }
+
+    .teacher-section::before{
+        content:"‹";
+        left:4px;
+    }
+
+    .teacher-section::after{
+        content:"›";
+        right:4px;
+    }
+
+    @keyframes teacherArrow{
+        0%, 100%{
+            opacity:0.35;
+        }
+
+        50%{
+            opacity:1;
+        }
+    }
 }
