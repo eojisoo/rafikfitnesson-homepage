@@ -90,21 +90,21 @@
 
         <div class="card-wrap">
 
-    <div class="card health-card">
+    <div class="card health-card reveal-left">
         <div class="card-overlay">
             <h3>HEALTH</h3>
             <p>24시간 자유로운 운동 공간</p>
         </div>
     </div>
 
-    <div class="card pt-card">
+    <div class="card pt-card reveal-right">
         <div class="card-overlay">
             <h3>PERSONAL TRAINING</h3>
             <p>전문 트레이너의 맞춤 관리</p>
         </div>
     </div>
 
-    <div class="card yoga-card">
+    <div class="card yoga-card reveal-left">
         <div class="card-overlay">
             <h3>YOGA & PILATES</h3>
             <p>몸의 균형과 회복을 위한 클래스</p>
@@ -132,22 +132,22 @@
         </p>
 
         <!-- 대표 사진 -->
-        <div class="facility-main">
+        <div class="facility-main reveal">
             <img src="images/facility-main.jpg" alt="대표 시설사진">
         </div>
 
         <!-- 갤러리 -->
         <div class="facility-sub">
 
-            <img src="images/facility-1.jpg" alt="">
-            <img src="images/facility-2.jpg" alt="">
-            <img src="images/facility-3.jpg" alt="">
-            <img src="images/facility-4.jpg" alt="">
+            <img class="reveal" src="images/facility-1.jpg" alt="">
+            <img class="reveal" src="images/facility-2.jpg" alt="">
+            <img class="reveal" src="images/facility-3.jpg" alt="">
+            <img class="reveal" src="images/facility-4.jpg" alt="">
 
-            <img src="images/facility-5.jpg" alt="">
-            <img src="images/facility-6.jpg" alt="">
-            <img src="images/facility-7.jpg" alt="">
-            <img src="images/facility-8.jpg" alt="">
+            <img class="reveal" src="images/facility-5.jpg" alt="">
+            <img class="reveal" src="images/facility-6.jpg" alt="">
+            <img class="reveal" src="images/facility-7.jpg" alt="">
+            <img class="reveal" src="images/facility-8.jpg" alt="">
 
         </div>
 
@@ -280,6 +280,22 @@ document.addEventListener("click", function(e){
     ){
         sideMenu.classList.remove("active");
     }
+});
+
+const revealItems = document.querySelectorAll(".reveal, .reveal-left, .reveal-right");
+
+const revealObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+        if(entry.isIntersecting){
+            entry.target.classList.add("show");
+        }
+    });
+}, {
+    threshold:0.18
+});
+
+revealItems.forEach(function(item){
+    revealObserver.observe(item);
 });
 </script>
 </body>

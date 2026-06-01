@@ -1506,3 +1506,51 @@ li{
         border-radius:999px;
     }
 }
+
+/* 스크롤 등장 애니메이션 */
+.reveal{
+    opacity:0;
+    transform:translateY(36px);
+    transition:0.8s ease;
+}
+
+.reveal.show{
+    opacity:1;
+    transform:translateY(0);
+}
+
+/* 왼쪽에서 등장 */
+.reveal-left{
+    opacity:0;
+    transform:translateX(-46px);
+    transition:0.8s ease;
+}
+
+.reveal-left.show{
+    opacity:1;
+    transform:translateX(0);
+}
+
+/* 오른쪽에서 등장 */
+.reveal-right{
+    opacity:0;
+    transform:translateX(46px);
+    transition:0.8s ease;
+}
+
+.reveal-right.show{
+    opacity:1;
+    transform:translateX(0);
+}
+
+/* 모바일에서 너무 과하게 움직이지 않게 */
+@media(max-width:768px){
+
+    .reveal-left{
+        transform:translateX(-28px);
+    }
+
+    .reveal-right{
+        transform:translateX(28px);
+    }
+}
