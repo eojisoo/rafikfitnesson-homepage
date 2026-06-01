@@ -1554,3 +1554,29 @@ li{
         transform:translateX(28px);
     }
 }
+
+/* 모바일 프로그램 카드 좌우 등장 보정 */
+@media(max-width:768px){
+
+    .programs .card{
+        animation:none;
+    }
+
+    .programs .card.reveal-left{
+        opacity:0;
+        transform:translateX(-60px);
+        transition:0.9s ease;
+    }
+
+    .programs .card.reveal-right{
+        opacity:0;
+        transform:translateX(60px);
+        transition:0.9s ease;
+    }
+
+    .programs .card.reveal-left.show,
+    .programs .card.reveal-right.show{
+        opacity:1;
+        transform:translateX(0);
+    }
+}
