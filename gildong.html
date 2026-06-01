@@ -314,21 +314,30 @@ teacherSections.forEach(function(section){
     const teacherLicense = section.querySelector(".teacher-license");
     const teacherComment = section.querySelector(".teacher-comment");
 
+    function updateTeacher(card){
+        teacherCards.forEach(function(item){
+            item.classList.remove("active");
+        });
+
+        card.classList.add("active");
+
+        teacherName.textContent = card.dataset.name;
+        teacherClass.textContent = card.dataset.class;
+        teacherLicense.textContent = card.dataset.license;
+        teacherComment.textContent = card.dataset.comment;
+    }
+
     teacherCards.forEach(function(card){
         card.addEventListener("click", function(){
-
-            teacherCards.forEach(function(item){
-                item.classList.remove("active");
-            });
-
-            card.classList.add("active");
-
-            teacherName.textContent = card.dataset.name;
-            teacherClass.textContent = card.dataset.class;
-            teacherLicense.textContent = card.dataset.license;
-            teacherComment.textContent = card.dataset.comment;
+            updateTeacher(card);
         });
     });
+
+    const firstActiveCard = section.querySelector(".teacher-card.active") || teacherCards[0];
+
+    if(firstActiveCard){
+        updateTeacher(firstActiveCard);
+    }
 });
 </script>
 

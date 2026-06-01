@@ -730,3 +730,47 @@ li{
     display:block;
     border-radius:24px;
 }
+
+/* 모바일 강사진 슬라이드 안내 */
+.teacher-slider-wrap{
+    position:relative;
+}
+
+.teacher-section h3::after{
+    content:"  → 옆으로 넘겨보세요";
+    font-size:14px;
+    font-weight:600;
+    color:#ff7a00;
+}
+
+.teacher-slider{
+    position:relative;
+}
+
+/* 왼쪽 화살표 */
+.teacher-slider::before{
+    content:"‹";
+    position:absolute;
+    left:0;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:40px;
+    font-weight:700;
+    color:#ff7a00;
+    z-index:10;
+    pointer-events:none;
+}
+
+/* 오른쪽 화살표 */
+.teacher-slider::after{
+    content:"›";
+    position:absolute;
+    right:0;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:40px;
+    font-weight:700;
+    color:#ff7a00;
+    z-index:10;
+    pointer-events:none;
+}
