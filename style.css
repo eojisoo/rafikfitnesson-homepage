@@ -406,19 +406,6 @@ li{
 
     /* 등장 애니메이션 */
 
-@keyframes fadeUp{
-
-    from{
-        opacity:0;
-        transform:translateY(30px);
-    }
-
-    to{
-        opacity:1;
-        transform:translateY(0);
-    }
-
-}
 }
 /* BRANCH PAGE */
 .branch-hero{
@@ -1231,54 +1218,7 @@ li{
     color:#ff7a00;
     font-weight:700;
 }
-/* FACILITY GALLERY */
-.facility-gallery{
-    background:#111;
-    color:white;
-    padding:120px 20px;
-    overflow:hidden;
-}
 
-.facility-gallery h2{
-    font-size:46px;
-    line-height:1.25;
-    margin-bottom:20px;
-}
-
-.facility-gallery .section-desc{
-    color:#bbb;
-    margin-bottom:46px;
-}
-
-
-.gallery-item img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    display:block;
-    transform:scale(1.04);
-    transition:0.6s ease;
-}
-
-.gallery-item::after{
-    content:"";
-    position:absolute;
-    inset:0;
-    background:linear-gradient(
-        rgba(0,0,0,0.05),
-        rgba(0,0,0,0.32)
-    );
-    opacity:0;
-    transition:0.4s ease;
-}
-
-.gallery-item:hover img{
-    transform:scale(1.12);
-}
-
-.gallery-item:hover::after{
-    opacity:1;
-}
 
 /* EVENT PREMIUM */
 .premium-event{
@@ -1363,16 +1303,7 @@ li{
         padding-bottom:18px;
     }
 
-    .gallery-item,
-    .gallery-item.large,
-    .gallery-item.tall,
-    .gallery-item.wide{
-        min-width:78%;
-        height:260px;
-        grid-column:auto;
-        grid-row:auto;
-        scroll-snap-align:start;
-    }
+
 
     .gallery-grid::-webkit-scrollbar{
         height:5px;
@@ -1402,24 +1333,7 @@ li{
     }
 }
 
-/* FACILITY PREMIUM */
 
-.facility-gallery{
-    background:#111;
-    color:white;
-    padding:120px 20px;
-}
-
-.facility-gallery h2{
-    font-size:46px;
-    line-height:1.3;
-    margin-bottom:20px;
-}
-
-.facility-gallery .section-desc{
-    color:#aaa;
-    margin-bottom:40px;
-}
 
 /* 대표 사진 */
 
@@ -1578,5 +1492,120 @@ li{
     .programs .card.reveal-right.show{
         opacity:1;
         transform:translateX(0);
+    }
+}
+
+/* GILDONG HERO */
+
+.branch-hero{
+    height:85vh;
+
+    background:
+    linear-gradient(
+        rgba(0,0,0,0.35),
+        rgba(0,0,0,0.75)
+    ),
+    url("images/gildong-hero.jpg");
+
+    background-size:cover;
+    background-position:center;
+}
+
+.branch-hero-content{
+    height:100%;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+
+    padding-bottom:90px;
+
+    text-align:left;
+}
+
+.branch-label{
+    color:#ff7a00;
+    font-size:13px;
+    font-weight:900;
+    letter-spacing:3px;
+    margin-bottom:18px;
+}
+
+.branch-hero h1{
+    font-size:68px;
+    line-height:0.95;
+    margin-bottom:24px;
+}
+
+.branch-hero p{
+    font-size:24px;
+    line-height:1.5;
+}
+
+/* 요약 카드 */
+
+.branch-summary{
+    background:white;
+    padding:40px 20px;
+}
+
+.summary-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:18px;
+}
+
+.summary-card{
+    background:#f8f8f8;
+    padding:26px;
+    border-radius:20px;
+    text-align:center;
+
+    transition:0.35s ease;
+}
+
+.summary-card:hover{
+    transform:translateY(-6px);
+}
+
+.summary-card strong{
+    display:block;
+    color:#ff7a00;
+    font-size:22px;
+    margin-bottom:10px;
+}
+
+.summary-card span{
+    font-size:15px;
+    font-weight:700;
+}
+
+/* 모바일 */
+
+@media(max-width:768px){
+
+    .branch-hero{
+        height:72vh;
+    }
+
+    .branch-hero-content{
+        padding-bottom:60px;
+    }
+
+    .branch-hero h1{
+        font-size:42px;
+        line-height:1.05;
+    }
+
+    .branch-hero p{
+        font-size:17px;
+    }
+
+    .summary-grid{
+        grid-template-columns:1fr 1fr;
+    }
+
+    .summary-card{
+        padding:20px;
     }
 }
