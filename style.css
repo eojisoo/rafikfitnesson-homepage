@@ -693,4 +693,21 @@ li{
     .teacher-detail h4{
         font-size:22px;
     }
+    
+}
+.map-box img{
+    width:100%;
+    display:block;
+    border-radius:24px;
+}
+
+.map-btn{
+    display:inline-block;
+    margin-top:20px;
+    padding:14px 24px;
+    background:#03c75a;
+    color:white;
+    text-decoration:none;
+    border-radius:12px;
+    font-weight:700;
 }
