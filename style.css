@@ -1627,29 +1627,33 @@ li{
     }
 }
 
-/* 모바일 지점 카드 슬라이드 */
+/* 모바일 지점 카드 가로 슬라이드 강제 적용 */
 @media(max-width:768px){
 
-    .branch-card-wrap{
-        display:flex;
+    .branch-home .branch-card-wrap{
+        display:flex !important;
+        flex-wrap:nowrap !important;
         gap:14px;
         overflow-x:auto;
+        overflow-y:hidden;
         scroll-snap-type:x mandatory;
-        padding-bottom:14px;
+        padding-bottom:16px;
     }
 
-    .branch-card-home{
-        min-width:82%;
+    .branch-home .branch-card-home{
+        width:82% !important;
+        min-width:82% !important;
+        max-width:82% !important;
+        flex:0 0 82% !important;
         min-height:170px;
-        flex-shrink:0;
         scroll-snap-align:start;
     }
 
-    .branch-card-wrap::-webkit-scrollbar{
+    .branch-home .branch-card-wrap::-webkit-scrollbar{
         height:4px;
     }
 
-    .branch-card-wrap::-webkit-scrollbar-thumb{
+    .branch-home .branch-card-wrap::-webkit-scrollbar-thumb{
         background:#ff7a00;
         border-radius:999px;
     }
