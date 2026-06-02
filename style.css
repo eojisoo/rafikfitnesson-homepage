@@ -1658,3 +1658,71 @@ li{
         border-radius:999px;
     }
 }
+
+/* 모바일 시설사진 가로 슬라이드 흔들림 방지 */
+@media(max-width:768px){
+
+    .facility-sub{
+        overflow-x:auto;
+        overflow-y:hidden;
+        scroll-snap-type:x mandatory;
+        -webkit-overflow-scrolling:touch;
+        overscroll-behavior-x:contain;
+        touch-action:pan-x;
+        align-items:center;
+    }
+
+    .facility-sub img{
+        scroll-snap-align:start;
+        flex:0 0 220px;
+        min-width:220px;
+        max-width:220px;
+        height:160px;
+        display:block;
+    }
+}
+
+/* 모바일 줄바꿈/가독성 정리 */
+@media(max-width:768px){
+
+    h2{
+        font-size:28px;
+        line-height:1.35;
+        word-break:keep-all;
+    }
+
+    h3{
+        word-break:keep-all;
+    }
+
+    p,
+    span,
+    a,
+    li{
+        word-break:keep-all;
+    }
+
+    .brand-message h2,
+    .facility-gallery h2,
+    .branch-home h2,
+    .premium-event h2{
+        word-break:keep-all;
+        line-height:1.35;
+    }
+
+    .brand-message p,
+    .section-desc{
+        word-break:keep-all;
+        line-height:1.7;
+    }
+}
+
+.mobile-only-br{
+    display:none;
+}
+
+@media(max-width:768px){
+    .mobile-only-br{
+        display:block;
+    }
+}
