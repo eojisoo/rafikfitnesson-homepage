@@ -1626,3 +1626,31 @@ li{
         padding:20px;
     }
 }
+
+/* 모바일 지점 카드 슬라이드 */
+@media(max-width:768px){
+
+    .branch-card-wrap{
+        display:flex;
+        gap:14px;
+        overflow-x:auto;
+        scroll-snap-type:x mandatory;
+        padding-bottom:14px;
+    }
+
+    .branch-card-home{
+        min-width:82%;
+        min-height:170px;
+        flex-shrink:0;
+        scroll-snap-align:start;
+    }
+
+    .branch-card-wrap::-webkit-scrollbar{
+        height:4px;
+    }
+
+    .branch-card-wrap::-webkit-scrollbar-thumb{
+        background:#ff7a00;
+        border-radius:999px;
+    }
+}
