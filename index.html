@@ -90,21 +90,21 @@
 
         <div class="card-wrap">
 
-    <div class="card health-card reveal-left">
+    <div class<div class="card health-card reveal-left" onclick="openProgramPopup('health')">
         <div class="card-overlay">
             <h3>HEALTH</h3>
             <p>24시간 자유로운 운동 공간</p>
         </div>
     </div>
 
-    <div class="card pt-card reveal-right">
+    <div class="card pt-card reveal-right" onclick="openProgramPopup('pt')">
         <div class="card-overlay">
             <h3>PERSONAL TRAINING</h3>
             <p>전문 트레이너의 맞춤 관리</p>
         </div>
     </div>
 
-    <div class="card yoga-card reveal-left">
+    <div class="card yoga-card reveal-left" onclick="openProgramPopup('yoga')">
         <div class="card-overlay">
             <h3>YOGA & PILATES</h3>
             <p>몸의 균형과 회복을 위한 클래스</p>
@@ -113,8 +113,18 @@
 
 </div>
 </section>
+<div class="program-popup" id="programPopup">
+    <div class="program-popup-box">
+        <button class="popup-close" onclick="closeProgramPopup()">×</button>
 
-<section class="facility-gallery">
+        <h3 id="popupTitle">FACILITY</h3>
+
+        <div class="popup-gallery" id="popupGallery"></div>
+    </div>
+</div>
+
+
+<section class="facility-gallery" id="facility">
 
     <div class="container">
 
@@ -139,17 +149,18 @@
         <!-- 갤러리 -->
         <div class="facility-sub">
 
-            <img class="reveal" src="images/facility-1.jpg" alt="">
-            <img class="reveal" src="images/facility-2.jpg" alt="">
-            <img class="reveal" src="images/facility-3.jpg" alt="">
-            <img class="reveal" src="images/facility-4.jpg" alt="">
+    <img class="reveal facility-img health-img" src="images/facility-1.jpg" alt="">
+    <img class="reveal facility-img health-img" src="images/facility-2.jpg" alt="">
 
-            <img class="reveal" src="images/facility-5.jpg" alt="">
-            <img class="reveal" src="images/facility-6.jpg" alt="">
-            <img class="reveal" src="images/facility-7.jpg" alt="">
-            <img class="reveal" src="images/facility-8.jpg" alt="">
+    <img class="reveal facility-img pt-img" src="images/facility-3.jpg" alt="">
+    <img class="reveal facility-img pt-img" src="images/facility-4.jpg" alt="">
 
-        </div>
+    <img class="reveal facility-img yoga-img" src="images/facility-5.jpg" alt="">
+    <img class="reveal facility-img yoga-img" src="images/facility-6.jpg" alt="">
+    <img class="reveal facility-img yoga-img" src="images/facility-7.jpg" alt="">
+    <img class="reveal facility-img yoga-img" src="images/facility-8.jpg" alt="">
+
+</div>
 
     </div>
 
@@ -311,6 +322,50 @@ const revealObserver = new IntersectionObserver(function(entries){
 revealItems.forEach(function(item){
     revealObserver.observe(item);
 });
+const popupData = {
+    health: {
+        title: "HEALTH",
+        images: [
+            "images/facility-1.jpg",
+            "images/facility-2.jpg",
+            "images/facility-3.jpg"
+        ]
+    },
+    pt: {
+        title: "PERSONAL TRAINING",
+        images: [
+            "images/facility-4.jpg",
+            "images/facility-5.jpg"
+        ]
+    },
+    yoga: {
+        title: "YOGA & PILATES",
+        images: [
+            "images/facility-6.jpg",
+            "images/facility-7.jpg",
+            "images/facility-8.jpg"
+        ]
+    }
+};
+
+function openProgramPopup(type) {
+    const popup = document.getElementById("programPopup");
+    const title = document.getElementById("popupTitle");
+    const gallery = document.getElementById("popupGallery");
+
+    title.textContent = popupData[type].title;
+    gallery.innerHTML = "";
+
+    popupData[type].images.forEach(function(src){
+        gallery.innerHTML += `<img src="${src}" alt="">`;
+    });
+
+    popup.classList.add("active");
+}
+
+function closeProgramPopup() {
+    document.getElementById("programPopup").classList.remove("active");
+}
 
 
 </script>
