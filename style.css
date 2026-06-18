@@ -25,11 +25,11 @@ nav{
     top:0;
     left:0;
     z-index:1000;
-    border-bottom:1px solid #eee;
+    border-bottom:none;
 }
 
 .nav-container{
-    height:78px;
+    height:70px;
     display:flex;
     align-items:center;
     justify-content:space-between;
@@ -150,7 +150,7 @@ nav{
 /* HERO */
 header{
     position:relative;
-    margin-top:78px;
+    margin-top:70px;
     height:92vh;
     background:
     linear-gradient(
@@ -1521,11 +1521,39 @@ li{
     linear-gradient(
         rgba(0,0,0,0.35),
         rgba(0,0,0,0.75)
-    ),
-    url("images/gildong-hero.jpg");
+    );
 
     background-size:cover;
     background-position:center;
+    background-repeat:no-repeat;
+}
+
+/* 지점별 HERO 이미지 */
+.gildong-hero{
+    background-image:
+    linear-gradient(
+        rgba(0,0,0,0.35),
+        rgba(0,0,0,0.75)
+    ),
+    url("images/gildong-hero.jpg");
+}
+
+.cheonho-hero{
+    background-image:
+    linear-gradient(
+        rgba(0,0,0,0.35),
+        rgba(0,0,0,0.75)
+    ),
+    url("images/cheonho-hero.jpg");
+}
+
+.dunchon-hero{
+    background-image:
+    linear-gradient(
+        rgba(0,0,0,0.35),
+        rgba(0,0,0,0.75)
+    ),
+    url("images/dunchon-hero.jpg");
 }
 
 .branch-hero-content{
@@ -2077,4 +2105,29 @@ li{
     background:#ff7a00;
     color:#fff;
     border-color:#ff7a00;
+}
+
+.trainer-name{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.youtube-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+
+    padding:4px 12px;
+
+    background:#ff0000;
+    color:white;
+
+    border-radius:999px;
+
+    font-size:12px;
+    font-weight:700;
+    text-decoration:none;
+
+    line-height:1;
 }
