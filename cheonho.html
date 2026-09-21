@@ -256,7 +256,7 @@
         <div class="branch-grid">
             <div class="branch-image">
                 <img id="yogaProgramImage"
-     src="images/yoga-schedule.jpg"
+     src="images/yoga-schedule.png"
      alt="길동점 요가">
             </div>
 
@@ -271,10 +271,19 @@
 
 <div class="program-tags yoga-list">
 
+<span onclick="changeImage(
+    'yogaProgramImage',
+    '.yoga-list span',
+    'images/yoga-schedule.png',
+    this
+    )">
+        시간표
+    </span>
+
     <span onclick="changeImage(
     'yogaProgramImage',
     '.yoga-list span',
-    'images/yoga-vinyasa.jpg',
+    'images/yoga-vinyasa.png',
     this
     )">
         빈야사
@@ -283,16 +292,16 @@
     <span onclick="changeImage(
     'yogaProgramImage',
     '.yoga-list span',
-    'images/yoga-insideflow.jpg',
+    'images/yoga-terapi.png',
     this
     )">
-        인사이드플로우
+        테라피 요가
     </span>
 
     <span onclick="changeImage(
     'yogaProgramImage',
     '.yoga-list span',
-    'images/yoga-yin.jpg',
+    'images/yoga-yin.png',
     this
     )">
         인요가
@@ -301,7 +310,7 @@
     <span onclick="changeImage(
     'yogaProgramImage',
     '.yoga-list span',
-    'images/yoga-ashtanga.jpg',
+    'images/yoga-ashtanga.png',
     this
     )">
         아쉬탕가
@@ -310,16 +319,16 @@
     <span onclick="changeImage(
     'yogaProgramImage',
     '.yoga-list span',
-    'images/yoga-evolution.jpg',
+    'images/yoga-hilling.png',
     this
     )">
-        애볼루션플로우
+        힐링 요가
     </span>
 
     <span onclick="changeImage(
     'yogaProgramImage',
     '.yoga-list span',
-    'images/yoga-hatha.jpg',
+    'images/yoga-hatha.png',
     this
     )">
         하타
@@ -357,6 +366,15 @@
     <span onclick="changeImage(
     'pilatesProgramImage',
     '.pilates-list span',
+    'images/pilates-schedule.jpg',
+    this
+    )">
+        시간표
+    </span>
+
+    <span onclick="changeImage(
+    'pilatesProgramImage',
+    '.pilates-list span',
     'images/pilates-reformer.jpg',
     this
     )">
@@ -366,19 +384,10 @@
     <span onclick="changeImage(
     'pilatesProgramImage',
     '.pilates-list span',
-    'images/pilates-barrel.jpg',
-    this
-    )">
-        바렐
-    </span>
-
-    <span onclick="changeImage(
-    'pilatesProgramImage',
-    '.pilates-list span',
     'images/pilates-chair.jpg',
     this
     )">
-        체어
+        바렐/체어
     </span>
 
 </div>
@@ -420,7 +429,7 @@
         0507-1395-0870
     </p>
 
-    <a href="https://naver.me/GGGGgI67"
+    <a href="https://naver.me/5N1Sqrvu"
        class="location-btn"
        target="_blank">
         네이버 지도 보기 →
@@ -519,8 +528,8 @@ const preloadImages = [
     "images/gildong-freeweight.jpg",
     "images/gildong-stretch.jpg",
 
-    "images/yoga-vinyasa.jpg",
-    "images/yoga-insideflow.jpg",
+    "images/yoga-vinyasa.png",
+    "images/yoga-insideflow.png",
     "images/yoga-yin.jpg",
     "images/yoga-ashtanga.jpg",
     "images/yoga-evolution.jpg",
