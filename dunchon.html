@@ -63,6 +63,101 @@
     </div>
 
 </header>
+<!-- 라피끄 360도 VR 투어 -->
+<section class="rafik-vr-section">
+
+  <div class="rafik-vr-header">
+    <span>EXPLORE OUR SPACE</span>
+    <h2>360° VIRTUAL TOUR</h2>
+    <p>라피끄의 공간을 직접 둘러보세요.</p>
+  </div>
+
+  <div class="rafik-vr-viewer">
+    <iframe
+      src="https://momento360.com/e/u/e536932247af4e6e9f393b6c7a6efa07?heading=0&amp;pitch=0&amp;field-of-view=75&amp;size=medium&amp;display-plan=true"
+      title="라피끄 360도 VR 투어"
+      loading="lazy"
+      allowfullscreen>
+    </iframe>
+  </div>
+
+  <p class="rafik-vr-guide">
+    화면을 드래그하여 360도로 둘러보세요.
+  </p>
+
+</section>
+
+<style>
+.rafik-vr-section {
+  width: 100%;
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.rafik-vr-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.rafik-vr-header span {
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: #888;
+}
+
+.rafik-vr-header h2 {
+  font-size: 32px;
+  margin: 12px 0;
+  font-weight: 700;
+}
+
+.rafik-vr-header p {
+  font-size: 15px;
+  color: #777;
+}
+
+.rafik-vr-viewer {
+  width: 100%;
+  height: 580px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #111;
+}
+
+.rafik-vr-viewer iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.rafik-vr-guide {
+  text-align: center;
+  font-size: 13px;
+  color: #888;
+  margin-top: 15px;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 768px) {
+
+  .rafik-vr-section {
+    margin: 40px auto;
+    padding: 0 15px;
+  }
+
+  .rafik-vr-header h2 {
+    font-size: 25px;
+  }
+
+  .rafik-vr-viewer {
+    height: 420px;
+    border-radius: 12px;
+  }
+
+}
+</style>
 <section class="branch-summary" id="branch-summary">
 
     <div class="container">
