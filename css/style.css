@@ -305,3 +305,26 @@ button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:800px){.gildong-refresh .brand-logo img{width:140px}.gildong-refresh .rafik-hero{min-height:760px;padding:85px 0 115px}.gildong-refresh .hero-title{font-size:clamp(62px,11vw,105px)}.gildong-refresh .hero-intro-row{align-items:start;flex-direction:column;gap:24px}.gildong-refresh .hero-bottom-row{margin-top:55px}.gildong-refresh .hero-orbit{width:780px;right:-500px;top:-80px}.gildong-refresh .orbit-two{width:620px;right:-420px;top:0}}
 @media(max-width:520px){.gildong-refresh .brand-logo img{width:120px}.gildong-refresh .links .pill{padding:10px 12px;font-size:11px}.gildong-refresh .rafik-hero{min-height:700px;padding:80px 0 100px}.gildong-refresh .hero-topline{font-size:9px;letter-spacing:.12em}.gildong-refresh .hero-title{font-size:clamp(54px,12.1vw,74px);margin:38px 0 30px}.gildong-refresh .hero-intro-row p span{font-size:12px}.gildong-refresh .hero-actions{width:100%}.gildong-refresh .hero-actions a{gap:14px;padding:15px 16px;font-size:12px;flex:1}.gildong-refresh .hero-bottom-row{align-items:start;flex-direction:column;gap:28px;margin-top:48px}.gildong-refresh .hero-scroll{display:none}.gildong-refresh .hero-ticker{height:38px}}
 @media(prefers-reduced-motion:reduce){.gildong-refresh .rafik-hero *, .gildong-refresh .rafik-hero *::before,.gildong-refresh .rafik-hero *::after{animation:none!important;transition:none!important}}
+
+/* 04 Timetable */
+.features{grid-template-columns:repeat(4,1fr)}
+.timetables{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.timetable{margin:0;background:white;border:1px solid var(--line);padding:22px}
+.timetable figcaption{font-size:12px;font-weight:800;letter-spacing:3px;margin-bottom:16px}
+.timetable img{display:block;width:100%;height:auto}
+.timetable-empty{display:none;min-height:360px;align-items:center;justify-content:center;background:var(--soft);color:#888;font-weight:700}
+.timetable.is-empty a{display:none}
+.timetable.is-empty .timetable-empty{display:flex}
+
+/* 05 Location */
+.location{grid-template-columns:1.4fr 1fr}
+.map{min-height:380px;background:#ecece9;border:1px solid var(--line)}
+.map-empty{height:100%;min-height:380px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.map-empty strong{font-size:28px;letter-spacing:-1px}
+.map-empty a{border-bottom:1px solid #151515;font-weight:700;font-size:14px}
+.loc-info{display:grid;grid-template-columns:70px 1fr;gap:12px 10px;margin:24px 0 8px;line-height:1.7}
+.loc-info dt{font-size:12px;font-weight:800;letter-spacing:1px;color:#999;padding-top:2px}
+.loc-info dd{margin:0;color:#333}
+.loc-info a{color:#151515;font-weight:700}
+.gildong-refresh .hero-bottom-row{justify-content:flex-end}
+@media(max-width:800px){.features{grid-template-columns:repeat(2,1fr)}.timetables,.location{grid-template-columns:1fr}.map,.map-empty{min-height:300px}}

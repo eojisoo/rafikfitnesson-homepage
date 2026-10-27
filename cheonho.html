@@ -8,7 +8,7 @@
   </title>
   <link href="css/style.css" rel="stylesheet"/>
  </head>
- <body>
+ <body data-page-branch="cheonho">
   <header>
    <div class="wrap nav">
     <a class="logo" href="#home">
@@ -31,8 +31,8 @@
      <a href="#programs">
       프로그램
      </a>
-     <a href="#team">
-      강사진
+     <a href="#timetable">
+      시간표
      </a>
      <a class="pill" href="#membership">
       등록 신청 &nearrow;
@@ -62,21 +62,6 @@
        &nearrow;
       </span>
      </a>
-     <div class="branch-line">
-      <span class="branch-dot">
-      </span>
-      <span id="activeBranchLabel">
-       천호역점에서 운동을 시작해 보세요
-      </span>
-     </div>
-     <div aria-label="지점 선택" class="switch">
-      <button class="active" data-branch="cheonho">
-       천호역점
-      </button>
-      <button class="" data-branch="gildong">
-       길동점
-      </button>
-     </div>
     </div>
    </section>
    <section class="section" id="tour">
@@ -185,9 +170,6 @@
        FITNESS &nearrow;
       </div>
       <div class="feature">
-       PERSONAL TRAINING &nearrow;
-      </div>
-      <div class="feature">
        YOGA &nearrow;
       </div>
       <div class="feature">
@@ -199,52 +181,38 @@
      </div>
     </div>
    </section>
-   <section class="section soft" id="team">
+   <section class="section soft" id="timetable">
     <div class="wrap">
      <div class="heading">
       <div>
        <div class="eyebrow">
-        04 / Our team
+        04 / Timetable
        </div>
        <h2>
-        함께하는 전문가들.
+        이번 달
+        <br/>
+        수업 시간표.
        </h2>
       </div>
       <p>
-       회원님의 목표를 이해하고 함께할 트레이너와 강사진을 소개합니다.
+       요가·바레, 필라테스 수업 시간표를 확인하세요. 이미지를 누르면 크게 볼 수 있습니다.
       </p>
      </div>
-     <div class="team">
-      <div class="person">
-       <div class="placeholder">
-       </div>
-       <h3>
-        트레이너 프로필
-       </h3>
-       <p>
-        사진 및 소개 등록 예정
-       </p>
-      </div>
-      <div class="person">
-       <div class="placeholder">
-       </div>
-       <h3>
-        요가 강사 프로필
-       </h3>
-       <p>
-        사진 및 소개 등록 예정
-       </p>
-      </div>
-      <div class="person">
-       <div class="placeholder">
-       </div>
-       <h3>
-        필라테스 강사 프로필
-       </h3>
-       <p>
-        사진 및 소개 등록 예정
-       </p>
-      </div>
+     <div class="timetables">
+      <figure class="timetable">
+       <figcaption>YOGA / BARRE</figcaption>
+       <a href="assets/timetable/cheonho-yoga-barre.jpg" target="_blank" rel="noopener">
+        <img src="assets/timetable/cheonho-yoga-barre.jpg" alt="천호역점 YOGA / BARRE 시간표" loading="lazy" onerror="this.closest('.timetable').classList.add('is-empty')"/>
+       </a>
+       <div class="timetable-empty">시간표 준비 중</div>
+      </figure>
+      <figure class="timetable">
+       <figcaption>PILATES</figcaption>
+       <a href="assets/timetable/cheonho-pilates.jpg" target="_blank" rel="noopener">
+        <img src="assets/timetable/cheonho-pilates.jpg" alt="천호역점 PILATES 시간표" loading="lazy" onerror="this.closest('.timetable').classList.add('is-empty')"/>
+       </a>
+       <div class="timetable-empty">시간표 준비 중</div>
+      </figure>
      </div>
     </div>
    </section>
@@ -263,33 +231,28 @@
       </div>
      </div>
      <div class="location">
+      <div class="map" id="kakaoMap">
+       <div class="map-empty">
+        <strong>천호역점</strong>
+        <a id="mapFallbackLink" target="_blank" rel="noopener">카카오맵에서 위치 보기 &nearrow;</a>
+       </div>
+      </div>
       <div class="loc">
        <div class="eyebrow">
-        Branch 01
+        CHEONHO
        </div>
        <h3>
         천호역점
        </h3>
-       <p>
-        운영시간 &middot; 주소 &middot; 주차 안내 등록 예정
-       </p>
-       <button class="cta secondary" onclick="window.location.href='cheonho.html'">
-        이 지점 보기 &nearrow;
-       </button>
-      </div>
-      <div class="loc">
-       <div class="eyebrow">
-        Branch 02
-       </div>
-       <h3>
-        길동점
-       </h3>
-       <p>
-        운영시간 &middot; 주소 &middot; 주차 안내 등록 예정
-       </p>
-       <button class="cta secondary" onclick="window.location.href='gildong.html'">
-        이 지점 보기 &nearrow;
-       </button>
+       <dl class="loc-info">
+        <dt>주소</dt>
+        <dd id="branchAddress"></dd>
+        <dt>연락처</dt>
+        <dd><a id="branchPhone"></a></dd>
+       </dl>
+       <a class="cta secondary" id="kakaoMapLink" target="_blank" rel="noopener">
+        카카오맵에서 길찾기 &nearrow;
+       </a>
       </div>
      </div>
     </div>
