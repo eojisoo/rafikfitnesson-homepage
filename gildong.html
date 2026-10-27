@@ -162,18 +162,18 @@
       </p>
      </div>
      <div class="features">
-      <div class="feature">
-       FITNESS &nearrow;
-      </div>
-      <div class="feature">
-       YOGA &nearrow;
-      </div>
-      <div class="feature">
-       PILATES &nearrow;
-      </div>
-      <div class="feature">
-       BARRE &nearrow;
-      </div>
+      <button type="button" class="feature" data-program="fitness" style="background-image:url('assets/programs/fitness/main.jpg')">
+       <span>FITNESS &nearrow;</span>
+      </button>
+      <button type="button" class="feature" data-program="yoga" style="background-image:url('assets/programs/yoga/main.jpg')">
+       <span>YOGA &nearrow;</span>
+      </button>
+      <button type="button" class="feature" data-program="pilates" style="background-image:url('assets/programs/pilates/main.jpg')">
+       <span>PILATES &nearrow;</span>
+      </button>
+      <button type="button" class="feature" data-program="barre" style="background-image:url('assets/programs/barre/main.jpg')">
+       <span>BARRE &nearrow;</span>
+      </button>
      </div>
     </div>
    </section>
@@ -331,6 +331,18 @@
       <p class="success-notice">※ 현재는 등록 신청만 접수되었으며, 결제는 진행되지 않았습니다.</p>
       <button class="primary success-return" type="button" onclick="closeModal()">홈페이지로 돌아가기</button>
     </section>
+   </div>
+  </div>
+  <div class="modal gallery-modal" id="programModal" role="dialog" aria-modal="true" aria-labelledby="programTitle">
+   <div class="gallery">
+    <div class="gallery-head">
+     <h2 id="programTitle"></h2>
+     <span class="gallery-count" id="programCount"></span>
+     <button type="button" class="gallery-close" aria-label="닫기" onclick="closeProgram()">&times;</button>
+    </div>
+    <div class="gallery-track" id="programTrack"></div>
+    <button type="button" class="gallery-nav prev" aria-label="이전 이미지" onclick="slideProgram(-1)">&larr;</button>
+    <button type="button" class="gallery-nav next" aria-label="다음 이미지" onclick="slideProgram(1)">&rarr;</button>
    </div>
   </div>
   <script charset="UTF-8" class="daum_roughmap_loader_script" src="https://t1.kakaocdn.net/kakaomapweb/roughmap/loader/prod/roughmapLoader.js"></script>

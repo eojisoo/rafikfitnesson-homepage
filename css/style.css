@@ -332,3 +332,27 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .map .root_daum_roughmap{width:100%!important}
 .map-frame{display:block;width:100%;height:380px;border:0}
 @media(max-width:800px){.map-frame{height:300px}}
+.map .root_daum_roughmap .cont{display:none!important}
+
+/* 03 Programs gallery */
+.feature{position:relative;border:0;min-height:260px;color:white;text-align:left;background-color:#2b2f2c;background-size:cover;background-position:center;overflow:hidden;cursor:pointer}
+.feature:before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#0000 40%,#000a);transition:opacity .3s}
+.feature span{position:relative}
+.feature:hover:before{opacity:.6}
+.gallery{position:relative;width:min(960px,100%);background:#111;color:white}
+.gallery-head{display:flex;align-items:center;gap:14px;padding:16px 20px}
+.gallery-head h2{margin:0;font-size:20px;letter-spacing:-.5px}
+.gallery-count{font-size:13px;color:#aaa;font-weight:700}
+.gallery-close{margin-left:auto;border:0;background:none;color:white;font-size:28px;line-height:1}
+.gallery-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.gallery-track::-webkit-scrollbar{display:none}
+.gallery-track img{flex:0 0 100%;width:100%;aspect-ratio:4/3;object-fit:cover;scroll-snap-align:start;display:block}
+.gallery-nav{position:absolute;top:55%;transform:translateY(-50%);width:46px;height:46px;border-radius:50%;border:0;background:#fffd;color:#111;font-size:20px;font-weight:800}
+.gallery-nav.prev{left:14px}
+.gallery-nav.next{right:14px}
+.gallery-nav:disabled{opacity:0;pointer-events:none}
+@media(max-width:800px){.feature{min-height:200px}}
+@media(max-width:520px){.gallery-modal{padding:0}.gallery-nav{width:38px;height:38px;font-size:16px}}
+.feature{aspect-ratio:9/11;min-height:0}
+.gallery-track img{aspect-ratio:auto;height:min(76vh,760px);object-fit:contain;background:#111}
+@media(max-width:800px){.feature{min-height:0}}
