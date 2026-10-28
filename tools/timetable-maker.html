@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>길동점 시간표 이미지 제작</title>
+<!--
+  길동점 시간표 이미지 제작 파일
+  1) 아래 TIMETABLE 값을 이번 달 시간표로 수정합니다.
+     rows: [시작 시간(24시), [월, 화, 수, 목, 금, 토, 일]] / 수업이 없는 칸은 ''
+     types: 수업별 색상(lime·dark·soft). 지정하지 않은 수업은 lime입니다.
+  2) Git Bash에서 sh tools/make-timetable.sh 를 실행하면
+     assets/timetable/gildong-yoga.png, gildong-pilates.png 가 새로 만들어집니다.
+  브라우저에서 이 파일을 열고 주소 끝에 ?p=yoga 또는 ?p=pilates 를 붙이면 미리 볼 수 있습니다.
+-->
+<style>
+*{box-sizing:border-box}
+html,body{margin:0}
+body{width:1400px;height:1000px;font-family:Pretendard,'Noto Sans KR','Malgun Gothic',sans-serif;background:#fff;color:#151515}
+.sheet{height:100%;display:flex;flex-direction:column;padding:56px 64px 44px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:30px}
+.brand{font-size:15px;font-weight:800;letter-spacing:.24em;color:#4f7d0f}
+.brand i{display:inline-block;width:9px;height:9px;border-radius:50%;background:#b7e95d;margin-right:10px;vertical-align:1px}
+h1{margin:12px 0 0;font-size:64px;line-height:1;font-weight:900;letter-spacing:-.04em}
+h1 span{color:#b7e95d;-webkit-text-stroke:0}
+.month{margin-left:16px;font-size:26px;font-weight:800;color:#888;letter-spacing:-.02em}
+.legend{display:flex;gap:10px}
+.legend .block{width:auto;height:auto;padding:10px 20px;font-size:18px}
+.grid{flex:1;display:grid;grid-template-columns:120px repeat(7,1fr);column-gap:8px;border-top:3px solid #151515}
+.grid>div{display:flex;align-items:center;justify-content:center;border-bottom:1px solid #e6e6e3;padding:6px 0}
+.day{font-size:24px;font-weight:900;padding:18px 0!important}
+.period{padding:20px 0 10px!important}
+.day.weekend{color:#9a9a9a}
+.period{grid-column:1/-1;justify-content:flex-start!important;font-size:17px;font-weight:900;letter-spacing:.14em;color:#4f7d0f;border-bottom:2px solid #151515!important}
+.time{justify-content:flex-start!important;font-variant-numeric:tabular-nums}
+.time strong{font-size:28px;font-weight:900;letter-spacing:-.03em}
+.time small{margin-left:6px;font-size:14px;font-weight:800;color:#888}
+.cell.weekend{background:#f7f7f5}
+.block{display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:4px 8px;border-radius:10px;font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.2;text-align:center;word-break:keep-all}
+.block.lime{background:#b7e95d;color:#11160e}
+.block.dark{background:#151515;color:#fff}
+.block.soft{background:#ecefe6;color:#151515}
+.foot{display:flex;justify-content:space-between;margin-top:22px;font-size:17px;color:#777}
+.foot strong{color:#151515;letter-spacing:.08em}
+</style>
+</head>
+<body>
+<div class="sheet" id="sheet"></div>
+<script>
+const TIMETABLE={
+ yoga:{title:'YOGA',month:'',types:{},rows:[
+  ['09:30',['하타요가','','','','','','']],
+  ['10:00',['','','빈야사','','아쉬탕가','','']],
+  ['10:30',['','Myo-Yin','','아쉬탕가 + 인요가','','','']],
+  ['10:40',['하타요가','','','','','','']],
+  ['19:00',['빈야사','Easy 하타','아쉬탕가 + 인요가','','','','']],
+  ['20:00',['','','','','아쉬탕가 + 인요가','','']],
+  ['20:20',['에볼루션 플로우','인사이드 플로우','Myo-Yin','인사이드 플로우','','','']]]},
+ pilates:{title:'PILATES',month:'',types:{'캐포머':'lime','바렐&체어':'dark'},rows:[
+  ['09:30',['캐포머','','바렐&체어','','캐포머','','']],
+  ['10:00',['','캐포머','','바렐&체어','','바렐&체어','']],
+  ['10:30',['바렐&체어','','캐포머','','바렐&체어','','']],
+  ['11:00',['','바렐&체어','','캐포머','','캐포머','']],
+  ['18:30',['바렐&체어','','캐포머','','','','']],
+  ['19:00',['','바렐&체어','','캐포머','','','']],
+  ['19:30',['캐포머','','바렐&체어','','캐포머','','']],
+  ['20:00',['','캐포머','','바렐&체어','','','']],
+  ['20:30',['바렐&체어','','캐포머','','바렐&체어','','']],
+  ['21:00',['','바렐&체어','','캐포머','','','']]]}
+};
+const DAYS=['월','화','수','목','금','토','일'];
+const t=TIMETABLE[new URLSearchParams(location.search).get('p')]||TIMETABLE.yoga;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const block=c=>'<span class="block '+(t.types[c]||'lime')+'">'+esc(c)+'</span>';
+const time=s=>{const[h,m]=s.split(':').map(Number);return'<strong>'+String(h%12||12).padStart(2,'0')+':'+String(m).padStart(2,'0')+'</strong><small>'+(h<12?'AM':'PM')+'</small>'};
+const groups=[['오전 MORNING',t.rows.filter(r=>+r[0].split(':')[0]<12)],['오후 EVENING',t.rows.filter(r=>+r[0].split(':')[0]>=12)]].filter(g=>g[1].length);
+let grid='<div></div>'+DAYS.map((d,i)=>'<div class="day'+(i>4?' weekend':'')+'">'+d+'</div>').join('');
+groups.forEach(([label,rows])=>{grid+='<div class="period">'+label+'</div>'+rows.map(([s,cs])=>'<div class="time">'+time(s)+'</div>'+DAYS.map((_,i)=>'<div class="cell'+(i>4?' weekend':'')+'">'+(cs[i]?block(cs[i]):'')+'</div>').join('')).join('')});
+const names=[...new Set(t.rows.flatMap(r=>r[1]).filter(Boolean))];
+document.getElementById('sheet').innerHTML='<div class="head"><div><div class="brand"><i></i>RAFIK &amp; FITNESS ON · 길동점</div><h1>'+esc(t.title)+' TIMETABLE<span>.</span>'+(t.month?'<span class="month">'+esc(t.month)+'</span>':'')+'</h1></div>'+(Object.keys(t.types).length?'<div class="legend">'+names.map(block).join('')+'</div>':'')+'</div><div class="grid" style="grid-template-rows:auto '+groups.map(g=>'auto '+g[1].map(()=>'1fr').join(' ')).join(' ')+'">'+grid+'</div><div class="foot"><span>※ 시간표는 부득이하게 변동이 필요한 경우 미리 공지 후 휴강 또는 변경될 수 있습니다.</span><strong>0507-1358-0870</strong></div>';
+</script>
+</body>
+</html>
