@@ -420,3 +420,16 @@ body.show-bottom-cta .bottom{transform:none}
 .timetable-zoom.zoomed{display:block;padding:0}
 .timetable-zoom.zoomed img{width:max(220%,1400px);max-width:none;max-height:none;cursor:zoom-out}
 @media(max-width:520px){.schedule{padding:14px;margin:0 -20px;border-left:0;border-right:0}.schedule-tabs{display:flex}.schedule-tabs button{flex:1}.schedule-zoom{right:8px;bottom:8px;padding:7px 11px;font-size:11px}.timetable-modal .gallery-count{font-size:11px}}
+
+/* Footer */
+footer{padding:64px 0 48px;background:#0c0d0e;color:#fff}
+.footer-top{display:grid;grid-template-columns:1.4fr 1.2fr 1fr;gap:40px;padding-bottom:36px;border-bottom:1px solid #ffffff1f}
+.footer-brand img{display:block;width:150px;height:auto;filter:invert(1)}
+footer .footer-brand p{margin:18px 0 0;font-size:13px;line-height:1.8;color:#a6aba8}
+.footer-col{display:flex;flex-direction:column;align-items:flex-start;gap:9px;font-size:13px;color:#a6aba8}
+.footer-col strong{margin-bottom:4px;font-size:12px;letter-spacing:.14em;color:#b7e95d}
+.footer-col a:hover{color:#fff}
+.footer-legal{padding-top:24px}
+footer .footer-legal p{margin:0 0 6px;font-size:12px;line-height:1.7;color:#6d736f}
+.footer-legal i{font-style:normal;margin:0 8px;color:#3a3f3b}
+@media(max-width:800px){footer{padding:48px 0 calc(110px + env(safe-area-inset-bottom))}.footer-top{grid-template-columns:1fr 1fr;gap:28px}.footer-brand{grid-column:1/-1}}
