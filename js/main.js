@@ -20,3 +20,6 @@ document.getElementById('programTrack').addEventListener('scroll',updateProgramC
 document.querySelectorAll('[data-program]').forEach(x=>x.addEventListener('click',()=>openProgram(x.dataset.program)));
 document.getElementById('programModal').addEventListener('click',e=>{if(e.target.id==='programModal')closeProgram()});
 document.addEventListener('keydown',e=>{if(!document.getElementById('programModal').classList.contains('show'))return;if(e.key==='Escape')closeProgram();if(e.key==='ArrowLeft')slideProgram(-1);if(e.key==='ArrowRight')slideProgram(1)});
+
+// 모바일 하단 고정 버튼: 첫 화면(히어로)을 지나면 표시합니다.
+const heroSection=document.getElementById('home');if(heroSection&&'IntersectionObserver'in window)new IntersectionObserver(([e])=>document.body.classList.toggle('show-bottom-cta',!e.isIntersecting),{rootMargin:'-66px 0px 0px 0px'}).observe(heroSection);else document.body.classList.add('show-bottom-cta');

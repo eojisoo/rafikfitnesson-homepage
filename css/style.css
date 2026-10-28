@@ -361,3 +361,46 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .feature{aspect-ratio:9/11;min-height:0}
 .gallery-track img{aspect-ratio:auto;height:min(76vh,760px);object-fit:contain;background:#111}
 @media(max-width:800px){.feature{min-height:0}}
+
+/* ===== 모바일 최적화 (광고 유입 대응) ===== */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{-webkit-tap-highlight-color:transparent}
+section[id]{scroll-margin-top:76px}
+.dialog input,.dialog select{font-size:16px}
+.dialog{max-height:90dvh}
+.gildong-refresh .bottom{background:#0c0d0e;box-shadow:0 -1px 0 rgba(255,255,255,.12)}
+.gildong-refresh .bottom a{background:#b7e95d;color:#11160e}
+@media(max-width:800px){
+section[id]{scroll-margin-top:66px}
+.gildong-refresh .rafik-hero{min-height:calc(100vh - 66px);min-height:calc(100svh - 66px)}
+.bottom{transform:translateY(110%);transition:transform .3s}
+body.show-bottom-cta .bottom{transform:none}
+.card{min-height:0}
+.card:hover{transform:none;box-shadow:none}
+.tour-panel{height:420px}
+}
+@media(max-width:520px){
+.gildong-refresh .rafik-hero{padding:56px 0 84px}
+.gildong-refresh .hero-title{font-size:clamp(46px,13vw,74px);margin:28px 0 24px}
+.gildong-refresh .hero-bottom-row{display:none}
+.gildong-refresh .hero-actions a{flex:1 1 0;min-width:0;white-space:nowrap}
+.section{padding:60px 0}
+.heading{margin-bottom:24px}
+.heading h2{font-size:34px}
+.tabs{flex-wrap:nowrap;overflow-x:auto;margin:0 -20px 22px;padding:0 20px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex-shrink:0;padding:11px 18px}
+.card{padding:24px}
+.card h3{font-size:22px;margin-top:16px}
+.card .price{font-size:28px}
+.features{gap:8px}
+.feature{padding:16px;font-size:16px}
+.tour{padding:24px 18px}
+.timetable{padding:14px}
+.loc{padding:24px}
+.loc-info{grid-template-columns:56px 1fr}
+.loc .cta{display:flex;width:100%}
+.modal:not(.gallery-modal){padding:0;align-items:flex-end}
+.dialog{width:100%;padding:24px 20px max(24px,env(safe-area-inset-bottom));max-height:92dvh;border-radius:16px 16px 0 0}
+.gallery-track img{height:auto;max-height:70dvh}
+}
