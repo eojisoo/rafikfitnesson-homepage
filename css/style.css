@@ -404,3 +404,54 @@ body.show-bottom-cta .bottom{transform:none}
 .dialog{width:100%;padding:24px 20px max(24px,env(safe-area-inset-bottom));max-height:92dvh;border-radius:16px 16px 0 0}
 .gallery-track img{height:auto;max-height:70dvh}
 }
+
+/* 04 Timetable (길동점: js/main.js TIMETABLE 데이터로 표시) — PC는 주간 표, 모바일은 요일별 목록 */
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.schedule{background:#fff;border:1px solid var(--line);padding:30px}
+.schedule-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.schedule-tabs{display:flex;gap:4px;padding:4px;background:var(--soft);border-radius:40px}
+.schedule-tabs button{border:0;background:none;color:#777;border-radius:40px;padding:11px 26px;font-size:13px;font-weight:850;letter-spacing:.14em}
+.schedule-tabs button.active{background:#151515;color:#fff}
+.schedule-legend{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.schedule-meta{font-size:13px;font-weight:750;color:#666;margin-right:6px}
+.schedule-legend .class-block{width:auto;min-height:0;padding:7px 14px;font-size:13px}
+.class-block{display:flex;align-items:center;justify-content:center;width:100%;min-height:40px;padding:8px 6px;border-radius:6px;font-size:15px;font-weight:800;letter-spacing:-.02em;line-height:1.25;word-break:keep-all;text-align:center}
+.class-block.lime{background:#b7e95d;color:#11160e}
+.class-block.dark{background:#151515;color:#fff}
+.class-block.soft{background:#ecefe6;color:#151515}
+.schedule-table{width:100%;border-collapse:separate;border-spacing:6px 0;table-layout:fixed}
+.schedule-table thead th{padding:0 0 12px;font-size:16px;font-weight:850;color:#151515;border-bottom:2px solid #151515}
+.schedule-table thead th:first-child{width:96px}
+.schedule-table thead th.today{color:#4f7d0f}
+.schedule-table thead th.today:after{content:'오늘';margin-left:6px;padding:2px 7px;border-radius:20px;background:#b7e95d;color:#11160e;font-size:11px;vertical-align:2px}
+.schedule-table td,.schedule-table tbody th{padding:6px 0;border-bottom:1px solid #ededeb;height:56px}
+.schedule-table td.today{background:#f6faee}
+.schedule-table tbody th{text-align:left;white-space:nowrap;font-variant-numeric:tabular-nums}
+.schedule-table tbody th strong,.schedule-list time strong{font-size:18px;font-weight:850;letter-spacing:-.03em}
+.schedule-table tbody th span,.schedule-list time span{margin-left:5px;font-size:11px;font-weight:800;color:#888}
+.schedule-table .schedule-period th{padding:22px 0 8px;height:auto;font-size:13px;font-weight:850;letter-spacing:.1em;color:#4f7d0f;text-align:left}
+.schedule-table tbody:first-of-type .schedule-period th{padding-top:14px}
+.schedule-mobile{display:none}
+.schedule-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:260px;background:var(--soft);text-align:center}
+.schedule-empty strong{font-size:20px;letter-spacing:-.5px}
+.schedule-empty span{font-size:13px;color:#888}
+.schedule-note{margin:20px 0 0;font-size:13px;color:#777;line-height:1.6}
+@media(max-width:700px){
+.schedule{padding:20px 16px}
+.schedule-tabs{width:100%}
+.schedule-tabs button{flex:1}
+.schedule-legend .class-block{padding:6px 12px;font-size:12px}
+.schedule-grid{display:none}
+.schedule-mobile{display:block}
+.schedule-days{display:flex;gap:6px;margin-bottom:6px}
+.schedule-days button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:52px;padding:0;border:1px solid #ddd;border-radius:8px;background:#fff;font-size:15px;font-weight:800;color:#151515}
+.schedule-days button small{font-size:10px;color:#4f7d0f}
+.schedule-days button.active{background:#151515;border-color:#151515;color:#fff}
+.schedule-days button.active small{color:#b7e95d}
+.schedule-list h4{margin:20px 0 8px;font-size:13px;letter-spacing:.1em;color:#4f7d0f}
+.schedule-list ul{list-style:none;margin:0;padding:0}
+.schedule-list li{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid #ededeb}
+.schedule-list time{flex:0 0 92px;font-variant-numeric:tabular-nums}
+.schedule-list .class-block{width:auto;flex:1;justify-content:flex-start;padding:12px 14px;font-size:16px}
+.schedule-none{margin:24px 0 8px;text-align:center;color:#888;font-size:14px}
+}

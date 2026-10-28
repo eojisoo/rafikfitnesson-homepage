@@ -1,5 +1,6 @@
-수업 시간표 이미지를 이 폴더에 아래 파일명으로 올리면 각 지점 페이지에 자동으로 표시됩니다.
+길동점 (메인)  : 시간표는 이미지가 아니라 js/main.js 하단의 TIMETABLE 값을 수정하면 바로 반영됩니다.
+
+천호역점은 수업 시간표 이미지를 이 폴더에 아래 파일명으로 올리면 페이지에 자동으로 표시됩니다.
 (파일이 없으면 '시간표 준비 중'으로 표시됩니다. 매달 같은 파일명으로 덮어쓰면 됩니다.)
 
-길동점 (메인)  : gildong-yoga-barre.jpg / gildong-pilates.jpg
 천호역점       : cheonho-yoga-barre.jpg / cheonho-pilates.jpg
