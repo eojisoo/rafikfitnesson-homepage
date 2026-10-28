@@ -8,18 +8,11 @@
   </title>
   <link href="css/style.css" rel="stylesheet"/>
  </head>
- <body data-page-branch="cheonho">
+ <body class="gildong-refresh" data-page-branch="cheonho">
   <header>
    <div class="wrap nav">
-    <a class="logo" href="#home">
-     RAFIQUE
-     <span style="font-weight:400">
-      &amp;
-     </span>
-     FITNESS ON
-     <small>
-      MOVE YOUR WAY
-     </small>
+    <a class="logo brand-logo" href="#home" aria-label="라피끄 & 피트니스온 천호역점 홈">
+     <img src="assets/rafik-logo.png" alt="RAFIQUE & FITNESS ON" width="180" height="62"/>
     </a>
     <nav class="links">
      <a href="#tour">
@@ -41,28 +34,35 @@
    </div>
   </header>
   <main>
-   <section class="hero" id="home">
-    <div class="wrap">
-     <div class="eyebrow">
-      Your space. Your movement.
-     </div>
-     <h1>
-      MOVE
-      <br/>
-      YOUR WAY.
-     </h1>
-     <p>
-      운동이 일상이 되는 공간.
-      <br/>
-      라피끄 &amp; 피트니스온에서 나만의 움직임을 시작하세요.
-     </p>
-     <a class="cta" href="#membership">
-      회원권 살펴보기
-      <span>
-       &nearrow;
-      </span>
-     </a>
+   <section class="hero rafik-hero" id="home" aria-label="라피끄 천호역점 메인">
+    <div class="hero-atmosphere" aria-hidden="true">
+     <!-- 배경 영상: assets/hero/cheonho.mp4 파일을 넣으면 자동으로 재생됩니다 -->
+     <video class="hero-video" autoplay muted loop playsinline preload="auto" onloadeddata="this.closest('.hero').classList.add('video-ready')">
+      <source src="assets/hero/cheonho.mp4" type="video/mp4"/>
+     </video>
+     <div class="hero-orbit orbit-one"></div>
+     <div class="hero-orbit orbit-two"></div>
+     <div class="hero-glow"></div>
+     <div class="hero-grid"></div>
     </div>
+    <div class="wrap hero-content">
+     <div class="hero-topline"><span class="hero-live-dot"></span> RAFIQUE & FITNESS ON <span class="hero-topline-divider">/</span> CHEONHO</div>
+     <div class="hero-title" aria-label="MOVE YOUR WAY.">
+      <span class="hero-title-line"><span>MOVE</span></span>
+      <span class="hero-title-line"><span>YOUR WAY<span class="hero-title-period">.</span></span></span>
+     </div>
+     <div class="hero-intro-row">
+      <p>YOUR SPACE. YOUR PACE.<br><span>움직임의 기준을 바꾸는 공간, 라피끄 & 피트니스온 천호역점.</span></p>
+      <div class="hero-actions">
+       <a class="hero-primary" href="#membership">회원권 둘러보기 <span aria-hidden="true">↗</span></a>
+       <a class="hero-secondary" href="#tour">공간 둘러보기 <span aria-hidden="true">↗</span></a>
+      </div>
+     </div>
+     <div class="hero-bottom-row">
+      <a class="hero-scroll" href="#tour">SCROLL TO EXPLORE <span aria-hidden="true">↓</span></a>
+     </div>
+    </div>
+    <div class="hero-ticker" aria-hidden="true"><div class="hero-ticker-track">MOVE WITH PURPOSE <span>✳</span> TRAIN YOUR WAY <span>✳</span> FIND YOUR FLOW <span>✳</span> MOVE WITH PURPOSE <span>✳</span> TRAIN YOUR WAY <span>✳</span> FIND YOUR FLOW <span>✳</span></div></div>
    </section>
    <section class="section" id="tour">
     <div class="wrap">
@@ -122,10 +122,7 @@
       </p>
      </div>
      <div class="tabs" id="categoryTabs">
-      <button class="active" data-category="all">
-       전체
-      </button>
-      <button data-category="gym">
+      <button class="active" data-category="gym">
        헬스
       </button>
       <button data-category="yoga">
@@ -139,6 +136,9 @@
       </button>
       <button data-category="pt">
        PT
+      </button>
+      <button data-category="all">
+       전체
       </button>
      </div>
      <div class="grid" id="products">
@@ -319,6 +319,22 @@
       등록 신청하기
      </button>
     </div>
+    <section class="application-success" id="applicationSuccess" aria-live="polite" hidden>
+      <div class="success-icon" aria-hidden="true">✓</div>
+      <div class="eyebrow">APPLICATION RECEIVED</div>
+      <h2>회원권 신청이 완료되었습니다</h2>
+      <p class="muted">신청 내용이 정상적으로 접수되었습니다.<br>담당자가 확인 후 연락드리겠습니다.</p>
+      <div class="success-summary">
+        <div><span>이용 지점</span><strong id="successBranch"></strong></div>
+        <div><span>신청 상품</span><strong id="successProduct"></strong></div>
+        <div><span>신청 금액</span><strong id="successPrice"></strong></div>
+        <div><span>신청자</span><strong id="successName"></strong></div>
+        <div><span>이용 시작 희망일</span><strong id="successDate"></strong></div>
+        <div><span>접수 상태</span><strong class="success-state">접수 완료</strong></div>
+      </div>
+      <p class="success-notice">※ 현재는 등록 신청만 접수되었으며, 결제는 진행되지 않았습니다.</p>
+      <button class="primary success-return" type="button" onclick="closeModal()">홈페이지로 돌아가기</button>
+    </section>
    </div>
   </div>
   <div class="modal gallery-modal" id="programModal" role="dialog" aria-modal="true" aria-labelledby="programTitle">

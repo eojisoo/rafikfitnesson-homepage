@@ -34,6 +34,10 @@ header{height:76px;position:sticky;top:0;z-index:10;background:#ffffffed;backdro
 
 .hero .wrap{position:relative;z-index:1;width:100%}
 
+.hero-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .8s;pointer-events:none;filter:brightness(.45)}
+
+.hero.video-ready .hero-video{opacity:1}
+
 .eyebrow{font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase}
 
 .hero h1{font-size:clamp(58px,10vw,136px);letter-spacing:-.095em;line-height:.96;margin:26px 0 28px;font-weight:850}
@@ -308,6 +312,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 
 /* 04 Timetable */
 .features{grid-template-columns:repeat(4,1fr)}
+[data-page-branch="gildong"] .features{grid-template-columns:repeat(3,1fr)}
 .timetables{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .timetable{margin:0;background:white;border:1px solid var(--line);padding:22px}
 .timetable figcaption{font-size:12px;font-weight:800;letter-spacing:3px;margin-bottom:16px}
