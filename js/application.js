@@ -282,6 +282,13 @@ async function submitApplication() {
     }
 
     if (saved) {
+      // 방문 분석: 신청 완료(전환). 개인정보는 보내지 않습니다.
+      if (typeof rafikTrack === 'function') {
+        rafikTrack('generate_lead', {
+          product_name: selectedProduct.name
+        });
+      }
+
       showApplicationSuccess({
         branchName: typeof BRANCH_CONFIG !== 'undefined' ? BRANCH_CONFIG[branch].name : branch,
         productName: selectedProduct.name,

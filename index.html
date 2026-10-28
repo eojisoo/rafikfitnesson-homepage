@@ -8,7 +8,7 @@
 <!-- rafikfitnesson.com 접속 시 길동점 페이지로 바로 이동 -->
 <meta http-equiv="refresh" content="0; url=gildong.html">
 <link rel="canonical" href="https://rafikfitnesson.com/gildong">
-<script>location.replace('gildong.html' + location.hash);</script>
+<script>try{if(document.referrer)sessionStorage.setItem('rafikReferrer',document.referrer)}catch(e){}location.replace('gildong.html' + location.search + location.hash);</script>
 </head>
 <body>
 <p><a href="gildong.html">라피끄 &amp; 피트니스온 길동점으로 이동</a></p>
