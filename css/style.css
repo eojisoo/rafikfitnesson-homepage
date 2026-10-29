@@ -412,14 +412,14 @@ body.show-bottom-cta .bottom{transform:none}
 .schedule-tabs button.active{background:#151515;color:#fff}
 .schedule-image{position:relative;display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in}
 .schedule-image img{display:block;width:100%;height:auto}
-.schedule-zoom{position:absolute;right:12px;bottom:12px;padding:9px 14px;border-radius:30px;background:#151515e6;color:#fff;font-size:12px;font-weight:750}
+.schedule-zoom{position:absolute;right:12px;top:12px;padding:9px 14px;border-radius:30px;background:#151515e6;color:#fff;font-size:12px;font-weight:750}
 .timetable-modal{padding:0;background:#0c0d0e}
 .timetable-viewer{display:flex;flex-direction:column;width:100%;height:100%;color:#fff}
 .timetable-zoom{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:12px;-webkit-overflow-scrolling:touch}
 .timetable-zoom img{display:block;width:min(100%,1400px);height:auto;max-height:100%;object-fit:contain;cursor:zoom-in;background:#fff}
 .timetable-zoom.zoomed{display:block;padding:0}
 .timetable-zoom.zoomed img{width:max(220%,1400px);max-width:none;max-height:none;cursor:zoom-out}
-@media(max-width:520px){.schedule{padding:14px;margin:0 -20px;border-left:0;border-right:0}.schedule-tabs{display:flex}.schedule-tabs button{flex:1}.schedule-zoom{right:8px;bottom:8px;padding:7px 11px;font-size:11px}.timetable-modal .gallery-count{font-size:11px}}
+@media(max-width:520px){.schedule{padding:14px;margin:0 -20px;border-left:0;border-right:0}.schedule-tabs{display:flex}.schedule-tabs button{flex:1}.schedule-zoom{right:8px;top:8px;padding:7px 11px;font-size:11px}.timetable-modal .gallery-count{font-size:11px}}
 
 /* Footer */
 footer{padding:64px 0 48px;background:#0c0d0e;color:#fff}
