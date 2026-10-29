@@ -23,6 +23,8 @@ document.addEventListener('click',e=>{
  const el=e.target.closest('a,button');if(!el)return;
  const href=el.getAttribute('href')||'';
  if(href.startsWith('tel:'))return rafikTrack('phone_click');
+ if(el.id==='naverTalk')return rafikTrack('naver_talk_click');
+ if(el.classList.contains('event-cta'))return rafikTrack('event_banner_click',{label:el.textContent.trim()});
  if(el.id==='naverMapLink'||el.id==='mapFallbackLink')return rafikTrack('map_click');
  if(el.dataset.productId){const p=(typeof products!=='undefined'?products:[]).find(x=>x.id===el.dataset.productId);return rafikTrack('select_product',{product_name:p?p.name:el.dataset.productId})}
  if(el.dataset.category)return rafikTrack('membership_tab',{category:el.dataset.category});
