@@ -55,6 +55,8 @@ const EVENT_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQ62Y06eHzd
 function renderEvent(ev){const box=document.getElementById('eventBanner');if(!box)return;if(!ev||!ev.title){box.hidden=true;return}
 box.innerHTML='<div class="event-copy"><span class="event-label">'+escapeHtml(ev.label||'EVENT')+'</span><strong>'+escapeHtml(ev.title)+'</strong>'+(ev.description?'<p>'+escapeHtml(ev.description)+'</p>':'')+(ev.period?'<small>'+escapeHtml(ev.period)+'</small>':'')+'</div><button type="button" class="event-cta">'+escapeHtml(ev.button||'혜택 받고 신청하기')+' &nearrow;</button>';box.hidden=false;
 box.querySelector('.event-cta').addEventListener('click',()=>{const tab=ev.category&&document.querySelector('[data-category="'+CSS.escape(ev.category)+'"]');if(tab)tab.click();document.getElementById('categoryTabs').scrollIntoView({behavior:'smooth',block:'start'})})}
+// 종료일은 2026-11-30, 2026.11.30, 2026. 11. 30 등 어떤 형식으로 적어도 인식합니다. 날짜를 못 읽으면 계속 표시합니다.
+function eventDate(v){const m=String(v).match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);return m?m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0'):'9999-12-31'}
 async function loadEvent(){if(!EVENT_CSV_URL)return;try{const res=await fetch(EVENT_CSV_URL,{cache:'no-store'});if(!res.ok)return;const rows=csvParse(await res.text());const heads=(rows.shift()||[]).map(h=>h.replace(/^﻿/,'').trim().toLowerCase());const today=new Date().toLocaleDateString('sv-SE');
-const ev=rows.map(r=>Object.fromEntries(heads.map((h,i)=>[h,(r[i]||'').trim()]))).find(x=>['TRUE','true','1','Y','ON','켜기'].includes(x.active)&&(!x.branch||x.branch==='all'||x.branch===branch)&&(!x.end||x.end.replace(/\./g,'-')>=today));renderEvent(ev)}catch(e){}}
+const ev=rows.map(r=>Object.fromEntries(heads.map((h,i)=>[h,(r[i]||'').trim()]))).find(x=>['TRUE','true','1','Y','ON','켜기'].includes(x.active)&&(!x.branch||x.branch==='all'||x.branch===branch)&&(!x.end||eventDate(x.end)>=today));renderEvent(ev)}catch(e){}}
 loadEvent();
