@@ -51,7 +51,7 @@ const PROMO_CONFIG={gildong:{naverTalkUrl:'https://talk.naver.com/ct/w425x4'},ch
 // 이벤트 배너: 구글시트 '이벤트' 탭을 웹에 게시한 CSV 주소입니다. (설정 방법: README.txt '이벤트 배너')
 // 열: active(체크박스) · branch(gildong·cheonho·all) · label · title · description · period · end(YYYY-MM-DD) · button · category(gym·yoga·pilates·pt)
 // active가 체크되어 있고, 지점이 맞고, end 날짜가 지나지 않은 첫 번째 줄이 표시됩니다.
-const EVENT_CSV_URL='';
+const EVENT_CSV_URL='https://docs.google.com/spreadsheets/d/e/2PACX-1vQ62Y06eHzdAWQaeszEGquKBpiGXq87Y4tYpmO7AZT9I1LuddaFzkNKSAs8toPEb8T8BUbj_mx_U0hs/pub?gid=435595990&single=true&output=csv';
 function renderEvent(ev){const box=document.getElementById('eventBanner');if(!box)return;if(!ev||!ev.title){box.hidden=true;return}
 box.innerHTML='<div class="event-copy"><span class="event-label">'+escapeHtml(ev.label||'EVENT')+'</span><strong>'+escapeHtml(ev.title)+'</strong>'+(ev.description?'<p>'+escapeHtml(ev.description)+'</p>':'')+(ev.period?'<small>'+escapeHtml(ev.period)+'</small>':'')+'</div><button type="button" class="event-cta">'+escapeHtml(ev.button||'혜택 받고 신청하기')+' &nearrow;</button>';box.hidden=false;
 box.querySelector('.event-cta').addEventListener('click',()=>{const tab=ev.category&&document.querySelector('[data-category="'+CSS.escape(ev.category)+'"]');if(tab)tab.click();document.getElementById('categoryTabs').scrollIntoView({behavior:'smooth',block:'start'})})}
