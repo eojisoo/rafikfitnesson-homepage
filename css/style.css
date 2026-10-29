@@ -448,3 +448,6 @@ footer .footer-legal p{margin:0 0 6px;font-size:12px;line-height:1.7;color:#6d73
 .privacy-page footer{padding:32px 0}
 footer .footer-legal a.privacy-link{color:#fff;font-weight:750}
 .legal a{text-decoration:underline}
+
+/* 메인 영상: 첫 장면 이미지(poster)를 영상이 불러와지기 전부터 보여줍니다 */
+.hero-video[poster]{opacity:1}

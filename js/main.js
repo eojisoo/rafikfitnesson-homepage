@@ -39,3 +39,6 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.getElement
 
 // 360° 투어(Panoee): 휴대폰 기울기(자이로) 값을 투어 iframe으로 전달합니다. iOS는 iframe 안에서 직접 받지 못해 필요합니다.
 window.addEventListener('devicemotion',e=>{const frame=document.getElementById('tourFrame');if(!frame||!frame.contentWindow||!/^https:\/\/tour\.panoee\.net\//.test(frame.src))return;const pick=(v,keys)=>v?Object.fromEntries(keys.map(k=>[k,typeof v[k]==='number'?v[k]:null])):null;frame.contentWindow.postMessage({type:'devicemotion',deviceMotionEvent:{acceleration:pick(e.acceleration,['x','y','z']),accelerationIncludingGravity:pick(e.accelerationIncludingGravity,['x','y','z']),rotationRate:pick(e.rotationRate,['alpha','beta','gamma']),interval:typeof e.interval==='number'?e.interval:0,timeStamp:e.timeStamp}},'https://tour.panoee.net')},{passive:true});
+
+// 메인 영상: 휴대폰 '데이터 절약 모드'에서는 영상을 받지 않고 첫 장면 이미지만 보여줍니다.
+if(navigator.connection&&navigator.connection.saveData)document.querySelectorAll('.hero-video').forEach(v=>{v.pause();v.removeAttribute('autoplay');v.querySelectorAll('source').forEach(s=>s.remove());v.load()});
