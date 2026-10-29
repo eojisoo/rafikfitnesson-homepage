@@ -48,7 +48,7 @@ if(navigator.connection&&navigator.connection.saveData)document.querySelectorAll
 // event: 진행 중인 이벤트. 끝나면 null로 바꾸거나, end 날짜(YYYY-MM-DD)를 넣으면 그다음 날부터 자동으로 숨겨집니다.
 //   category를 넣으면 버튼을 눌렀을 때 해당 회원권 탭(gym·yoga·pilates·pt)이 선택됩니다.
 // 예) event:{label:'OPEN EVENT',title:'오픈 기념 3개월 등록 시 1개월 추가',desc:'11월 한 달간 신규 등록 회원 한정 혜택입니다.',period:'2026.11.01 – 11.30',end:'2026-11-30',button:'혜택 받고 신청하기',category:'gym'}
-const PROMO_CONFIG={gildong:{naverTalkUrl:'',event:null},cheonho:{naverTalkUrl:'',event:null}};
+const PROMO_CONFIG={gildong:{naverTalkUrl:'https://talk.naver.com/ct/w425x4',event:null},cheonho:{naverTalkUrl:'',event:null}};
 (function(){const promo=PROMO_CONFIG[branch]||{};const talk=document.getElementById('naverTalk');if(talk&&/^https:\/\/talk\.naver\.com\//.test(promo.naverTalkUrl||'')){talk.href=promo.naverTalkUrl;talk.hidden=false}
 const ev=promo.event,box=document.getElementById('eventBanner');if(!ev||!box||(ev.end&&new Date().toLocaleDateString('sv-SE')>ev.end))return;
 box.innerHTML='<div class="event-copy"><span class="event-label">'+escapeHtml(ev.label||'EVENT')+'</span><strong>'+escapeHtml(ev.title)+'</strong>'+(ev.desc?'<p>'+escapeHtml(ev.desc)+'</p>':'')+(ev.period?'<small>'+escapeHtml(ev.period)+'</small>':'')+'</div><button type="button" class="event-cta">'+escapeHtml(ev.button||'혜택 받고 신청하기')+' &nearrow;</button>';box.hidden=false;
