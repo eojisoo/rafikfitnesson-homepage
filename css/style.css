@@ -472,3 +472,8 @@ footer .footer-legal a.privacy-link{color:#fff;font-weight:750}
 .talk-float[hidden]{display:none}
 @media(max-width:800px){.talk-float{right:14px;bottom:calc(14px + env(safe-area-inset-bottom));padding:11px 15px 11px 11px;font-size:13px}body.show-bottom-cta .talk-float{bottom:calc(86px + env(safe-area-inset-bottom))}}
 @media(max-width:520px){.talk-float{padding:0;width:50px;height:50px;justify-content:center}.talk-float span{display:none}.talk-float b{width:30px;height:30px;font-size:16px}}
+
+/* 03 Programs: 팝업 영상 (세로 영상에 맞춰 창 너비를 줄입니다) */
+.gallery.is-video{width:min(460px,100%)}
+.gallery-track video{flex:0 0 100%;display:block;width:100%;height:min(76vh,760px);background:#111;scroll-snap-align:start}
+@media(max-width:520px){.gallery-track video{height:auto;max-height:78dvh}}
