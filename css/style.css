@@ -329,7 +329,7 @@ button:disabled{opacity:.45;cursor:not-allowed}
 .map-empty a{border-bottom:1px solid #151515;font-weight:700;font-size:14px}
 .loc-info{display:grid;grid-template-columns:70px 1fr;gap:12px 10px;margin:24px 0 8px;line-height:1.7}
 .loc-info dt{font-size:12px;font-weight:800;letter-spacing:1px;color:#999;padding-top:2px}
-.loc-info dd{margin:0;color:#333}
+.loc-info dd{margin:0;color:#333;word-break:keep-all}
 .loc-info a{color:#151515;font-weight:700}
 .gildong-refresh .hero-bottom-row{justify-content:flex-end}
 @media(max-width:800px){.features{grid-template-columns:repeat(2,1fr)}.timetables,.location{grid-template-columns:1fr}.map,.map-empty{min-height:300px}}

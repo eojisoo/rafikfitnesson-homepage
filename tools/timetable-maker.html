@@ -2,15 +2,17 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>길동점 시간표 이미지 제작</title>
+<title>지점별 시간표 이미지 제작</title>
 <!--
-  길동점 시간표 이미지 제작 파일
+  지점별 시간표 이미지 제작 파일
   1) 아래 TIMETABLE 값을 이번 달 시간표로 수정합니다.
      rows: [시작 시간(24시), [월, 화, 수, 목, 금, 토, 일]] / 수업이 없는 칸은 ''
+     강사를 함께 표시하려면 '수업명|강사' 로 적습니다. 예) '콤비리포머|김아영'
      types: 수업별 색상(lime·dark·soft). 지정하지 않은 수업은 lime입니다.
-  2) Git Bash에서 sh tools/make-timetable.sh 를 실행하면
-     assets/timetable/gildong-yoga.png, gildong-pilates.png 가 새로 만들어집니다.
-  브라우저에서 이 파일을 열고 주소 끝에 ?p=yoga 또는 ?p=pilates 를 붙이면 미리 볼 수 있습니다.
+     month: '11월'처럼 적으면 제목 옆에 표시됩니다.
+     height: 이미지 세로 크기. 줄 수를 많이 바꾸면 tools/make-timetable.sh 의 값도 같이 바꿉니다.
+  2) Git Bash에서 sh tools/make-timetable.sh 를 실행하면 assets/timetable/ 의 이미지가 새로 만들어집니다.
+  브라우저에서 이 파일을 열고 주소 끝에 ?p=cheonho-pilates 처럼 붙이면 미리 볼 수 있습니다.
 -->
 <style>
 *{box-sizing:border-box}
@@ -36,6 +38,8 @@ h1 span{color:#b7e95d;-webkit-text-stroke:0}
 .time small{margin-left:6px;font-size:14px;font-weight:800;color:#888}
 .cell.weekend{background:#f7f7f5}
 .block{display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:4px 8px;border-radius:10px;font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.2;text-align:center;word-break:keep-all}
+.block.has-teacher{flex-direction:column;gap:2px}
+.block small{font-size:16px;font-weight:650;letter-spacing:-.02em;opacity:.78}
 .block.lime{background:#b7e95d;color:#11160e}
 .block.dark{background:#151515;color:#fff}
 .block.soft{background:#ecefe6;color:#151515}
@@ -46,8 +50,9 @@ h1 span{color:#b7e95d;-webkit-text-stroke:0}
 <body>
 <div class="sheet" id="sheet"></div>
 <script>
+const BRANCHES={gildong:{name:'길동점',phone:'0507-1358-0870'},cheonho:{name:'천호역점',phone:'0507-1395-0870'}};
 const TIMETABLE={
- yoga:{title:'YOGA',month:'',types:{},rows:[
+ 'gildong-yoga':{title:'YOGA',month:'',types:{},rows:[
   ['09:30',['하타요가','','','','','','']],
   ['10:00',['','','빈야사','','아쉬탕가','','']],
   ['10:30',['','Myo-Yin','','아쉬탕가 + 인요가','','','']],
@@ -55,7 +60,7 @@ const TIMETABLE={
   ['19:00',['빈야사','Easy 하타','아쉬탕가 + 인요가','','','','']],
   ['20:00',['','','','','아쉬탕가 + 인요가','','']],
   ['20:20',['에볼루션 플로우','인사이드 플로우','Myo-Yin','인사이드 플로우','','','']]]},
- pilates:{title:'PILATES',month:'',types:{'캐포머':'lime','바렐&체어':'dark'},rows:[
+ 'gildong-pilates':{title:'PILATES',month:'',types:{'캐포머':'lime','바렐&체어':'dark'},rows:[
   ['09:30',['캐포머','','바렐&체어','','캐포머','','']],
   ['10:00',['','캐포머','','바렐&체어','','바렐&체어','']],
   ['10:30',['바렐&체어','','캐포머','','바렐&체어','','']],
@@ -65,18 +70,49 @@ const TIMETABLE={
   ['19:30',['캐포머','','바렐&체어','','캐포머','','']],
   ['20:00',['','캐포머','','바렐&체어','','','']],
   ['20:30',['바렐&체어','','캐포머','','바렐&체어','','']],
-  ['21:00',['','바렐&체어','','캐포머','','','']]]}
+  ['21:00',['','바렐&체어','','캐포머','','','']]]},
+ 'cheonho-yoga':{title:'YOGA',month:'11월',height:820,types:{},rows:[
+  ['09:50',['힐링 빈야사|장예원','','하타 요가|박정운','','아로마 테라피|박정운','','']],
+  ['12:00',['','테라피 요가|최은채','','힐링요가|최은채','','','']],
+  ['18:20',['','빈야사|장예원','','빈야사|장예원','','','']],
+  ['20:30',['하타 요가|김서영','','아쉬탕가|김서영','','인요가|장예원','','']]]},
+ 'cheonho-barre':{title:'BARRE',month:'11월',height:1000,types:{'밸런스':'lime','릴렉싱':'soft','에너지':'dark'},rows:[
+  ['10:00',['','밸런스|장유아','','릴렉싱|장유아','','','']],
+  ['11:00',['릴렉싱|김재인','밸런스|장유아','','릴렉싱|장유아','에너지|김재인','','']],
+  ['12:00',['릴렉싱|김재인','','','','에너지|김재인','','']],
+  ['18:30',['밸런스|장유아','','릴렉싱|장유아','','에너지|장유아','','']],
+  ['19:30',['밸런스|장유아','에너지|남송녕','릴렉싱|장유아','밸런스|남송녕','에너지|장유아','','']],
+  ['20:30',['','에너지|남송녕','','밸런스|남송녕','','','']]]},
+ 'cheonho-pilates':{title:'PILATES',month:'11월',height:1500,types:{'콤비리포머':'lime','바렐&체어':'dark'},rows:[
+  ['09:30',['콤비리포머|김아영','','바렐&체어|김아영','','콤비리포머|김아영','','']],
+  ['10:00',['','','','','','바렐&체어|김하은','']],
+  ['10:30',['바렐&체어|김아영','','콤비리포머|김아영','','바렐&체어|김아영','','']],
+  ['11:00',['','','','','','콤비리포머|김하은','']],
+  ['12:00',['','','','','','바렐&체어|김하은','']],
+  ['18:00',['콤비리포머|김기령','','','','','','']],
+  ['18:30',['','바렐&체어|장진영','','콤비리포머|장진영','','','']],
+  ['19:00',['바렐&체어|김기령','','콤비리포머|김기령','','바렐&체어|김기령','','']],
+  ['19:30',['','콤비리포머|장진영','','바렐&체어|장진영','','','']],
+  ['20:00',['콤비리포머|김기령','','바렐&체어|김기령','','콤비리포머|김기령','','']],
+  ['20:30',['','바렐&체어|장진영','','콤비리포머|장진영','','','']],
+  ['21:00',['바렐&체어|김기령','','콤비리포머|김기령','','','','']],
+  ['21:30',['','콤비리포머|장진영','','','','','']]]}
 };
 const DAYS=['월','화','수','목','금','토','일'];
-const t=TIMETABLE[new URLSearchParams(location.search).get('p')]||TIMETABLE.yoga;
+const key=new URLSearchParams(location.search).get('p');
+const t=TIMETABLE[key]||TIMETABLE['gildong-yoga'];
+const b=BRANCHES[(TIMETABLE[key]?key:'gildong').split('-')[0]];
+if(t.height)document.body.style.height=t.height+'px';
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const block=c=>'<span class="block '+(t.types[c]||'lime')+'">'+esc(c)+'</span>';
+const block=c=>{const[name,teacher]=c.split('|');return'<span class="block '+(t.types[name]||'lime')+(teacher?' has-teacher':'')+'">'+esc(name)+(teacher?'<small>'+esc(teacher)+' 강사</small>':'')+'</span>'};
 const time=s=>{const[h,m]=s.split(':').map(Number);return'<strong>'+String(h%12||12).padStart(2,'0')+':'+String(m).padStart(2,'0')+'</strong><small>'+(h<12?'AM':'PM')+'</small>'};
-const groups=[['오전 MORNING',t.rows.filter(r=>+r[0].split(':')[0]<12)],['오후 EVENING',t.rows.filter(r=>+r[0].split(':')[0]>=12)]].filter(g=>g[1].length);
+const hour=r=>+r[0].split(':')[0];
+const day=t.rows.filter(r=>hour(r)<17);
+const groups=[[day.some(r=>hour(r)>=12)?'오전·점심 DAYTIME':'오전 MORNING',day],['오후 EVENING',t.rows.filter(r=>hour(r)>=17)]].filter(g=>g[1].length);
 let grid='<div></div>'+DAYS.map((d,i)=>'<div class="day'+(i>4?' weekend':'')+'">'+d+'</div>').join('');
 groups.forEach(([label,rows])=>{grid+='<div class="period">'+label+'</div>'+rows.map(([s,cs])=>'<div class="time">'+time(s)+'</div>'+DAYS.map((_,i)=>'<div class="cell'+(i>4?' weekend':'')+'">'+(cs[i]?block(cs[i]):'')+'</div>').join('')).join('')});
-const names=[...new Set(t.rows.flatMap(r=>r[1]).filter(Boolean))];
-document.getElementById('sheet').innerHTML='<div class="head"><div><div class="brand"><i></i>RAFIK &amp; FITNESS ON · 길동점</div><h1>'+esc(t.title)+' TIMETABLE<span>.</span>'+(t.month?'<span class="month">'+esc(t.month)+'</span>':'')+'</h1></div>'+(Object.keys(t.types).length?'<div class="legend">'+names.map(block).join('')+'</div>':'')+'</div><div class="grid" style="grid-template-rows:auto '+groups.map(g=>'auto '+g[1].map(()=>'1fr').join(' ')).join(' ')+'">'+grid+'</div><div class="foot"><span>※ 시간표는 부득이하게 변동이 필요한 경우 미리 공지 후 휴강 또는 변경될 수 있습니다.</span><strong>0507-1358-0870</strong></div>';
+const names=[...new Set(t.rows.flatMap(r=>r[1]).filter(Boolean).map(c=>c.split('|')[0]))];
+document.getElementById('sheet').innerHTML='<div class="head"><div><div class="brand"><i></i>RAFIK &amp; FITNESS ON · '+b.name+'</div><h1>'+esc(t.title)+' TIMETABLE<span>.</span>'+(t.month?'<span class="month">'+esc(t.month)+'</span>':'')+'</h1></div>'+(Object.keys(t.types).length?'<div class="legend">'+names.map(block).join('')+'</div>':'')+'</div><div class="grid" style="grid-template-rows:auto '+groups.map(g=>'auto '+g[1].map(()=>'1fr').join(' ')).join(' ')+'">'+grid+'</div><div class="foot"><span>※ 시간표는 부득이하게 변동이 필요한 경우 미리 공지 후 휴강 또는 변경될 수 있습니다.</span><strong>'+b.phone+'</strong></div>';
 </script>
 </body>
 </html>

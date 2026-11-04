@@ -211,24 +211,20 @@
        </h2>
       </div>
       <p>
-       요가·바레, 필라테스 수업 시간표를 확인하세요. 이미지를 누르면 크게 볼 수 있습니다.
+       요가, 바레, 필라테스 수업 시간표를 확인하세요. 시간표를 누르면 크게 확대해서 볼 수 있습니다.
       </p>
      </div>
-     <div class="timetables">
-      <figure class="timetable">
-       <figcaption>YOGA / BARRE</figcaption>
-       <a href="assets/timetable/cheonho-yoga-barre.jpg" target="_blank" rel="noopener">
-        <img src="assets/timetable/cheonho-yoga-barre.jpg" alt="천호역점 YOGA / BARRE 시간표" loading="lazy" onerror="this.closest('.timetable').classList.add('is-empty')"/>
-       </a>
-       <div class="timetable-empty">시간표 준비 중</div>
-      </figure>
-      <figure class="timetable">
-       <figcaption>PILATES</figcaption>
-       <a href="assets/timetable/cheonho-pilates.jpg" target="_blank" rel="noopener">
-        <img src="assets/timetable/cheonho-pilates.jpg" alt="천호역점 PILATES 시간표" loading="lazy" onerror="this.closest('.timetable').classList.add('is-empty')"/>
-       </a>
-       <div class="timetable-empty">시간표 준비 중</div>
-      </figure>
+     <!-- 시간표 이미지: tools/timetable-maker.html 수정 후 sh tools/make-timetable.sh 실행 (assets/timetable/README.txt 참고) -->
+     <div class="schedule">
+      <div class="schedule-tabs" role="tablist" aria-label="수업 종목">
+       <button type="button" class="active" role="tab" aria-selected="true" data-timetable="yoga">YOGA</button>
+       <button type="button" role="tab" aria-selected="false" data-timetable="barre">BARRE</button>
+       <button type="button" role="tab" aria-selected="false" data-timetable="pilates">PILATES</button>
+      </div>
+      <button type="button" class="schedule-image" id="timetableOpen" aria-label="시간표 크게 보기">
+       <img id="timetableImage" src="assets/timetable/cheonho-yoga.png" alt="천호역점 YOGA 시간표"/>
+       <span class="schedule-zoom">🔍 눌러서 크게 보기</span>
+      </button>
      </div>
     </div>
    </section>
@@ -283,10 +279,9 @@
      </div>
      <div class="footer-col">
       <strong>천호역점</strong>
-      <!-- 주소·전화번호가 정해지면 주석을 풀고 입력하세요 -->
-      <!-- <span>서울 강동구 ○○로 000</span> -->
-      <!-- <a href="tel:00000000000">000-0000-0000</a> -->
-      <span>상담 문의는 센터로 연락해 주세요.</span>
+      <span>서울 강동구 천호대로 1037 지하1층</span>
+      <span>맥도날드, 투썸플레이스 건물</span>
+      <a href="tel:050713950870">0507-1395-0870</a>
      </div>
      <div class="footer-col">
       <strong>바로가기</strong>
@@ -376,6 +371,16 @@
       <p class="success-notice">※ 현재는 등록 신청만 접수되었으며, 결제는 진행되지 않았습니다.</p>
       <button class="primary success-return" type="button" onclick="closeModal()">홈페이지로 돌아가기</button>
     </section>
+   </div>
+  </div>
+  <div class="modal timetable-modal" id="timetableModal" role="dialog" aria-modal="true" aria-labelledby="timetableModalTitle">
+   <div class="timetable-viewer">
+    <div class="gallery-head">
+     <h2 id="timetableModalTitle"></h2>
+     <span class="gallery-count">이미지를 누르면 확대 / 축소</span>
+     <button type="button" class="gallery-close" aria-label="닫기" onclick="closeTimetable()">&times;</button>
+    </div>
+    <div class="timetable-zoom" id="timetableZoom"><img id="timetableZoomImage" alt=""/></div>
    </div>
   </div>
   <div class="modal gallery-modal" id="programModal" role="dialog" aria-modal="true" aria-labelledby="programTitle">
