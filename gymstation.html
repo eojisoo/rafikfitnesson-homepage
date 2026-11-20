@@ -436,8 +436,10 @@ header{border-bottom:0}
 .js .sec-sign.rv.in{transform:none;transition:opacity .4s ease,transform .9s cubic-bezier(.3,1.5,.5,1)}
 /* 호버: 카드는 살짝 들리고, 버튼 화살표는 ↗ 방향으로 */
 .card,.reason,.pcard{transition:transform .25s ease,box-shadow .25s ease}
-.card:hover,.reason:hover,.pcard:hover{transform:translateY(-6px) rotate(-.5deg);box-shadow:0 22px 40px rgba(20,20,20,.28)}
-.js .reason.rv.in:hover,.js .pcard.rv.in:hover{transform:translateY(-6px) rotate(-.5deg)}
+@media (hover:hover){
+ .card:hover,.reason:hover,.pcard:hover{transform:translateY(-6px) rotate(-.5deg);box-shadow:0 22px 40px rgba(20,20,20,.28)}
+ .js .reason.rv.in:hover,.js .pcard.rv.in:hover{transform:translateY(-6px) rotate(-.5deg)}
+}
 .btn .arrow{display:inline-block;transition:transform .2s ease}
 .btn:hover .arrow{transform:translate(3px,-3px)}
 .feature{background-size:auto 100%;transition:background-size .5s ease}
@@ -522,6 +524,121 @@ header{border-bottom:0}
  .talk-float b{width:30px;height:30px;font-size:16px}
  .gallery-modal{padding:0}
  .gallery-track img{aspect-ratio:auto;height:auto;max-height:70dvh;object-fit:contain}
+}
+/* ───────── 휴대폰 최적화 (맨 마지막에 두어 위 규칙보다 우선합니다) ───────── */
+.tour-guard,.swipe-hint{display:none}
+a,button{-webkit-tap-highlight-color:rgba(255,99,25,.18)}
+/* 손가락으로 쓰는 기기: 투어 보호막 표시, 마우스용 들림 효과 끄기 */
+@media (pointer:coarse){
+ .tour.has-tour .tour-guard{position:absolute;inset:0;z-index:4;display:flex;align-items:center;justify-content:center;gap:10px;border:0;cursor:pointer;background:linear-gradient(180deg,rgba(10,10,10,.05),rgba(10,10,10,.45));color:#fff;font:800 16px/1 var(--kr)}
+ .tour.has-tour .tour-guard::before{content:"";position:absolute;left:50%;top:50%;width:250px;height:52px;transform:translate(-50%,-50%);border-radius:999px;background:var(--sign);box-shadow:0 0 0 3px var(--on-sign),0 10px 24px rgba(0,0,0,.4);z-index:-1}
+ .tour.tour-on .tour-guard{display:none}
+}
+@media (hover:none){.poster:hover .ad-in img{transform:none}}
+@media (max-width:560px){
+ /* 성능: 화면 전체를 덮는 노이즈의 혼합 효과를 끄고 아주 옅게 */
+ body::after{mix-blend-mode:normal;opacity:.035}
+ /* 상단 바 */
+ .bar{padding-block:9px}
+ .brand .dots{font-size:11px}
+ .brand strong{font-size:17px}
+ .bar .btn{padding:7px 12px;font-size:13px}
+ main section{padding-block:40px;scroll-margin-top:58px}
+ /* 첫 화면: 간판·안내판을 줄이고 버튼이 첫 화면 안에 들어오게 */
+ .hero{padding-block:16px 26px}
+ .tube{top:8px}
+ .hanger{padding-top:30px}
+ .hanger::before,.hanger::after{height:34px;width:20px}
+ .hero-sign{gap:0;padding:18px 18px 16px}
+ .hero-sign h1{font-size:clamp(34px,11vw,46px)}
+ .hero-sign .sub{margin-top:8px;font-size:13.5px}
+ .hero-sign .lines{margin-top:14px;padding-top:14px;border-top-width:2px;font-size:20px;gap:8px}
+ .sticker{width:62px;height:62px;font-size:11px;right:-6px;bottom:-20px;border-width:2px}
+ .dir-sign{grid-template-columns:1fr 1fr;margin-top:30px}
+ .dir-sign::before,.dir-sign::after{top:-30px;height:30px;width:8px}
+ .dir-sign a{gap:6px;padding:11px 10px;font-size:11px}
+ .dir-sign a+a{justify-content:flex-start;text-align:left;border-top:0;border-left:2px solid var(--on-sign)}
+ .dir-sign .t{font-size:13.5px;line-height:1.3}
+ .dir-sign .t small{display:none}
+ .dir-sign .arrow{font-size:18px}
+ .dir-sign .dot{font-size:10px}
+ .hero-copy{margin-top:26px;gap:16px}
+ .hero-copy h2{font-size:clamp(26px,8vw,32px)}
+ .hero-copy .lead{margin-top:10px;font-size:15px}
+ .hero-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .hero-actions .btn{padding:13px 8px;font-size:15px;white-space:nowrap}
+ .facts{flex-wrap:nowrap;overflow-x:auto;margin:14px -20px 0;padding:2px 20px;scrollbar-width:none}
+ .facts::-webkit-scrollbar{display:none}
+ .facts span{flex-shrink:0;font-size:13px}
+ /* 선로·전광판 */
+ .track{height:138px}
+ .track .train{height:106px;width:1555px;bottom:9px}
+ .mosaic{top:10px;font-size:15px;border-width:6px;padding:4px 12px}
+ .ticker{padding:8px 0}
+ .ticker-track span{font-size:24px;padding-right:32px}
+ .ticker-track em{width:22px;height:22px;font-size:13px}
+ /* 섹션 제목 안내판 */
+ .sec-sign{padding:12px 14px;gap:10px;margin-bottom:14px}
+ .sec-sign h2{font-size:20px}
+ .sec-sign .dot{font-size:13px}
+ .sec-desc{margin-bottom:18px;font-size:15px}
+ /* 옆으로 넘기는 카드: 이유 · 회원권 · 광고판 (다음 카드가 살짝 보여서 넘길 수 있다는 걸 알 수 있음) */
+ .reasons,.grid,main .prog{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:20px;margin:0 -20px;padding:6px 20px 22px;scrollbar-width:none;overscroll-behavior-x:contain}
+ .reasons::-webkit-scrollbar,.grid::-webkit-scrollbar,main .prog::-webkit-scrollbar{display:none}
+ .reasons>*,.grid>.card,main .prog>*{flex:0 0 82%;scroll-snap-align:start}
+ .reasons .reason:last-child{grid-column:auto}
+ .grid>p{flex:1 0 100%}
+ .reason{padding:22px 20px}
+ .reason .n{font-size:28px}
+ .reason h3{margin-top:14px}
+ .card{padding:66px 20px 20px}
+ .card .price{font-size:28px}
+ .poster{aspect-ratio:4/5}
+ .swipe-hint{display:block;margin:-8px 0 0;text-align:right;font-size:12px;font-weight:700;color:var(--ink-mute)}
+ .note{margin-top:10px}
+ /* 회원권 광고판: 덜 길쭉하게 */
+ .ad-wide{aspect-ratio:5/4;margin-bottom:18px}
+ .ad-wide .ad-copy{padding:56px 18px 16px}
+ .ad-wide .ad-copy strong{font-size:23px}
+ .tabs{margin-bottom:12px}
+ /* 투어·지도: 화면을 덜 차지하게 */
+ .tour{aspect-ratio:1/1}
+ .tour-note{font-size:13px}
+ .map,.map.has-map{height:260px;min-height:0}
+ .map-empty{min-height:252px}
+ .location{gap:12px}
+ .loc{padding:20px}
+ .loc h3{font-size:24px;margin-bottom:16px}
+ .loc-actions,.final .hero-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .loc-actions .btn,.final .btn{padding:12px 8px;font-size:14.5px;white-space:nowrap}
+ /* 역 입구 */
+ .entrance{padding:26px 34px 0}
+ .final .ent-body{padding:20px 18px}
+ .final h2{font-size:28px}
+ .rail{height:34px;margin:0 14px}
+ /* 하단 고정 바: 전화 + 회원권 */
+ /* 하단 바가 전화·톡톡·회원권을 모두 담으므로 떠 있는 톡톡 버튼은 숨김 (카드 가림 방지) */
+ .talk-float{display:none!important}
+ .bottom{display:grid;grid-template-columns:.8fr .9fr 2fr;gap:6px}
+ .bottom a{padding:14px 6px;font-size:15px;white-space:nowrap}
+ .bottom a.call{background:transparent;color:var(--on-sign);box-shadow:inset 0 0 0 2px #55524C}
+ .bottom a.talk{gap:6px;background:var(--green);color:#fff}
+ .bottom a.talk b{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fff;color:var(--green);font-size:11px;font-weight:900}
+ .dir-sign .t{word-break:keep-all}
+ footer{padding-top:32px}
+ .footer-top{gap:20px}
+ .footer-col a{padding:6px 0}
+}
+/* 아주 작은 화면 (아이폰 SE 1세대 등 320~360px) */
+@media (max-width:360px){
+ .brand{gap:6px}
+ .brand .dots{font-size:9.5px;gap:3px}
+ .brand strong{font-size:15.5px}
+ .bar .btn{padding:6px 10px;font-size:12.5px}
+ .dir-sign .dot{display:none}
+ .dir-sign a{padding:11px 10px}
+ .hero-actions .btn{font-size:14px}
+ .bottom a{font-size:14px}
 }
 </style>
 </head>
@@ -655,6 +772,7 @@ header{border-bottom:0}
   <div class="sign reason"><div class="top"><span class="dot y">Y</span><span class="n">LIMIT</span></div><h3>헬스 정원제</h3><p>등록 인원을 관리해 기구를 기다리는 시간을 줄였습니다.</p></div>
   <div class="sign reason"><div class="top"><span class="dot b">M</span><span class="n">1:1</span></div><h3>목표 맞춤 PT</h3><p>체형 분석부터 루틴 설계까지, 트레이너가 처음부터 함께합니다.</p></div>
  </div>
+ <p class="swipe-hint" aria-hidden="true">옆으로 넘겨 보세요 <span class="arrow">→</span></p>
 </div></section>
 
 <section id="tour"><div class="wrap">
@@ -663,6 +781,8 @@ header{border-bottom:0}
  <div class="sign tour" id="tourContainer">
   <iframe class="tour-panel" id="tourFrame" title="짐스테이션 360도 센터 투어" loading="lazy" allowfullscreen allow="autoplay; accelerometer; gyroscope; fullscreen; xr-spatial-tracking"></iframe>
   <div class="tour-empty"><strong id="tourBranch">짐스테이션 천호역점</strong><p>360° 센터 투어 준비 중입니다.</p></div>
+  <!-- 휴대폰: 페이지를 내리다가 투어에 손가락이 걸리지 않도록, 눌러야 투어 조작이 시작됩니다 -->
+  <button type="button" class="tour-guard" id="tourGuard"><span class="dot o" aria-hidden="true">1</span>눌러서 360° 둘러보기 <span class="arrow" aria-hidden="true">↗</span></button>
  </div>
  <p class="tour-note">투어가 보이지 않으면 새로고침하거나 상담 전화로 문의해 주세요.</p>
 </div></section>
@@ -690,6 +810,7 @@ header{border-bottom:0}
   <button data-category="pt">PT</button>
  </div>
  <div class="grid" id="products"></div>
+ <p class="swipe-hint" aria-hidden="true">옆으로 넘겨 보세요 <span class="arrow">→</span></p>
  <p class="note" id="productNotice">회원권 정보를 불러오는 중입니다.</p>
 </div></section>
 
@@ -718,6 +839,7 @@ header{border-bottom:0}
    </div>
   </div>
  </div>
+ <p class="swipe-hint" aria-hidden="true">옆으로 넘겨 보세요 <span class="arrow">→</span></p>
 </div></section>
 
 <div class="stripe" aria-hidden="true"></div>
@@ -780,7 +902,8 @@ header{border-bottom:0}
 
 <!-- 네이버 톡톡 상담: js/main.js PROMO_CONFIG의 cheonho 주소로 표시됩니다 -->
 <a class="talk-float" id="naverTalk" href="#" target="_blank" rel="noopener" aria-label="네이버 톡톡 상담" hidden><b>N</b><span>톡톡 상담</span></a>
-<div class="bottom"><a href="#membership">회원권 확인하기 <span class="arrow" aria-hidden="true">↗</span></a></div>
+<!-- 휴대폰 하단 고정 바: 전화 + 회원권 -->
+<div class="bottom"><a class="call" href="tel:050713950870">전화</a><a class="talk" href="https://talk.naver.com/ct/w4btea" target="_blank" rel="noopener"><b aria-hidden="true">N</b>톡톡</a><a href="#membership">회원권 확인하기 <span class="arrow" aria-hidden="true">↗</span></a></div>
 
 <div class="modal" id="modal">
  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -849,6 +972,9 @@ header{border-bottom:0}
  // 선로가 화면에 들어오면 열차 출발
  var track=document.querySelector('.track');
  if(track&&!reduce){if('IntersectionObserver'in window){var tio=new IntersectionObserver(function(es){if(es[0].isIntersecting){track.classList.add('run');tio.disconnect()}},{threshold:.4});tio.observe(track)}else track.classList.add('run')}
+ // 휴대폰 투어 보호막: 누르면 걷히고 투어 조작 시작
+ var guard=document.getElementById('tourGuard');
+ if(guard)guard.addEventListener('click',function(){document.getElementById('tourContainer').classList.add('tour-on');if(typeof rafikTrack==='function')rafikTrack('tour_interact')});
  layout();
 })();
 // 상담 번호 복사 (번호는 main.js가 천호역점 정보로 채웁니다)
