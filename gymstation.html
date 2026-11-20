@@ -624,6 +624,23 @@ a,button{-webkit-tap-highlight-color:rgba(255,99,25,.18)}
  .footer-top{gap:20px}
  .footer-col a{padding:6px 0}
 }
+/* ───────── 첫 화면 실사 간판 (assets/gymstation/hero-sign.jpg) ───────── */
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.hero-photo{position:relative;margin:0}
+.hero-photo img{display:block;width:100%;height:auto;max-height:min(58vh,520px);object-fit:cover;object-position:50% 48%;border-radius:14px;box-shadow:0 24px 50px rgba(20,16,10,.26),0 6px 14px rgba(20,16,10,.14);animation:heroIn 1.3s cubic-bezier(.2,.8,.2,1) both}
+@keyframes heroIn{from{opacity:0;transform:scale(1.025)}to{opacity:1;transform:none}}
+.hero-photo .sticker{right:-14px;bottom:-28px}
+.hero>.dir-sign{margin-top:28px}
+.hero>.dir-sign::before,.hero>.dir-sign::after{display:none}
+@media (max-width:560px){
+ .hero{padding-top:0}
+ /* 휴대폰: 간판 사진을 화면 끝까지 꽉 차게 */
+ .hero-photo{margin:0 -20px}
+ .hero-photo img{max-height:none;border-radius:0;box-shadow:0 10px 24px rgba(20,16,10,.2)}
+ .hero-photo .sticker{right:12px;bottom:-26px}
+ .hero>.dir-sign{margin-top:30px}
+}
+@media (prefers-reduced-motion:reduce){.hero-photo img{animation:none}}
 /* 아주 작은 화면 (아이폰 SE 1세대 등 320~360px) */
 @media (max-width:360px){
  .brand{gap:6px}
@@ -658,25 +675,18 @@ a,button{-webkit-tap-highlight-color:rgba(255,99,25,.18)}
 
 <main>
 <div class="platform" id="home">
-<div class="tube" aria-hidden="true"></div>
 <div class="wrap hero">
- <div class="hanger">
-  <div class="sign bolts hero-sign">
-   <div>
-    <h1>Gym Station</h1>
-    <div class="sub">Strength / Training / Conditioning</div>
-   </div>
-   <div class="lines" aria-label="GYM">
-    <span class="dot o">G</span><span class="dot y">Y</span><span class="dot b">M</span><span class="arrow" aria-hidden="true">↗</span>
-   </div>
-   <div class="sticker" aria-hidden="true">24/7<br>OPEN</div>
-  </div>
-  <!-- 방향 안내판: 큰 간판 아래 매달린 보조 안내판 (각 칸은 해당 섹션 링크) -->
-  <nav class="sign bolts dir-sign" aria-label="이 역에서 갈 수 있는 곳">
-   <a href="#tour"><span class="arrow" aria-hidden="true">↓</span><span class="dot o" aria-hidden="true">1</span><span class="dot y" aria-hidden="true">2</span><span class="t">센터 투어 · 회원권<small>360° Tour &amp; Membership</small></span></a>
-   <a href="#programs"><span class="t">프로그램 · 오시는 길<small>Programs &amp; Exit 5</small></span><span class="dot b" aria-hidden="true">3</span><span class="dot o" aria-hidden="true">4</span><span class="arrow" aria-hidden="true">↘</span></a>
-  </nav>
- </div>
+ <!-- 첫 화면 간판: 실사 이미지 (글자가 이미지에 들어 있어 제목은 화면에 보이지 않게 따로 둡니다) -->
+ <h1 class="sr-only">Gym Station 짐스테이션 — Strength / Training / Conditioning</h1>
+ <figure class="hero-photo">
+  <img src="assets/gymstation/hero-sign.jpg" alt="천장에 매달린 지하철 역 간판: Gym Station, Strength / Training / Conditioning, G Y M" width="1774" height="887" fetchpriority="high" decoding="async">
+  <div class="sticker" aria-hidden="true">24/7<br>OPEN</div>
+ </figure>
+ <!-- 방향 안내판 (각 칸은 해당 섹션 링크) -->
+ <nav class="sign bolts dir-sign" aria-label="이 역에서 갈 수 있는 곳">
+  <a href="#tour"><span class="arrow" aria-hidden="true">↓</span><span class="dot o" aria-hidden="true">1</span><span class="dot y" aria-hidden="true">2</span><span class="t">센터 투어 · 회원권<small>360° Tour &amp; Membership</small></span></a>
+  <a href="#programs"><span class="t">프로그램 · 오시는 길<small>Programs &amp; Exit 5</small></span><span class="dot b" aria-hidden="true">3</span><span class="dot o" aria-hidden="true">4</span><span class="arrow" aria-hidden="true">↘</span></a>
+ </nav>
  <div class="hero-copy">
   <div>
    <h2>이번 역은<br><em>짐스테이션</em>입니다</h2>
