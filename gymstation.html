@@ -43,7 +43,8 @@
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--tile) var(--tiles);color:var(--ink);font-family:var(--kr);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
+/* 페이지 배경은 민무늬 미색 (타일 무늬는 선로 구간의 건너편 벽에만 사용) */
+body{margin:0;background:var(--tile);color:var(--ink);font-family:var(--kr);font-size:16px;line-height:1.7;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1160px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
 a{color:inherit}
 button{font:inherit;color:inherit}
@@ -304,8 +305,6 @@ footer{background:var(--sign);color:var(--on-sign-mute);border-top:6px solid var
 .gallery-nav:disabled{opacity:0;pointer-events:none}
 
 /* ── 움직임·질감: 형광등 · 흔들리는 간판 · 지나가는 열차 · 스티커 · LED 전광판 · 노선 진행바 · 등장 효과 ── */
-/* 필름 노이즈 */
-body::after{content:"";position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.09;mix-blend-mode:multiply;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 /* 승강장: 천장 형광등 빛 + 아래로 갈수록 살짝 어둡게 */
 .platform{position:relative;overflow:hidden;background:radial-gradient(ellipse 62% 58% at 50% 0%,rgba(255,247,224,.95),rgba(255,247,224,0) 72%),linear-gradient(180deg,transparent 65%,rgba(20,20,20,.07))}
 .platform>.wrap{position:relative;z-index:1}
@@ -336,8 +335,6 @@ body::after{content:"";position:fixed;inset:0;z-index:50;pointer-events:none;opa
 /* 노랑 노선 배지는 검정 글자 (뉴욕 지하철 방식), 주황 버튼도 검정 글자로 대비 확보 */
 .dot.y{color:#111}
 .btn.orange{color:#111}
-/* 타일 벽 위 글자: 줄눈이 글자를 가로지르지 않도록 글자 뒤에 타일색 바탕을 깔고 가장자리를 부드럽게 퍼뜨립니다 */
-.hero-copy h2,.hero-copy .lead,.sec-desc,.tour-note,.note{width:fit-content;max-width:100%;background:rgba(243,241,236,.95);border-radius:6px;box-shadow:0 0 14px 12px rgba(243,241,236,.95)}
 .ad-copy{background:linear-gradient(180deg,transparent,rgba(8,8,8,.9) 42%)}
 /* 방향 안내판: 큰 간판 아래 짧은 봉으로 매달린 보조 안내판 (Uptown / Downtown 안내판처럼 좌우 두 칸) */
 .dir-sign{position:relative;display:grid;grid-template-columns:1fr 1fr;margin:44px 7% 0;padding:0}
@@ -536,8 +533,6 @@ a,button{-webkit-tap-highlight-color:rgba(255,99,25,.18)}
 }
 @media (hover:none){.poster:hover .ad-in img{transform:none}}
 @media (max-width:560px){
- /* 성능: 화면 전체를 덮는 노이즈의 혼합 효과를 끄고 아주 옅게 */
- body::after{mix-blend-mode:normal;opacity:.035}
  /* 상단 바 */
  .bar{padding-block:9px}
  .brand .dots{font-size:11px}
@@ -583,7 +578,7 @@ a,button{-webkit-tap-highlight-color:rgba(255,99,25,.18)}
  .sec-sign .dot{font-size:13px}
  .sec-desc{margin-bottom:18px;font-size:15px}
  /* 옆으로 넘기는 카드: 이유 · 회원권 · 광고판 (다음 카드가 살짝 보여서 넘길 수 있다는 걸 알 수 있음) */
- .reasons,.grid,main .prog{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:20px;margin:0 -20px;padding:6px 20px 22px;scrollbar-width:none;overscroll-behavior-x:contain}
+ .reasons,.grid,main .prog{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:20px;margin:-10px -20px -34px;padding:16px 20px 60px;scrollbar-width:none;overscroll-behavior-x:contain}
  .reasons::-webkit-scrollbar,.grid::-webkit-scrollbar,main .prog::-webkit-scrollbar{display:none}
  .reasons>*,.grid>.card,main .prog>*{flex:0 0 82%;scroll-snap-align:start}
  .reasons .reason:last-child{grid-column:auto}
@@ -594,7 +589,7 @@ a,button{-webkit-tap-highlight-color:rgba(255,99,25,.18)}
  .card{padding:66px 20px 20px}
  .card .price{font-size:28px}
  .poster{aspect-ratio:4/5}
- .swipe-hint{display:block;margin:-8px 0 0;text-align:right;font-size:12px;font-weight:700;color:var(--ink-mute)}
+ .swipe-hint{position:relative;display:block;margin:-8px 0 0;text-align:right;font-size:12px;font-weight:700;color:var(--ink-mute)}
  .note{margin-top:10px}
  /* 회원권 광고판: 덜 길쭉하게 */
  .ad-wide{aspect-ratio:5/4;margin-bottom:18px}
