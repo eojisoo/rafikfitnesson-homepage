@@ -247,6 +247,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 .benefits li.hl{color:#FF9A55;font-weight:800}
 .plan .btn{height:50px}
 .plan--best .btn--outline{background:var(--green);border-color:var(--green);color:#fff}
+.plan-nav{display:none}
 .price-foot{margin-top:46px;text-align:center}
 .price-foot strong{display:block;font-size:clamp(20px,2.4vw,26px);font-weight:900;letter-spacing:-.03em}
 .price-foot p{margin-top:8px;font-size:13px;color:var(--gray)}
@@ -308,8 +309,17 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
  .nav{display:none}
  .header__inner{justify-content:space-between}
  .about__grid,.pt__grid,.contact__grid,.location__grid{grid-template-columns:1fr}
- .plans{grid-template-columns:1fr;max-width:440px;gap:28px}
- .plan--best{order:-1}
+ /* 요금제: 프리미엄을 가운데에 두고 양옆 카드가 살짝 보이는 가로 넘기기 */
+ .plans{display:flex;align-items:stretch;gap:12px;max-width:none;margin:0 -20px;padding:26px calc((100vw - min(76vw,330px)) / 2) 26px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
+ .plans::-webkit-scrollbar{display:none}
+ .plan,.plan--best{flex:0 0 min(76vw,330px);scroll-snap-align:center;scroll-snap-stop:always;padding:34px 20px 22px;transition:scale .35s ease,opacity .35s ease}
+ .plans.ready .plan:not(.cur){scale:.93;opacity:.55}
+ .plan-nav{display:flex;justify-content:center;gap:6px;margin-top:4px}
+ .plan-nav button{display:flex;align-items:center;gap:6px;height:34px;padding:0 12px;border:0;border-radius:999px;background:none;font:700 13px var(--font);color:var(--gray);cursor:pointer}
+ .plan-nav button::before{content:"";width:7px;height:7px;border-radius:50%;background:#cfd2cf;transition:width .3s,background .3s}
+ .plan-nav button.on{color:var(--black)}
+ .plan-nav button.on::before{width:20px;border-radius:4px;background:var(--green)}
+ .price-foot{margin-top:28px}
  .gallery{grid-template-columns:1fr 1fr;grid-template-rows:240px 170px 170px}
  .g1{grid-column:span 2;grid-row:auto}
  .sec-head--row p{text-align:left}
@@ -351,8 +361,6 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
  .tour{aspect-ratio:4/5}
  .gallery{grid-template-rows:200px 140px 140px;gap:10px}
  .gallery figcaption{font-size:14px;padding:30px 14px 12px}
- .plan,.plan--best{padding:30px 20px 24px}
- .plan--best{padding-top:38px}
  .term dd b{font-size:22px}
  .contact__copy p{font-size:16px}
  .map{min-height:260px}
@@ -360,6 +368,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
  .loc-btns .btn{flex:1;padding:0 12px}
 }
 .swipe{display:none}
+.facility .swipe{margin:0 0 10px}
 @media (max-width:560px){.swipe{display:block}}
 @media (max-width:560px){
  .event__cards{grid-template-columns:1fr;gap:34px;margin-top:44px}
@@ -372,12 +381,31 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
  .event__note br{display:none}
  .event__cta{display:grid;grid-template-columns:1fr 1fr;gap:10px}
  .event__cta .btn{padding:0 8px;font-size:15px}
+ /* 휴대폰: 구간 간격을 줄여 스크롤 길이 단축 */
+ .section{padding:60px 0}
+ .event{padding:56px 0}
+ .sec-head{margin-bottom:28px}
+ .stats__grid>div{padding:18px 0}
+ .about__img{aspect-ratio:16/10}
+ .tour{aspect-ratio:1/1}
+ /* 시설 사진: 옆으로 넘기기 */
+ .gallery{display:flex;grid-template-rows:none;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;margin:0 -20px;padding:0 20px 4px;scrollbar-width:none}
+ .gallery::-webkit-scrollbar{display:none}
+ .gallery figure{flex:0 0 74%;height:230px;scroll-snap-align:center}
+ .gallery .swipe-tag{flex:none}
+ .ask{padding:22px 18px}
+ .ask a{padding:14px}
+ .info div{padding:14px 0}
+ .footer{font-size:12px}
 }
 @media (max-width:360px){
  .logo img{height:34px}
  .hero__cta{grid-template-columns:1fr}
  .mobile-cta a{font-size:14px}
  .info div{grid-template-columns:64px 1fr}
+ .plan,.plan--best{padding-left:16px;padding-right:16px}
+ .term dd b{font-size:19px}
+ .term.best dt::after{margin-left:4px;padding:1px 4px;font-size:10px}
 }
 @media (prefers-reduced-motion:reduce){
  *,*::before,*::after{animation:none!important;transition:none!important}
@@ -528,6 +556,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
    <iframe id="tourFrame" title="짐스테이션 360도 센터 투어" loading="lazy" allowfullscreen allow="autoplay; accelerometer; gyroscope; fullscreen; xr-spatial-tracking"></iframe>
    <button type="button" class="tour__guard" id="tourGuard"><span>눌러서 360° 둘러보기 ↗</span></button>
   </div>
+  <span class="swipe">시설 사진은 옆으로 넘겨 보세요 →</span>
   <div class="gallery">
    <figure class="g1 reveal"><div class="photo" style="background-image:url('assets/programs/fitness/4.jpg')"></div><figcaption>프리웨이트 존</figcaption></figure>
    <figure class="g2 reveal" style="--d:.06s"><div class="photo" style="background-image:url('assets/programs/fitness/3.jpg')"></div><figcaption>머신 존</figcaption></figure>
@@ -547,8 +576,8 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
   </div>
   <div class="round reveal" role="tablist" aria-label="모집 차수"><button type="button" role="tab" class="on" aria-selected="true" data-round="1">1차 모집가</button><button type="button" role="tab" aria-selected="false" data-round="2">2차 모집가</button></div>
   <p class="round-note reveal"><b><span class="ev-round">1차</span> 사전 등록가</b> <span class="ev-until">12월 20일(일)까지</span> · 선착순 마감될 수 있습니다</p>
-  <div class="plans">
-   <article class="plan reveal">
+  <div class="plans reveal" id="plans">
+   <article class="plan" data-name="베이직">
     <div class="plan__head"><span class="plan__name">BASIC</span><h3>베이직</h3><p class="plan__desc">운동에 꼭 필요한 기본</p></div>
     <dl class="terms">
      <div class="term best" data-r1="25900" data-r2="27900" data-m="12"><dt>12개월</dt><dd><b>월 <span class="mo">25,900</span>원</b><small>총 <span class="tot">310,800</span>원</small></dd></div>
@@ -560,7 +589,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
     </ul>
     <a href="#contact" class="btn btn--outline btn--block" data-plan="베이직">베이직 상담하기</a>
    </article>
-   <article class="plan plan--best reveal" style="--d:.08s">
+   <article class="plan plan--best" data-name="프리미엄">
     <span class="plan__flag">★ BEST 추천</span>
     <div class="plan__head"><span class="plan__name">PREMIUM</span><h3>프리미엄</h3><p class="plan__desc">가장 합리적인 선택</p></div>
     <dl class="terms">
@@ -573,7 +602,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
     </ul>
     <a href="#contact" class="btn btn--outline btn--block" data-plan="프리미엄">프리미엄 상담하기</a>
    </article>
-   <article class="plan reveal" style="--d:.16s">
+   <article class="plan" data-name="시그니처">
     <div class="plan__head"><span class="plan__name">SIGNATURE</span><h3>시그니처</h3><p class="plan__desc">모든 혜택을 한 번에</p></div>
     <dl class="terms">
      <div class="term best" data-r1="39900" data-r2="44900" data-m="12"><dt>12개월</dt><dd><b>월 <span class="mo">39,900</span>원</b><small>총 <span class="tot">478,800</span>원</small></dd></div>
@@ -586,6 +615,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
     <a href="#contact" class="btn btn--outline btn--block" data-plan="시그니처">시그니처 상담하기</a>
    </article>
   </div>
+  <div class="plan-nav" id="planNav" aria-hidden="true"><button type="button" data-go="0"><span>베이직</span></button><button type="button" data-go="1"><span>프리미엄</span></button><button type="button" data-go="2"><span>시그니처</span></button></div>
   <div class="price-foot reveal">
    <strong>운동만 생각하세요. 나머지는 짐스테이션이.</strong>
    <p>모든 금액은 부가세 포함 금액입니다. 총액은 월 요금에 개월 수를 곱한 금액이며, 가격과 이용 조건은 센터 사정에 따라 변경될 수 있습니다.</p>
@@ -605,8 +635,8 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
    <h3 id="askTitle">편한 방법으로 문의하세요</h3>
    <p>상담 데스크 운영 시간에 바로 답변드려요.</p>
    <a class="talk" id="talkLink" href="https://talk.naver.com/ct/w4btea" target="_blank" rel="noopener"><i>N</i><span><strong>네이버 톡톡 상담</strong><small>메시지로 편하게 문의</small></span><em>→</em></a>
-   <a href="tel:050713950870"><i>☎</i><span><strong>전화 상담</strong><small>0507-1395-0870</small></span><em>→</em></a>
-   <a href="#location"><i>⌖</i><span><strong>직접 방문</strong><small>천호역 · 천호대로 1037 지하1층</small></span><em>→</em></a>
+   <a href="tel:050713950870"><i><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></i><span><strong>전화 상담</strong><small>0507-1395-0870</small></span><em>→</em></a>
+   <a href="#location"><i><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg></i><span><strong>직접 방문</strong><small>천호역 · 천호대로 1037 지하1층</small></span><em>→</em></a>
   </div>
  </div>
 </section>
@@ -638,7 +668,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
   <div class="footer__legal">
    <!-- 사업자 정보: 확정되면 주석을 풀고 값을 입력하세요 -->
    <!-- <p>상호 짐스테이션 · 대표 OOO · 사업자등록번호 000-00-00000</p> -->
-   <p>짐스테이션 천호역점 · 서울 강동구 천호대로 1037 지하1층 · 0507-1395-0870</p>
+   <p>짐스테이션 천호역점 · 서울 강동구 천호대로 1037 지하1층 · <a href="tel:050713950870" style="white-space:nowrap;text-decoration:none">0507-1395-0870</a></p>
    <p>개인정보 보호책임자 안종훈 · 이메일 <a href="mailto:rafik04@naver.com">rafik04@naver.com</a> · <a href="privacy.html">개인정보처리방침</a></p>
    <p>&copy; 2026 GYM STATION. All rights reserved.</p>
   </div>
@@ -704,6 +734,18 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
   terms.forEach(function(t){var mo=+t.dataset['r'+r];t.querySelector('.mo').textContent=mo.toLocaleString('ko-KR');t.querySelector('.tot').textContent=(mo*t.dataset.m).toLocaleString('ko-KR')})})});
  // 1차가 끝나면(2차 기간·이벤트 종료 후) 요금표는 2차 가격을 보여 주고 1차 버튼은 숨깁니다
  if(!evPhase||evPhase.round>=2){var b2=document.querySelector('[data-round="2"]'),b1=document.querySelector('[data-round="1"]');b2.click();b1.hidden=true;if(!evPhase)document.querySelector(".round").hidden=true}
+ // 요금제 넘기기: 처음엔 프리미엄을 가운데에, 가운데 카드 강조 + 아래 점 표시
+ (function(){
+  var box=document.getElementById('plans'),cards=[].slice.call(box.querySelectorAll('.plan')),nav=[].slice.call(document.querySelectorAll('#planNav button'));
+  function scroller(){return box.scrollWidth>box.clientWidth+4}
+  function center(i,smooth){var c=cards[i];box.scrollTo({left:c.offsetLeft-(box.clientWidth-c.offsetWidth)/2,behavior:smooth?'smooth':'auto'})}
+  function mark(){if(!scroller()){box.classList.remove('ready');return}var mid=box.scrollLeft+box.clientWidth/2,best=0,d=1e9;cards.forEach(function(c,i){var x=Math.abs(c.offsetLeft+c.offsetWidth/2-mid);if(x<d){d=x;best=i}});cards.forEach(function(c,i){c.classList.toggle('cur',i===best)});nav.forEach(function(b,i){b.classList.toggle('on',i===best)});box.classList.add('ready')}
+  var t=0;box.addEventListener('scroll',function(){if(!t)t=requestAnimationFrame(function(){t=0;mark()})},{passive:true});
+  nav.forEach(function(b){b.addEventListener('click',function(){center(+b.dataset.go,true)})});
+  cards.forEach(function(c,i){c.addEventListener('click',function(e){if(scroller()&&!c.classList.contains('cur')&&!e.target.closest('a')){center(i,true)}})});
+  function init(){if(scroller())center(1,false);mark()}
+  init();addEventListener('load',init);addEventListener('resize',function(){if(scroller())center(cards.findIndex(function(c){return c.classList.contains('cur')})>=0?cards.findIndex(function(c){return c.classList.contains('cur')}):1,false);mark()});
+ })();
  // 요금제 상담 버튼: 상담 카드 제목에 선택한 요금제 표시
  [].forEach.call(document.querySelectorAll('[data-plan]'),function(b){b.addEventListener('click',function(){document.getElementById('askTitle').textContent=b.dataset.plan+' 요금제 상담, 편한 방법으로 문의하세요';if(typeof rafikTrack==='function')rafikTrack('select_product',{product_name:b.dataset.plan})})});
 
