@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>짐스테이션 천호역 | 인원정원제 프리미엄 피트니스</title>
 <meta name="description" content="천호역 인원정원제 프리미엄 피트니스 짐스테이션. 24시간 헬스 · 1:1 PT, 베이직 · 프리미엄 · 럭셔리 이용요금 안내.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0f0e'/%3E%3Cpath d='M12 40 Q32 8 52 40' fill='none' stroke='%2300a84b' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0f0e'/%3E%3Cpath d='M12 40 Q32 8 52 40' fill='none' stroke='%23FE6201' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="짐스테이션 GYM STATION">
 <meta property="og:title" content="짐스테이션 · 천호역">
@@ -22,7 +22,7 @@
 <style>
 /* 짐스테이션 시안 2: 딥 그린 · 블랙 프리미엄 클럽 콘셉트 */
 :root{
- --green:#00a84b; --green-d:#008a3d; --green-l:#e6f7ee;
+ --green:#FE6201; --green-d:#D94F00; --green-l:#FFF1E7; /* 로고 주황 (변수 이름은 그대로 둠) */
  --black:#0d0f0e; --black-2:#161a18; --black-3:#232927;
  --white:#fff; --off:#f5f6f4; --gray:#6b716e; --gray-l:#a9b0ac; --border:#e3e6e3;
  --radius:16px;
@@ -39,14 +39,13 @@ img{display:block;max-width:100%}
 .section{padding:clamp(76px,11vw,140px) 0;position:relative}
 
 /* 로고 */
-.logo{display:inline-flex;flex-direction:column;align-items:center;line-height:1}
-.logo__arc{width:150px;height:auto;margin-bottom:-2px}
-.logo__arc path{fill:none;stroke:var(--green);stroke-width:3.2;stroke-linecap:round}
-.logo__word{font:italic 900 21px var(--en);letter-spacing:-.02em;color:var(--black);white-space:nowrap}
-.logo__word em{color:var(--green)}
-.logo__sub{margin-top:4px;font:700 7px var(--en);letter-spacing:.38em;color:var(--gray);white-space:nowrap}
-.logo--light{align-items:flex-start}
-.logo--light .logo__word{color:#fff;font-size:24px}
+.logo{position:relative;display:inline-block;line-height:0}
+.logo img{display:block;height:46px;width:auto}
+.logo .logo--on-light{position:absolute;left:0;top:0;opacity:0;transition:opacity .3s}
+.logo .logo--on-dark{transition:opacity .3s}
+.header.scrolled .logo .logo--on-light{opacity:1}
+.header.scrolled .logo .logo--on-dark{opacity:0}
+.footer .logo img{height:54px}
 
 /* 공통 */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:54px;padding:0 28px;border-radius:8px;font:800 16px var(--font);border:2px solid transparent;cursor:pointer;transition:background .2s,color .2s,transform .2s,border-color .2s;white-space:nowrap}
@@ -64,14 +63,14 @@ img{display:block;max-width:100%}
 }
 .eyebrow{display:inline-flex;align-items:center;gap:10px;font:italic 800 13px var(--en);letter-spacing:.18em;color:var(--green);margin-bottom:14px}
 .eyebrow::before{content:"";width:28px;height:3px;background:currentColor;transform:skewX(-20deg)}
-.eyebrow--light{color:#6ee7a4}
+.eyebrow--light{color:#FF9A55}
 h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spacing:-.035em}
 .sec-head{margin-bottom:clamp(36px,5vw,60px)}
 .sec-head--center{text-align:center}
 .sec-head--center .eyebrow{justify-content:center}
 .sec-head p{margin-top:12px;color:var(--gray)}
 
-.photo{position:relative;background:linear-gradient(135deg,#1d2321,#0f1311 60%,#0b3a22);background-size:cover;background-position:center;overflow:hidden}
+.photo{position:relative;background:linear-gradient(135deg,#1d2321,#0f1311 60%,#3a1a08);background-size:cover;background-position:center;overflow:hidden}
 
 .js .reveal{opacity:0;transform:translateY(24px);transition:opacity .8s ease var(--d,0s),transform .8s cubic-bezier(.2,.8,.2,1) var(--d,0s)}
 .js .reveal.in{opacity:1;transform:none}
@@ -79,11 +78,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 /* 헤더 */
 .header{position:fixed;inset:0 0 auto;z-index:50;transition:background .3s,box-shadow .3s}
 .header__inner{display:flex;align-items:center;gap:36px;height:72px}
-.header .logo__word{color:#fff;transition:color .3s}
-.header .logo__sub{color:rgba(255,255,255,.6)}
 .header.scrolled{background:rgba(255,255,255,.95);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 1px 0 var(--border)}
-.header.scrolled .logo__word{color:var(--black)}
-.header.scrolled .logo__sub{color:var(--gray)}
 .nav{display:flex;gap:28px;margin-left:auto}
 .nav a{font-weight:700;font-size:15px;color:rgba(255,255,255,.85);position:relative;transition:color .2s}
 .header.scrolled .nav a{color:var(--black)}
@@ -102,8 +97,8 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 @keyframes draw{to{stroke-dashoffset:0}}
 .hero__inner{position:relative;padding:120px 0 100px}
 .tag{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);font:italic 800 12px var(--en);letter-spacing:.16em}
-.tag i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(0,168,75,.7);animation:ping 1.6s infinite}
-@keyframes ping{70%{box-shadow:0 0 0 10px rgba(0,168,75,0)}100%{box-shadow:0 0 0 0 rgba(0,168,75,0)}}
+.tag i{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(254,98,1,.7);animation:ping 1.6s infinite}
+@keyframes ping{70%{box-shadow:0 0 0 10px rgba(254,98,1,0)}100%{box-shadow:0 0 0 0 rgba(254,98,1,0)}}
 .hero h1{margin:24px 0 20px;font-size:clamp(42px,7.2vw,96px);line-height:1.1;font-weight:900;letter-spacing:-.045em}
 .hero h1 em{font-style:normal;color:var(--green)}
 .hero p{font-size:clamp(16px,1.5vw,19px);color:rgba(255,255,255,.78);max-width:560px}
@@ -181,13 +176,13 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:center;max-width:1040px;margin-inline:auto}
 .plan{position:relative;display:flex;flex-direction:column;background:#fff;border-radius:20px;padding:34px 28px 30px;border:1px solid var(--border);box-shadow:0 18px 40px -30px rgba(0,0,0,.25)}
 .plan--best{background:var(--black);color:#fff;border-color:var(--black);padding:42px 28px 38px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55)}
-.plan__flag{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);background:var(--green);color:#fff;font-weight:800;font-size:14px;padding:9px 20px;border-radius:999px;white-space:nowrap;box-shadow:0 8px 18px -8px rgba(0,120,55,.8)}
+.plan__flag{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);background:var(--green);color:#fff;font-weight:800;font-size:14px;padding:9px 20px;border-radius:999px;white-space:nowrap;box-shadow:0 8px 18px -8px rgba(200,70,0,.8)}
 .plan__head{text-align:center;padding-bottom:20px;border-bottom:1px solid var(--border)}
 .plan--best .plan__head{border-color:var(--black-3)}
 .plan__name{display:block;font:italic 800 12px var(--en);letter-spacing:.2em;color:var(--green)}
 .plan h3{margin-top:6px;font-size:28px;font-weight:900;letter-spacing:-.03em}
 .plan__desc{margin-top:4px;font-size:14px;color:var(--gray)}
-.plan--best .plan__desc{color:#6ee7a4}
+.plan--best .plan__desc{color:#FF9A55}
 .terms{padding:16px 0;border-bottom:1px solid var(--border);display:grid;gap:12px}
 .plan--best .terms{border-color:var(--black-3)}
 .term{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:12px}
@@ -196,15 +191,15 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 .term dd{text-align:right}
 .term dd b{display:block;font-size:24px;font-weight:900;letter-spacing:-.03em;line-height:1.25;font-variant-numeric:tabular-nums}
 .term dd small{display:block;font-size:12px;color:var(--gray);font-weight:600}
-.plan--best .term dd small{color:#6ee7a4}
+.plan--best .term dd small{color:#FF9A55}
 .term.best dt::after{content:"최저 월가";display:inline-block;margin-left:6px;padding:1px 6px;border-radius:4px;background:var(--green-l);color:var(--green-d);font-size:11px;font-weight:800;vertical-align:1px}
-.plan--best .term.best dt::after{background:rgba(0,168,75,.2);color:#6ee7a4}
+.plan--best .term.best dt::after{background:rgba(254,98,1,.2);color:#FF9A55}
 .benefits{flex:1;padding:18px 0 22px;display:grid;gap:11px;align-content:start}
 .benefits li{display:flex;gap:10px;font-size:15px;font-weight:600}
 .benefits li::before{content:"✓";flex:none;width:16px;color:var(--green);font-weight:900}
 .benefits li.off{color:#b9bdb9;font-weight:500}
 .benefits li.off::before{content:"—";color:#c9ccc9}
-.benefits li.hl{color:#6ee7a4;font-weight:800}
+.benefits li.hl{color:#FF9A55;font-weight:800}
 .plan .btn{height:50px}
 .plan--best .btn--outline{background:var(--green);border-color:var(--green);color:#fff}
 .price-foot{margin-top:46px;text-align:center}
@@ -218,7 +213,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 .contact__grid{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,88px);align-items:center}
 .contact__copy p{margin-top:16px;font-size:18px;color:rgba(255,255,255,.9)}
 .contact__copy p b{color:#fff;border-bottom:3px solid #fff}
-.ask{background:#fff;color:var(--black);border-radius:20px;padding:clamp(24px,3vw,38px);box-shadow:0 30px 60px -30px rgba(0,40,20,.6);display:grid;gap:12px}
+.ask{background:#fff;color:var(--black);border-radius:20px;padding:clamp(24px,3vw,38px);box-shadow:0 30px 60px -30px rgba(60,20,0,.6);display:grid;gap:12px}
 .ask h3{font-size:20px;font-weight:900;letter-spacing:-.02em}
 .ask>p{color:var(--gray);font-size:15px;margin-top:-6px}
 .ask a{display:flex;align-items:center;gap:14px;padding:16px 18px;border:1px solid var(--border);border-radius:12px;transition:border-color .2s,background .2s}
@@ -250,7 +245,6 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 /* 푸터 */
 .footer{background:var(--black);color:var(--gray-l);padding:56px 0 64px;font-size:13px}
 .footer__inner{display:flex;justify-content:space-between;align-items:flex-start;gap:28px;flex-wrap:wrap}
-.footer .logo__sub{color:var(--gray)}
 .footer__legal{display:grid;gap:4px;text-align:right}
 .footer__legal a{text-decoration:underline}
 
@@ -279,15 +273,13 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
  .show-cta .mobile-cta{transform:none}
  .mobile-cta a{display:flex;align-items:center;justify-content:center;gap:6px;height:54px;border-radius:10px;font-weight:900;font-size:15px;background:var(--black);color:#fff;border:1px solid rgba(255,255,255,.22);box-shadow:0 12px 30px -10px rgba(0,0,0,.55)}
  .mobile-cta a.talk b{display:grid;place-items:center;width:18px;height:18px;border-radius:4px;background:#03C75A;font:900 11px var(--en)}
- .mobile-cta a.go{background:var(--green);border-color:var(--green);box-shadow:0 12px 30px -10px rgba(0,120,55,.7)}
+ .mobile-cta a.go{background:var(--green);border-color:var(--green);box-shadow:0 12px 30px -10px rgba(200,70,0,.7)}
  .footer{padding-bottom:110px}
 }
 @media (max-width:560px){
  .wrap{width:calc(100% - 40px)}
  .header__inner{height:64px}
- .header .logo__word{font-size:17px}
- .header .logo__arc{width:118px}
- .header .logo__sub{font-size:6px;margin-top:3px}
+ .logo img{height:38px}
  html{scroll-padding-top:64px}
  .header .btn--sm{display:none}
  .hero{min-height:88svh;align-items:flex-end}
@@ -324,7 +316,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 .swipe{display:none}
 @media (max-width:560px){.swipe{display:block}}
 @media (max-width:360px){
- .logo__word{font-size:18px}
+ .logo img{height:34px}
  .hero__cta{grid-template-columns:1fr}
  .mobile-cta a{font-size:14px}
  .info div{grid-template-columns:64px 1fr}
@@ -343,9 +335,8 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 <header class="header" id="top">
  <div class="wrap header__inner">
   <a href="#top" class="logo" aria-label="짐스테이션 홈">
-   <svg class="logo__arc" viewBox="0 0 120 22" aria-hidden="true"><path d="M4 20 Q60 -8 116 20"/><path d="M22 20 Q60 2 98 20"/></svg>
-   <span class="logo__word">GYM STATION <em>24&amp;PT</em></span>
-   <span class="logo__sub">PREMIUM FITNESS CLUB</span>
+   <img class="logo--on-dark" src="assets/gymstation/logo-white.png" alt="GYM STATION 짐스테이션" width="600" height="230">
+   <img class="logo--on-light" src="assets/gymstation/logo-orange.png" alt="" aria-hidden="true" width="600" height="230">
   </a>
   <nav class="nav" aria-label="주요 메뉴">
    <a href="#program">프로그램</a>
@@ -519,7 +510,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
   <div class="ask reveal" style="--d:.1s">
    <h3 id="askTitle">편한 방법으로 문의하세요</h3>
    <p>상담 데스크 운영 시간에 바로 답변드려요.</p>
-   <a class="talk" id="talkLink" href="https://talk.naver.com/ct/w4btea" target="_blank" rel="noopener"><i>N</i><span><strong>네이버 톡톡 상담</strong><small>메시지로 편하게 문의</small></span><em>↗</em></a>
+   <a class="talk" id="talkLink" href="https://talk.naver.com/ct/w4btea" target="_blank" rel="noopener"><i>N</i><span><strong>네이버 톡톡 상담</strong><small>메시지로 편하게 문의</small></span><em>→</em></a>
    <a href="tel:050713950870"><i>☎</i><span><strong>전화 상담</strong><small>0507-1395-0870</small></span><em>→</em></a>
    <a href="#location"><i>⌖</i><span><strong>직접 방문</strong><small>천호역 · 천호대로 1037 지하1층</small></span><em>→</em></a>
   </div>
@@ -549,16 +540,13 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 
 <footer class="footer">
  <div class="wrap footer__inner">
-  <div class="logo logo--light">
-   <span class="logo__word">GYM STATION <em>24&amp;PT</em></span>
-   <span class="logo__sub">PREMIUM FITNESS CLUB</span>
-  </div>
+  <div class="logo"><img src="assets/gymstation/logo-white.png" alt="GYM STATION 짐스테이션" width="600" height="230" loading="lazy"></div>
   <div class="footer__legal">
    <!-- 사업자 정보: 확정되면 주석을 풀고 값을 입력하세요 -->
    <!-- <p>상호 짐스테이션 · 대표 OOO · 사업자등록번호 000-00-00000</p> -->
    <p>짐스테이션 천호역점 · 서울 강동구 천호대로 1037 지하1층 · 0507-1395-0870</p>
    <p>개인정보 보호책임자 안종훈 · 이메일 <a href="mailto:rafik04@naver.com">rafik04@naver.com</a> · <a href="privacy.html">개인정보처리방침</a></p>
-   <p>&copy; 2026 GYM STATION 24&amp;PT. All rights reserved.</p>
+   <p>&copy; 2026 GYM STATION. All rights reserved.</p>
   </div>
  </div>
 </footer>
