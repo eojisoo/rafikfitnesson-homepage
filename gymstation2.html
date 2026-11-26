@@ -7,8 +7,8 @@
 <!-- 시안 2 확인용: 검색엔진에 노출하지 않습니다 -->
 <meta name="robots" content="noindex, nofollow">
 <title>짐스테이션 천호역 | 인원정원제 프리미엄 피트니스</title>
-<meta name="description" content="천호역 인원정원제 프리미엄 피트니스 짐스테이션. 24시간 헬스 · 1:1 PT, 베이직 · 프리미엄 · 럭셔리 이용요금 안내.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d0f0e'/%3E%3Cpath d='M12 40 Q32 8 52 40' fill='none' stroke='%23FE6201' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta name="description" content="천호역 인원정원제 프리미엄 피트니스 짐스테이션. 24시간 헬스 · 1:1 PT, 베이직 · 프리미엄 · 시그니처 이용요금 안내.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FE6201'/%3E%3Cpath d='M8 42H22C27 42 29 40 32 36L38 28C41 24 43 22 48 22H56' fill='none' stroke='%23fff' stroke-width='6' stroke-linejoin='round'/%3E%3C/svg%3E">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="짐스테이션 GYM STATION">
 <meta property="og:title" content="짐스테이션 · 천호역">
@@ -90,10 +90,12 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 .hero__bg{position:absolute;inset:0;animation:zoom 18s ease-out both}
 @keyframes zoom{from{transform:scale(1.12)}}
 .hero__shade{position:absolute;inset:0;background:linear-gradient(90deg,rgba(8,10,9,.92) 0%,rgba(8,10,9,.62) 50%,rgba(8,10,9,.25) 100%),linear-gradient(0deg,rgba(8,10,9,.75),transparent 45%)}
-.hero__arc{position:absolute;right:-8%;top:12%;width:min(900px,70vw);opacity:.9}
-.hero__arc path,.pt__arc path,.contact__arc path{fill:none;stroke-width:6;stroke-linecap:round}
-.hero__arc path{stroke:var(--green);stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 2.2s .4s cubic-bezier(.6,0,.2,1) forwards}
-.hero__arc path+path{stroke:rgba(255,255,255,.25);animation-delay:.7s}
+.ribbons{overflow:visible}
+.ribbons path{fill:none;stroke-width:22;stroke-linejoin:round}
+.hero__arc{position:absolute;right:-6%;top:14%;width:min(820px,62vw);opacity:.85}
+.hero__arc path{stroke:var(--green);stroke-dasharray:900;stroke-dashoffset:900;animation:draw 1.8s .3s cubic-bezier(.6,0,.2,1) forwards}
+.hero__arc path:nth-child(2){opacity:.55;animation-delay:.45s}
+.hero__arc path:nth-child(3){opacity:.25;animation-delay:.6s}
 @keyframes draw{to{stroke-dashoffset:0}}
 .hero__inner{position:relative;padding:120px 0 100px}
 .tag{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);font:italic 800 12px var(--en);letter-spacing:.16em}
@@ -137,8 +139,8 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 
 /* PT */
 .pt{background:var(--black);color:#fff;overflow:hidden}
-.pt__arc{position:absolute;left:-20%;bottom:-30%;width:900px;opacity:.15}
-.pt__arc path{stroke:var(--green);stroke-width:10}
+.pt__arc{position:absolute;right:-12%;bottom:-8%;width:760px;opacity:.14}
+.pt__arc path{stroke:var(--green)}
 .pt__grid{position:relative;display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(36px,6vw,96px);align-items:center}
 .pt h2 em{font-style:italic;font-family:var(--en);color:var(--green)}
 .pt__lead{margin:18px 0 32px;color:var(--gray-l);font-size:17px}
@@ -173,14 +175,18 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 /* 이용요금 */
 .membership{background:#f3f2ee}
 .price-head .brand-en{display:block;font:700 13px var(--en);letter-spacing:.42em;color:var(--gray);margin-bottom:10px}
+.round{display:flex;width:max-content;max-width:100%;margin:-18px auto 44px;padding:4px;border-radius:999px;background:#fff;border:1px solid var(--border)}
+.round button{min-width:120px;height:42px;padding:0 18px;border:0;border-radius:999px;background:none;font:800 15px var(--font);color:var(--gray);cursor:pointer;transition:background .2s,color .2s}
+.round button.on{background:var(--green);color:#fff;box-shadow:0 6px 14px -6px rgba(200,70,0,.7)}
 .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:center;max-width:1040px;margin-inline:auto}
 .plan{position:relative;display:flex;flex-direction:column;background:#fff;border-radius:20px;padding:34px 28px 30px;border:1px solid var(--border);box-shadow:0 18px 40px -30px rgba(0,0,0,.25)}
 .plan--best{background:var(--black);color:#fff;border-color:var(--black);padding:42px 28px 38px;box-shadow:0 30px 60px -28px rgba(0,0,0,.55)}
 .plan__flag{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);background:var(--green);color:#fff;font-weight:800;font-size:14px;padding:9px 20px;border-radius:999px;white-space:nowrap;box-shadow:0 8px 18px -8px rgba(200,70,0,.8)}
 .plan__head{text-align:center;padding-bottom:20px;border-bottom:1px solid var(--border)}
 .plan--best .plan__head{border-color:var(--black-3)}
-.plan__name{display:block;font:italic 800 12px var(--en);letter-spacing:.2em;color:var(--green)}
+.plan__name{display:block;font:italic 900 12px var(--en);letter-spacing:.2em;color:var(--green)}
 .plan h3{margin-top:6px;font-size:28px;font-weight:900;letter-spacing:-.03em}
+.plan__head::after{content:"";display:block;width:44px;height:4px;margin:14px auto 0;background:var(--green);transform:skewX(-30deg)}
 .plan__desc{margin-top:4px;font-size:14px;color:var(--gray)}
 .plan--best .plan__desc{color:#FF9A55}
 .terms{padding:16px 0;border-bottom:1px solid var(--border);display:grid;gap:12px}
@@ -189,10 +195,10 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 .term dt{font-size:14px;color:var(--gray);font-weight:600}
 .plan--best .term dt{color:var(--gray-l)}
 .term dd{text-align:right}
-.term dd b{display:block;font-size:24px;font-weight:900;letter-spacing:-.03em;line-height:1.25;font-variant-numeric:tabular-nums}
+.term dd b{display:block;font-size:23px;font-weight:900;letter-spacing:-.03em;line-height:1.25;font-variant-numeric:tabular-nums}
 .term dd small{display:block;font-size:12px;color:var(--gray);font-weight:600}
 .plan--best .term dd small{color:#FF9A55}
-.term.best dt::after{content:"최저 월가";display:inline-block;margin-left:6px;padding:1px 6px;border-radius:4px;background:var(--green-l);color:var(--green-d);font-size:11px;font-weight:800;vertical-align:1px}
+.term.best dt::after{content:"최저가";display:inline-block;margin-left:6px;padding:1px 6px;border-radius:4px;background:var(--green-l);color:var(--green-d);font-size:11px;font-weight:800;vertical-align:1px}
 .plan--best .term.best dt::after{background:rgba(254,98,1,.2);color:#FF9A55}
 .benefits{flex:1;padding:18px 0 22px;display:grid;gap:11px;align-content:start}
 .benefits li{display:flex;gap:10px;font-size:15px;font-weight:600}
@@ -208,8 +214,8 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 
 /* 상담 */
 .contact{background:var(--green);color:#fff;overflow:hidden}
-.contact__arc{position:absolute;right:-10%;top:-10%;width:900px}
-.contact__arc path{stroke:rgba(255,255,255,.14);stroke-width:12}
+.contact__arc{position:absolute;right:-8%;top:-4%;width:760px}
+.contact__arc path{stroke:rgba(255,255,255,.16)}
 .contact__grid{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:clamp(32px,6vw,88px);align-items:center}
 .contact__copy p{margin-top:16px;font-size:18px;color:rgba(255,255,255,.9)}
 .contact__copy p b{color:#fff;border-bottom:3px solid #fff}
@@ -288,7 +294,8 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
  .hero p br{display:none}
  .hero__cta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:28px}
  .hero__cta .btn{padding:0 10px;font-size:15px}
- .hero__arc{right:-30%;top:14%;width:120vw;opacity:.7}
+ .hero__arc{right:-34%;top:12%;width:118vw;opacity:.6}
+ .pt__arc,.contact__arc{width:520px}
  .hero__scroll{display:none}
  .stats__grid>div{flex-direction:column;align-items:flex-start;gap:6px;padding:24px 0}
  .stats b{font-size:38px}
@@ -326,6 +333,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
  html{scroll-behavior:auto}
  .js .reveal{opacity:1;transform:none}
  .hero__arc path{stroke-dashoffset:0}
+ .round button{transition:none}
 }
 </style>
 <script>document.documentElement.classList.add('js')</script>
@@ -353,7 +361,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 <section class="hero" id="home">
  <div class="photo hero__bg" style="background-image:url('assets/programs/fitness/4.jpg')"></div>
  <div class="hero__shade"></div>
- <svg class="hero__arc" viewBox="0 0 800 300" aria-hidden="true"><path d="M20 290 Q400 -110 780 290"/><path d="M140 290 Q400 10 660 290"/></svg>
+ <svg class="hero__arc ribbons" viewBox="0 0 640 300" aria-hidden="true"><g><path d="M0 250 H180 C214 250 232 238 252 212 L338 100 C358 74 378 62 412 62 H640"/><path d="M60 290 H240 C274 290 292 278 312 252 L398 140 C418 114 438 102 472 102 H700"/><path d="M120 330 H300 C334 330 352 318 372 292 L458 180 C478 154 498 142 532 142 H760"/></g></svg>
  <div class="wrap hero__inner">
   <span class="tag reveal"><i></i>CHEONHO · 24H OPEN</span>
   <h1 class="reveal" style="--d:.08s">붐비지 않는<br><em>프리미엄</em> 피트니스</h1>
@@ -408,7 +416,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 </section>
 
 <section class="section pt" id="pt">
- <svg class="pt__arc" viewBox="0 0 800 300" aria-hidden="true"><path d="M20 290 Q400 -110 780 290"/></svg>
+ <svg class="pt__arc ribbons" viewBox="0 0 640 300" aria-hidden="true"><g><path d="M0 250 H180 C214 250 232 238 252 212 L338 100 C358 74 378 62 412 62 H640"/><path d="M60 290 H240 C274 290 292 278 312 252 L398 140 C418 114 438 102 472 102 H700"/><path d="M120 330 H300 C334 330 352 318 372 292 L458 180 C478 154 498 142 532 142 H760"/></g></svg>
  <div class="wrap pt__grid">
   <div class="reveal">
    <span class="eyebrow eyebrow--light">PERSONAL TRAINING</span>
@@ -453,13 +461,14 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
    <h2>짐스테이션 이용요금</h2>
    <p>인원정원제 프리미엄 피트니스 · 천호역</p>
   </div>
+  <div class="round reveal" role="tablist" aria-label="모집 차수"><button type="button" role="tab" class="on" aria-selected="true" data-round="1">1차 모집가</button><button type="button" role="tab" aria-selected="false" data-round="2">2차 모집가</button></div>
   <div class="plans">
    <article class="plan reveal">
     <div class="plan__head"><span class="plan__name">BASIC</span><h3>베이직</h3><p class="plan__desc">운동에 꼭 필요한 기본</p></div>
     <dl class="terms">
-     <div class="term"><dt>3개월</dt><dd><b>150,000원</b><small>월 50,000원</small></dd></div>
-     <div class="term"><dt>6개월</dt><dd><b>270,000원</b><small>월 45,000원</small></dd></div>
-     <div class="term best"><dt>12개월</dt><dd><b>420,000원</b><small>월 35,000원</small></dd></div>
+     <div class="term best" data-r1="28490" data-r2="30690" data-m="12"><dt>12개월</dt><dd><b>월 <span class="mo">28,490</span>원</b><small>총 <span class="tot">341,880</span>원</small></dd></div>
+     <div class="term" data-r1="40590" data-r2="46090" data-m="6"><dt>6개월</dt><dd><b>월 <span class="mo">40,590</span>원</b><small>총 <span class="tot">243,540</span>원</small></dd></div>
+     <div class="term" data-r1="52690" data-r2="57090" data-m="3"><dt>3개월</dt><dd><b>월 <span class="mo">52,690</span>원</b><small>총 <span class="tot">158,070</span>원</small></dd></div>
     </dl>
     <ul class="benefits">
      <li>헬스 이용</li><li>수건 제공</li><li class="off">운동복</li><li class="off">개인락커</li><li>PT 최초 2회</li><li class="off">음료</li>
@@ -470,9 +479,9 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
     <span class="plan__flag">★ BEST 추천</span>
     <div class="plan__head"><span class="plan__name">PREMIUM</span><h3>프리미엄</h3><p class="plan__desc">가장 합리적인 선택</p></div>
     <dl class="terms">
-     <div class="term"><dt>3개월</dt><dd><b>195,000원</b><small>월 65,000원</small></dd></div>
-     <div class="term"><dt>6개월</dt><dd><b>345,000원</b><small>월 57,500원</small></dd></div>
-     <div class="term best"><dt>12개월</dt><dd><b>485,000원</b><small>월 40,417원</small></dd></div>
+     <div class="term best" data-r1="37290" data-r2="41690" data-m="12"><dt>12개월</dt><dd><b>월 <span class="mo">37,290</span>원</b><small>총 <span class="tot">447,480</span>원</small></dd></div>
+     <div class="term" data-r1="48290" data-r2="52690" data-m="6"><dt>6개월</dt><dd><b>월 <span class="mo">48,290</span>원</b><small>총 <span class="tot">289,740</span>원</small></dd></div>
+     <div class="term" data-r1="58190" data-r2="70290" data-m="3"><dt>3개월</dt><dd><b>월 <span class="mo">58,190</span>원</b><small>총 <span class="tot">174,570</span>원</small></dd></div>
     </dl>
     <ul class="benefits">
      <li>헬스 이용</li><li>수건 제공</li><li>운동복 또는 개인락커 택 1</li><li class="hl">PT 월 1회 (이월 불가)</li><li class="hl">음료 주 1회 (이월 불가)</li>
@@ -480,27 +489,27 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
     <a href="#contact" class="btn btn--outline btn--block" data-plan="프리미엄">프리미엄 상담하기</a>
    </article>
    <article class="plan reveal" style="--d:.16s">
-    <div class="plan__head"><span class="plan__name">LUXURY</span><h3>럭셔리</h3><p class="plan__desc">모든 혜택을 한 번에</p></div>
+    <div class="plan__head"><span class="plan__name">SIGNATURE</span><h3>시그니처</h3><p class="plan__desc">모든 혜택을 한 번에</p></div>
     <dl class="terms">
-     <div class="term"><dt>3개월</dt><dd><b>240,000원</b><small>월 80,000원</small></dd></div>
-     <div class="term"><dt>6개월</dt><dd><b>420,000원</b><small>월 70,000원</small></dd></div>
-     <div class="term best"><dt>12개월</dt><dd><b>570,000원</b><small>월 47,500원</small></dd></div>
+     <div class="term best" data-r1="43890" data-r2="49390" data-m="12"><dt>12개월</dt><dd><b>월 <span class="mo">43,890</span>원</b><small>총 <span class="tot">526,680</span>원</small></dd></div>
+     <div class="term" data-r1="54890" data-r2="65890" data-m="6"><dt>6개월</dt><dd><b>월 <span class="mo">54,890</span>원</b><small>총 <span class="tot">329,340</span>원</small></dd></div>
+     <div class="term" data-r1="63690" data-r2="76890" data-m="3"><dt>3개월</dt><dd><b>월 <span class="mo">63,690</span>원</b><small>총 <span class="tot">191,070</span>원</small></dd></div>
     </dl>
     <ul class="benefits">
      <li>헬스 이용</li><li>수건 제공</li><li>운동복 제공</li><li>개인락커</li><li>PT 월 2회 (이월 불가)</li><li>음료 무제한 (1일 1회)</li>
     </ul>
-    <a href="#contact" class="btn btn--outline btn--block" data-plan="럭셔리">럭셔리 상담하기</a>
+    <a href="#contact" class="btn btn--outline btn--block" data-plan="시그니처">시그니처 상담하기</a>
    </article>
   </div>
   <div class="price-foot reveal">
    <strong>운동만 생각하세요. 나머지는 짐스테이션이.</strong>
-   <p>월 환산 금액은 기간 요금을 개월 수로 나눈 금액입니다. 가격과 이용 조건은 센터 사정에 따라 변경될 수 있습니다.</p>
+   <p>모든 금액은 부가세(10%) 포함 금액입니다. 총액은 월 요금에 개월 수를 곱한 금액이며, 가격과 이용 조건은 센터 사정에 따라 변경될 수 있습니다.</p>
   </div>
  </div>
 </section>
 
 <section class="section contact" id="contact">
- <svg class="contact__arc" viewBox="0 0 800 300" aria-hidden="true"><path d="M20 290 Q400 -110 780 290"/><path d="M140 290 Q400 10 660 290"/></svg>
+ <svg class="contact__arc ribbons" viewBox="0 0 640 300" aria-hidden="true"><g><path d="M0 250 H180 C214 250 232 238 252 212 L338 100 C358 74 378 62 412 62 H640"/><path d="M60 290 H240 C274 290 292 278 312 252 L398 140 C418 114 438 102 472 102 H700"/><path d="M120 330 H300 C334 330 352 318 372 292 L458 180 C478 154 498 142 532 142 H760"/></g></svg>
  <div class="wrap contact__grid">
   <div class="contact__copy reveal">
    <span class="eyebrow eyebrow--light" style="color:#fff">CONTACT</span>
@@ -582,6 +591,10 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
  if('IntersectionObserver'in window){var tio=new IntersectionObserver(function(es){if(es[0].isIntersecting){loadTour();tio.disconnect()}},{rootMargin:'600px 0px'});tio.observe(tour)}else loadTour();
  document.getElementById('tourGuard').addEventListener('click',function(){loadTour();tour.classList.add('on');if(typeof rafikTrack==='function')rafikTrack('tour_interact')});
 
+ // 1차 / 2차 모집가 전환 (월 요금 · 총액, 부가세 포함)
+ var terms=[].slice.call(document.querySelectorAll('.term[data-r1]')),rb=[].slice.call(document.querySelectorAll('[data-round]'));
+ rb.forEach(function(b){b.addEventListener('click',function(){var r=b.dataset.round;rb.forEach(function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-selected',on)});
+  terms.forEach(function(t){var mo=+t.dataset['r'+r];t.querySelector('.mo').textContent=mo.toLocaleString('ko-KR');t.querySelector('.tot').textContent=(mo*t.dataset.m).toLocaleString('ko-KR')})})});
  // 요금제 상담 버튼: 상담 카드 제목에 선택한 요금제 표시
  [].forEach.call(document.querySelectorAll('[data-plan]'),function(b){b.addEventListener('click',function(){document.getElementById('askTitle').textContent=b.dataset.plan+' 요금제 상담, 편한 방법으로 문의하세요';if(typeof rafikTrack==='function')rafikTrack('select_product',{product_name:b.dataset.plan})})});
 
