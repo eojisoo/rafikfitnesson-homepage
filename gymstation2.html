@@ -138,6 +138,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
 .event__note b{font-weight:900}
 .event__note em{font-style:normal;font-weight:900;color:var(--green)}
 .event__cta{display:flex;justify-content:center;gap:12px;margin-top:30px;flex-wrap:wrap}
+.round[hidden]{display:none}
 .round-note{text-align:center;margin-bottom:44px;font-size:14px;color:var(--gray)}
 .round-note b{color:var(--green-d)}
 .pt__deal{color:#FF9A55;font-weight:800}
@@ -419,24 +420,24 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
  <a href="#event" class="hero__scroll" aria-label="아래로">SCROLL</a>
 </section>
 
-<!-- 그랜드 오픈 1차 사전 등록 이벤트: 기간·남은 자리는 아래 스크립트의 OPEN_EVENT에서 바꿉니다 -->
+<!-- 그랜드 오픈 사전 등록 이벤트 (1차 ~12/20, 2차 12/21~12/27): 기간·가격·남은 자리는 아래 스크립트의 OPEN_EVENT에서 바꿉니다 -->
 <section class="event" id="event">
  <div class="wrap">
   <div class="event__head reveal">
    <span class="event__open">GRAND OPEN</span>
-   <h2>1차 사전 등록 이벤트</h2>
-   <p class="event__date"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>12월 19일(토)까지</span></p>
+   <h2><span class="ev-round">1차</span> 사전 등록 이벤트</h2>
+   <p class="event__date"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span class="ev-until">12월 20일(일)까지</span></p>
   </div>
   <div class="event__cards">
    <article class="deal reveal" data-seat="gym">
     <span class="deal__label">24시 헬스</span>
-    <p class="deal__price"><small>월</small><b>25,900</b><small>원~</small></p>
-    <p class="deal__sub">베이직 12개월 · 1차 사전 등록가</p>
+    <p class="deal__price"><small>월</small><b class="ev-gym">25,900</b><small>원~</small></p>
+    <p class="deal__sub">베이직 12개월 · <span class="ev-round">1차</span> 사전 등록가</p>
     <p class="deal__seat">선착순 <b>20명</b><span class="deal__left" hidden></span></p>
    </article>
    <article class="deal reveal" style="--d:.08s" data-seat="pt">
     <span class="deal__label">전문 P.T</span>
-    <p class="deal__price"><small>회당</small><b>39,000</b><small>원</small></p>
+    <p class="deal__price"><small>회당</small><b class="ev-pt">39,000</b><small>원</small></p>
     <p class="deal__sub">1:1 퍼스널 트레이닝</p>
     <p class="deal__seat">선착순 <b>10명</b><span class="deal__left" hidden></span></p>
    </article>
@@ -499,7 +500,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
   <div class="reveal">
    <span class="eyebrow eyebrow--light">PERSONAL TRAINING</span>
    <h2>혼자서는 어려웠던 변화,<br><em>PT</em>로 확실하게</h2>
-   <p class="pt__lead">상담부터 체성분 분석, 맞춤 프로그램까지. <span class="pt__dealtxt">그랜드 오픈 사전 등록 기간에는 <b class="pt__deal">회당 39,000원</b>(선착순 10명)으로 시작할 수 있어요.</span></p>
+   <p class="pt__lead">상담부터 체성분 분석, 맞춤 프로그램까지. <span class="pt__dealtxt">그랜드 오픈 사전 등록 기간에는 <b class="pt__deal">회당 <span class="ev-pt">39,000</span>원</b>(선착순 10명)으로 시작할 수 있어요.</span></p>
    <a href="#contact" class="btn btn--green">PT 상담 문의 →</a>
   </div>
   <ol class="steps">
@@ -540,7 +541,7 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
    <p>인원정원제 프리미엄 피트니스 · 천호역</p>
   </div>
   <div class="round reveal" role="tablist" aria-label="모집 차수"><button type="button" role="tab" class="on" aria-selected="true" data-round="1">1차 모집가</button><button type="button" role="tab" aria-selected="false" data-round="2">2차 모집가</button></div>
-  <p class="round-note reveal"><b>1차 사전 등록가</b> 12월 19일(토)까지 · 선착순 마감될 수 있습니다</p>
+  <p class="round-note reveal"><b><span class="ev-round">1차</span> 사전 등록가</b> <span class="ev-until">12월 20일(일)까지</span> · 선착순 마감될 수 있습니다</p>
   <div class="plans">
    <article class="plan reveal">
     <div class="plan__head"><span class="plan__name">BASIC</span><h3>베이직</h3><p class="plan__desc">운동에 꼭 필요한 기본</p></div>
@@ -670,22 +671,34 @@ h2{font-size:clamp(28px,4.2vw,48px);line-height:1.24;font-weight:900;letter-spac
  if('IntersectionObserver'in window){var tio=new IntersectionObserver(function(es){if(es[0].isIntersecting){loadTour();tio.disconnect()}},{rootMargin:'600px 0px'});tio.observe(tour)}else loadTour();
  document.getElementById('tourGuard').addEventListener('click',function(){loadTour();tour.classList.add('on');if(typeof rafikTrack==='function')rafikTrack('tour_interact')});
 
- // 그랜드 오픈 1차 사전 등록 이벤트
+ // 그랜드 오픈 사전 등록 이벤트 — 날짜(한국 시간)에 따라 1차 → 2차 → 종료로 자동 전환됩니다
  // 남은 자리: 실제 등록 현황에 맞춰 숫자를 바꿔 주세요 (null이면 표시 안 함, 0이면 "마감")
- var OPEN_EVENT={end:'2026-12-19',seats:{gym:null,pt:null}};
+ var OPEN_EVENT=[
+  {round:1,end:'2026-12-20',until:'12월 20일(일)까지',gym:'25,900',pt:'39,000',seats:{gym:null,pt:null}},
+  {round:2,end:'2026-12-27',until:'12월 27일(일)까지',gym:'27,900',pt:'39,000',seats:{gym:null,pt:null}}
+ ];
+ var evPhase=null;
  (function(){
   var ev=document.getElementById('event'),today=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
-  if(today>OPEN_EVENT.end){
-   // 이벤트 기간이 끝나면 이벤트 안내를 자동으로 숨깁니다
+  for(var i=0;i<OPEN_EVENT.length;i++)if(today<=OPEN_EVENT[i].end){evPhase=OPEN_EVENT[i];break}
+  function each(sel,fn){[].forEach.call(document.querySelectorAll(sel),fn)}
+  if(!evPhase){
+   // 이벤트 기간이 모두 끝나면 이벤트 안내를 자동으로 숨깁니다
    ev.hidden=true;var c=document.getElementById('heroCta');c.setAttribute('href','#membership');c.firstChild.textContent='이용요금 보기 ';
-   [].forEach.call(document.querySelectorAll('.round-note,.pt__dealtxt'),function(x){x.hidden=true});
+   each('.round-note,.pt__dealtxt',function(x){x.hidden=true});
    document.querySelector('.hero__scroll').setAttribute('href','#stats');return}
-  [].forEach.call(ev.querySelectorAll('[data-seat]'),function(card){var n=OPEN_EVENT.seats[card.dataset.seat],el=card.querySelector('.deal__left');if(typeof n!=='number')return;el.hidden=false;if(n<=0){el.textContent='마감';card.classList.add('closed')}else el.textContent='남은 자리 '+n+'명'});
+  each('.ev-round',function(x){x.textContent=evPhase.round+'차'});
+  each('.ev-until',function(x){x.textContent=evPhase.until});
+  each('.ev-gym',function(x){x.textContent=evPhase.gym});
+  each('.ev-pt',function(x){x.textContent=evPhase.pt});
+  [].forEach.call(ev.querySelectorAll('[data-seat]'),function(card){var n=evPhase.seats[card.dataset.seat],el=card.querySelector('.deal__left');if(typeof n!=='number')return;el.hidden=false;if(n<=0){el.textContent='마감';card.classList.add('closed')}else el.textContent='남은 자리 '+n+'명'});
  })();
  // 1차 / 2차 모집가 전환 (월 요금 · 총액, 부가세 포함)
  var terms=[].slice.call(document.querySelectorAll('.term[data-r1]')),rb=[].slice.call(document.querySelectorAll('[data-round]'));
  rb.forEach(function(b){b.addEventListener('click',function(){var r=b.dataset.round;rb.forEach(function(x){var on=x===b;x.classList.toggle('on',on);x.setAttribute('aria-selected',on)});
   terms.forEach(function(t){var mo=+t.dataset['r'+r];t.querySelector('.mo').textContent=mo.toLocaleString('ko-KR');t.querySelector('.tot').textContent=(mo*t.dataset.m).toLocaleString('ko-KR')})})});
+ // 1차가 끝나면(2차 기간·이벤트 종료 후) 요금표는 2차 가격을 보여 주고 1차 버튼은 숨깁니다
+ if(!evPhase||evPhase.round>=2){var b2=document.querySelector('[data-round="2"]'),b1=document.querySelector('[data-round="1"]');b2.click();b1.hidden=true;if(!evPhase)document.querySelector(".round").hidden=true}
  // 요금제 상담 버튼: 상담 카드 제목에 선택한 요금제 표시
  [].forEach.call(document.querySelectorAll('[data-plan]'),function(b){b.addEventListener('click',function(){document.getElementById('askTitle').textContent=b.dataset.plan+' 요금제 상담, 편한 방법으로 문의하세요';if(typeof rafikTrack==='function')rafikTrack('select_product',{product_name:b.dataset.plan})})});
 
