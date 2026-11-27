@@ -7,8 +7,44 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
-// 사람 모델: MakeHuman(CC0)으로 만든 인체 + 게임엔진용 뼈대
-const HUMAN_URL = 'assets/gymstation/guide/trainee.glb';
+// 사람 모델: MakeHuman(CC0)으로 만든 근육형 남성 + 게임엔진용 뼈대
+// 몸은 찰흙 질감, 정점마다 근육 번호(_MUSCLE)와 경계 가중치(_MW)가 들어 있어 운동별로 쓰는 근육만 색칠합니다.
+const HUMAN_URL = 'assets/gymstation/guide/anatomy_male.glb';
+// 근육 번호 (Blender 스크립트와 동일)
+export const MUSCLE = { pec: 1, dfront: 2, dside: 3, drear: 4, biceps: 5, triceps: 6, forearm: 7, lats: 8, traps: 9, midback: 10, abs: 11, oblique: 12, erector: 13, glute: 14, quad: 15, ham: 16, calf: 17 };
+// 근육 결 방향(결에 수직인 방향, 모델 좌표: x 바깥, y 위, z 앞)
+const FIBER = { 8: [0.83, -0.55, 0], 10: [0.6, 0.8, 0], 4: [0.95, 0.3, 0], 5: [0.75, 0.67, 0], 1: [0, 1, 0], 6: [0.75, 0.67, 0], 9: [0.5, 0.86, 0] };
+
+// 찰흙 몸 + 근육 결이 보이는 근육 강조 재질
+function anatomyMaterial() {
+  const act = new Float32Array(18), fib = [];
+  for (let i = 0; i < 18; i++) fib.push(new THREE.Vector3(...(FIBER[i] || [0, 1, 0])));
+  const uniforms = { uAct: { value: act }, uFib: { value: fib }, uWork: { value: 0 } };
+  const m = new THREE.MeshStandardMaterial({ color: 0xcfbfac, roughness: 0.86, metalness: 0 });
+  m.onBeforeCompile = (sh) => {
+    Object.assign(sh.uniforms, uniforms);
+    sh.vertexShader = 'attribute float _muscle;\nattribute float _mw;\nuniform float uAct[18];\nuniform vec3 uFib[18];\nvarying float vAct;\nvarying float vFib;\n' +
+      sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>
+      int mid = int(_muscle + 0.5);
+      vAct = uAct[mid] * _mw;
+      vFib = dot(vec3(abs(position.x), position.y, position.z), uFib[mid]);`);
+    sh.fragmentShader = 'uniform float uWork;\nvarying float vAct;\nvarying float vFib;\n' +
+      sh.fragmentShader.replace('#include <color_fragment>', `#include <color_fragment>
+      float a = smoothstep(0.03, 0.55, vAct);
+      float f1 = 0.5 + 0.5 * sin(vFib * 430.0);
+      float f2 = 0.5 + 0.5 * sin(vFib * 1250.0 + sin(vFib * 70.0) * 3.0);
+      vec3 deep = vec3(0.50, 0.09, 0.06), lite = vec3(0.86, 0.25, 0.15);
+      vec3 mus = mix(deep, lite, f1 * 0.65 + f2 * 0.35);
+      mus = mix(mus, vec3(1.0, 0.45, 0.16), uWork * 0.4 * smoothstep(0.7, 1.0, vAct));
+      diffuseColor.rgb = mix(diffuseColor.rgb, mus, a);`)
+      .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
+      totalEmissiveRadiance += vec3(0.9, 0.28, 0.06) * uWork * 0.28 * smoothstep(0.35, 1.0, vAct);`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+      roughnessFactor = mix(roughnessFactor, 0.5, smoothstep(0.03, 0.55, vAct));`);
+  };
+  m.customProgramCacheKey = () => 'anatomy-v1';
+  return { material: m, uniforms };
+}
 const DRACO_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/';
 
 const V = (x, y, z = 0) => new THREE.Vector3(x, y, z);
@@ -123,7 +159,7 @@ export function createHighRow(container) {
   const T = 0.075, Y0 = 0.04;
   const P = V(-0.9, 1.9);             // 레버 회전축 (머리 뒤 위쪽)
   const R = 1.36;                      // 회전축 → 손잡이 길이
-  const A0 = -15 * Math.PI / 180, A1 = -51 * Math.PI / 180; // 시작(팔 뻗음) / 끝(당김) 각도
+  const A0 = -15 * Math.PI / 180; let A1 = -45 * Math.PI / 180; // 시작(팔 뻗음) / 끝(당김) 각도
   // 바닥 프레임
   for (const z of [-0.55, 0.55]) tube(V(-1.55, Y0, z), V(0.72, Y0, z * 0.62), T, M.frame, mach);
   tube(V(-1.55, Y0, -0.55), V(-1.55, Y0, 0.55), T, M.frame, mach);
@@ -167,12 +203,12 @@ export function createHighRow(container) {
   for (const s of [-1, 1]) {
     const pivot = new THREE.Group(); pivot.position.set(P.x, P.y, 0.42 * s); scene.add(pivot);
     const arm = new THREE.Group(); pivot.add(arm);
-    tube(V(-0.42, 0, 0), V(R - 0.08, 0, -0.06 * s), 0.08, M.frame, arm);
+    tube(V(-0.42, 0, 0), V(R - 0.08, 0, -0.12 * s), 0.08, M.frame, arm);
     // 손잡이: 아래로 꺾인 봉 + 고무 그립
-    tube(V(R - 0.1, 0.02, -0.06 * s), V(R, -0.04, -0.06 * s), 0.06, M.frame, arm);
+    tube(V(R - 0.1, 0.02, -0.12 * s), V(R, -0.04, -0.12 * s), 0.06, M.frame, arm);
     const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.019, 0.019, 0.17, 18), M.rubber);
-    grip.position.set(R + 0.005, -0.12, -0.06 * s); grip.rotation.z = 0.25; grip.castShadow = true; arm.add(grip);
-    const gripEnd = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.02, 18), M.chrome); gripEnd.position.set(R + 0.027, -0.205, -0.06 * s); gripEnd.rotation.z = 0.25; arm.add(gripEnd);
+    grip.position.set(R + 0.005, -0.12, -0.12 * s); grip.rotation.z = 0.25; grip.castShadow = true; arm.add(grip);
+    const gripEnd = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.02, 18), M.chrome); gripEnd.position.set(R + 0.027, -0.205, -0.12 * s); gripEnd.rotation.z = 0.25; arm.add(gripEnd);
     // 뒤쪽 원판 봉 + 원판 2장
     const horn = cyl(0.026, 0.26, M.chrome, 'z'); horn.position.set(-0.42, 0, 0.13 * s); arm.add(horn);
     for (let i = 0; i < 2; i++) {
@@ -182,7 +218,7 @@ export function createHighRow(container) {
     levers.push({ pivot, arm, s });
   }
   // 손잡이 그립 위치 (레버 회전에 따라)
-  const handWorld = (ang, s, z = 0.36) => { const lx = R + 0.005, ly = -0.12, c = Math.cos(ang), n = Math.sin(ang); return V(P.x + lx * c - ly * n, P.y + lx * n + ly * c, z * s); };
+  const handWorld = (ang, s, z = 0.30) => { const lx = R + 0.005, ly = -0.12, c = Math.cos(ang), n = Math.sin(ang); return V(P.x + lx * c - ly * n, P.y + lx * n + ly * c, z * s); };
 
   // 손잡이가 지나가는 길 (점선 호)
   const pathPts = []; for (let i = 0; i <= 40; i++) { const a = A0 + (A1 - A0) * i / 40; pathPts.push(handWorld(a, 1, 0.43)); }
@@ -190,8 +226,10 @@ export function createHighRow(container) {
 
   // ---------------- 사람 (실사형 인체) ----------------
   const human = { ready: false };
-  const glowMat = new THREE.MeshBasicMaterial({ color: 0xff6a10, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
-  const glows = [0, 1].map(() => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.1, 24, 16), glowMat); m.scale.set(0.55, 1.45, 0.7); m.renderOrder = 5; scene.add(m); return m; });
+  const anat = anatomyMaterial();
+  // 하이 로우에서 쓰는 근육 (1 = 주동근, 나머지 = 보조근)
+  anat.uniforms.uAct.value[MUSCLE.lats] = 1; anat.uniforms.uAct.value[MUSCLE.midback] = 0.8; anat.uniforms.uAct.value[MUSCLE.drear] = 0.75; anat.uniforms.uAct.value[MUSCLE.biceps] = 0.65;
+  const clayMat = new THREE.MeshStandardMaterial({ color: 0xcfbfac, roughness: 0.86, metalness: 0 });
   const draco = new DRACOLoader().setDecoderPath(DRACO_URL);
   const loader = new GLTFLoader().setDRACOLoader(draco);
   const loadP = new Promise((resolve, reject) => loader.load(HUMAN_URL, (g) => { try { setupHuman(g.scene); resolve(); } catch (e) { reject(e); } }, undefined, reject));
@@ -213,13 +251,10 @@ export function createHighRow(container) {
 
   function setupHuman(root) {
     root.rotation.y = Math.PI / 2; // 모델 정면(+z) → 기구 앞쪽(+x)
-    root.scale.setScalar(1.06);    // 키 약 165cm 성인 비율
     root.traverse((o) => {
       if (o.isMesh) {
         o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
-        const m = o.material;
-        if (m && m.map && /ponytail|eyebrow|eyelash|high-poly/i.test(o.name + m.name)) { m.transparent = false; m.alphaTest = 0.45; m.depthWrite = true; m.side = THREE.DoubleSide; }
-        if (m) { m.envMapIntensity = 0.6; if (m.roughness !== undefined) m.roughness = Math.max(m.roughness, 0.55); }
+        o.material = o.geometry.attributes._muscle ? anat.material : clayMat;
       }
     });
     scene.add(root);
@@ -245,6 +280,14 @@ export function createHighRow(container) {
     human.hipY = (lo + hi) / 2;
     seatG.position.y = human.hipY - 0.085 - 0.57;
     padG.position.y = human.hipY + 0.07 + 0.065 - 0.8;
+    // 당기기 끝: 손(그립)이 어깨선보다 약간 앞에서 멈추는 각도 → 팔꿈치가 몸통 뒤로 과하게 빠지지 않음
+    human.hipY = (lo + hi) / 2; poseBody(1);
+    const S1 = wpos(B.upperarm_r);
+    let a1 = A0;
+    for (let a = A0; a > -1.6; a -= 0.005) { const g = handWorld(a, 1); a1 = a; if (g.x <= S1.x + 0.05 || g.y < S1.y - 0.36) break; }
+    A1 = a1;
+    const pts = []; for (let i = 0; i <= 40; i++) pts.push(handWorld(A0 + (A1 - A0) * i / 40, 1, 0.43));
+    path.geometry.setFromPoints(pts); path.computeLineDistances();
     human.ready = true;
   }
 
@@ -257,7 +300,7 @@ export function createHighRow(container) {
     root.position.set(0.02 - pel.x, human.hipY - pel.y, -pel.z);
     root.updateWorldMatrix(true, true);
     // 상체: 살짝 뒤로 기대고(6°→11°), 당길 때 가슴을 엶
-    const lean = 0.1 + 0.08 * p;
+    const lean = 0.07 + 0.05 * p;
     const sp = wpos(B.spine_01), nk = wpos(B.neck_01), L = nk.distanceTo(sp);
     aim(B.spine_01, B.neck_01, sp.clone().add(V(-Math.sin(lean) * L, Math.cos(lean) * L, 0)));
     // 머리는 정면 보기
@@ -281,13 +324,41 @@ export function createHighRow(container) {
     }
   }
 
+  // 손가락을 손바닥 쪽으로 말아 손잡이를 쥔 모양으로
+  function rotWorld(bone, axis, angle) {
+    bone.updateWorldMatrix(true, false);
+    const q = new THREE.Quaternion().setFromAxisAngle(axis, angle);
+    const bw = bone.getWorldQuaternion(new THREE.Quaternion()), pw = bone.parent.getWorldQuaternion(new THREE.Quaternion());
+    bone.quaternion.copy(pw.invert().multiply(q.multiply(bw)));
+    bone.updateWorldMatrix(false, true);
+  }
+  function curlFingers(sfx) {
+    const root = human.root, g = (n) => root.getObjectByName(n + sfx);
+    const hand = g('hand'), hp = wpos(hand);
+    const nrm = wpos(g('index_01')).sub(hp).cross(wpos(g('pinky_01')).sub(hp)).normalize();
+    if (nrm.dot(wpos(g('thumb_02')).sub(hp)) < 0) nrm.negate(); // 손바닥 쪽
+    for (const fn of ['index', 'middle', 'ring', 'pinky']) {
+      for (const [k, a] of [['01', 1.0], ['02', 1.25], ['03', 0.85]]) {
+        const b = g(fn + '_' + k), nx = k === '03' ? null : g(fn + '_0' + (+k + 1));
+        const bp = wpos(b), dir = nx ? wpos(nx).sub(bp).normalize() : wpos(b).sub(wpos(g(fn + '_02'))).normalize();
+        const axis = dir.clone().cross(nrm).normalize();
+        if (axis.lengthSq() > 1e-6) rotWorld(b, axis, a);
+      }
+    }
+    const t2 = g('thumb_02'), t3 = g('thumb_03'), td = wpos(t3).sub(wpos(t2)).normalize();
+    const ta = td.clone().cross(nrm).normalize(); if (ta.lengthSq() > 1e-6) { rotWorld(t2, ta, 0.5); rotWorld(t3, ta, 0.5); }
+  }
+
   function poseHuman(p, ang) {
     const { B, len } = human;
     poseBody(p);
     for (const [u, l, h, s] of [['upperarm_l', 'lowerarm_l', 'hand_l', -1], ['upperarm_r', 'lowerarm_r', 'hand_r', 1]]) {
       const S = wpos(B[u]), G = handWorld(ang, s);
-      const pole = V(-0.5, -1, 0.85 * s).normalize();
-      const E = ik(S, G, len.upper, len.fore + len.palm, pole);
+      // 팔꿈치는 아래·바깥으로 (뒤쪽 성분은 작게)
+      let pole = V(-0.12, -1, 0.7 * s).normalize();
+      let E = ik(S, G, len.upper, len.fore + len.palm, pole);
+      // 관절 한계: 팔꿈치가 몸통 뒷면(어깨 관절보다 9cm 뒤)을 넘어가지 않게
+      for (let k = 0; k < 8 && E.x < S.x - 0.09; k++) { pole = pole.add(V(0.25, 0, 0)).normalize(); E = ik(S, G, len.upper, len.fore + len.palm, pole); }
       aim(B[u], B[l], E);
       const Ew = wpos(B[l]);
       const W = Ew.clone().add(G.clone().sub(Ew).normalize().multiplyScalar(len.fore));
@@ -295,10 +366,8 @@ export function createHighRow(container) {
       // 손바닥이 손잡이를 감싸도록 손을 팔뚝 방향으로
       const Wp = wpos(B[h]);
       aim(B[h], B[s < 0 ? 'middle_01_l' : 'middle_01_r'], Wp.clone().add(G.clone().sub(Ew).normalize().multiplyScalar(0.1)).add(V(0, -0.02, 0)));
+      curlFingers(s < 0 ? '_l' : '_r');
     }
-    // 강조 근육(광배근) 위치: 등 옆구리
-    const s2 = wpos(B.spine_02), s3 = wpos(B.spine_03);
-    glows.forEach((g, i) => { const z = i ? 0.115 : -0.115; g.position.set((s2.x + s3.x) / 2 - 0.085, (s2.y + s3.y) / 2 - 0.02, z); g.rotation.z = 0.12; });
   }
 
   // ---------------- 카메라 ----------------
@@ -347,7 +416,7 @@ export function createHighRow(container) {
     for (const lv of levers) lv.arm.rotation.z = ang;
     if (human.ready) poseHuman(p, ang);
     const work = ph === 1 || ph === 2 ? 1 : ph === 3 ? 0.55 : 0.15;
-    glowMat.opacity = 0.05 + 0.33 * work;
+    anat.uniforms.uWork.value = work;
     render();
   }
   function render() { renderer.render(scene, camera); }
