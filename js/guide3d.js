@@ -453,28 +453,40 @@ function tBarRowRig(ctx) {
   const pad = box(PADL, PADT, 0.34, M.pad); pad.position.copy(padCenter); pad.rotation.z = PA; mach.add(pad);
   const padBase = box(PADL * 0.7, 0.04, 0.2, M.frameEdge); padBase.position.copy(padCenter).add(n.clone().multiplyScalar(-PADT / 2 - 0.02)); padBase.rotation.z = PA; mach.add(padBase);
   const under = padCenter.clone().add(n.clone().multiplyScalar(-PADT / 2 - 0.05));
-  // 뒤쪽 기둥: 발판 앞에서 패드 뒤쪽 아래까지 (사진처럼 약간 기울어짐)
-  const postBase = V(-0.55, Y0), postTop = padLow.clone().add(u.clone().multiplyScalar(0.08)).add(n.clone().multiplyScalar(-0.08));
-  tube(postBase, postTop, T, M.frame, mach);
+  // 기둥: 패드 아래에서 바닥까지 수직, 사진처럼 두 다리 사이 (발은 기둥 양옆 발판에)
+  let postX = padLow.x + 0.14, postTop = V(0, 0), postBase = V(0, 0), postG = null;
+  const P = V(0, 0.2);
+  function buildPost(x) {
+    if (postG) { mach.remove(postG); postG.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); }
+    postG = new THREE.Group(); mach.add(postG);
+    postX = x;
+    const tPost = (postX - padLow.x + n.x * (PADT / 2 + 0.03)) / u.x;
+    postTop = padLow.clone().add(u.clone().multiplyScalar(tPost)).add(n.clone().multiplyScalar(-(PADT / 2 + 0.03)));
+    postBase = V(postX, Y0);
+    tube(postBase, postTop, T, M.frame, postG);
+    tube(postTop, J, T * 0.9, M.frame, postG); // 패드 아래 받침 빔
+    P.set(postX + 0.07, 0.2, 0);
+    const hub = cyl(0.05, 0.18, M.frameEdge, 'z'); hub.position.copy(P); postG.add(hub);
+    const pin = cyl(0.03, 0.22, new THREE.MeshStandardMaterial({ color: 0xf2c200, roughness: 0.4 }), 'z'); pin.position.copy(P); postG.add(pin);
+    tube(V(postX, Y0), P.clone().add(V(-0.04, 0)), 0.05, M.frame, postG);
+  }
   // 앞쪽 A자 다리: 패드 앞쪽 아래 → 바닥 앞 좌우
   const J = padLow.clone().add(u.clone().multiplyScalar(PADL * 0.78)).add(n.clone().multiplyScalar(-0.09));
   for (const s of [-1, 1]) bent([V(0.55, Y0, 0.34 * s), V(0.4, 0.42, 0.2 * s), J.clone().setZ(0.05 * s)], T, M.frame, mach);
   tube(J.clone().setZ(-0.07), J.clone().setZ(0.07), T, M.frame, mach);
-  tube(postTop, J, T * 0.9, M.frame, mach); // 패드 아래 받침 빔
   for (const s of [-1, 1]) { const ft = box(0.14, 0.02, 0.1, M.rubber); ft.position.set(0.56, 0.01, 0.34 * s); mach.add(ft); }
-  tube(V(0.42, 0.38, -0.24), V(0.42, 0.38, 0.24), 0.05, M.frame, mach); // 손잡이 받침대
+  const restBar = cyl(0.025, 0.36, M.frame, 'z'); mach.add(restBar); // 손잡이 받침대 (레버가 쉬는 자리)
+  for (const s of [-1, 1]) { const rp = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1, 0.05), M.frame); rp.castShadow = true; restBar.userData['post' + s] = rp; mach.add(rp); }
   // 발판 (2단, 위치는 체형에 맞춰)
   const stepG = new THREE.Group(); mach.add(stepG);
   const stepLo = box(0.42, 0.04, 0.6, M.rubber); stepLo.position.set(-0.12, 0, 0); stepG.add(stepLo);
   const stepHi = box(0.26, 0.035, 0.5, M.rubber); stepHi.position.set(0.18, 0.13, 0); stepG.add(stepHi);
-  const stepArm = box(0.06, 0.13, 0.06, M.frame); stepArm.position.set(0.28, 0.06, 0); stepG.add(stepArm);
-  // 레버 회전축 (기둥 아래, 노란 핀)
-  const P = V(-0.48, 0.2);
-  const hub = cyl(0.05, 0.18, M.frameEdge, 'z'); hub.position.copy(P); mach.add(hub);
-  const pin = cyl(0.03, 0.22, new THREE.MeshStandardMaterial({ color: 0xf2c200, roughness: 0.4 }), 'z'); pin.position.copy(P); mach.add(pin);
+  let stepLink = null;
+  buildPost(postX);
   let R = 0.95, A0 = 0.2, A1 = 0.7;
   const GZ = 0.2;   // 패러럴 손잡이 좌우 위치
   const GL = 0.16;  // 손잡이 길이 (앞뒤 방향)
+  const HORN = 0.6, PLATE_AT = 0.42, HORN_BEND = -65 * Math.PI / 180; // 원판 봉 길이 / 원판 위치 / 아래로 꺾인 각도
   let lever = null;
   function buildLever() {
     if (lever) { scene.remove(lever); lever.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); }
@@ -491,13 +503,57 @@ function tBarRowRig(ctx) {
     }
     tube(V(R - 0.16, 0.02, -0.12), V(R - 0.16, 0.02, 0.12), 0.05, M.frame, lever);
     // 앞으로 뻗은 원판 봉 + 원판
-    const horn = cyl(0.026, 0.4, M.chrome, 'x'); horn.position.set(R + 0.2, -0.02, 0); lever.add(horn);
-    for (let i = 0; i < 2; i++) { const pl = cyl(i ? 0.19 : 0.225, 0.04, M.plate, 'x'); pl.position.set(R + 0.1 + i * 0.045, -0.02, 0); lever.add(pl); }
+    const hornG = new THREE.Group(); hornG.position.set(R + 0.02, -0.02, 0); hornG.rotation.z = HORN_BEND; lever.add(hornG);
+    const horn = cyl(0.026, HORN, M.chrome, 'x'); horn.position.set(HORN / 2, 0, 0); hornG.add(horn);
+    const collar = cyl(0.045, 0.06, M.frameEdge, 'x'); collar.position.set(0.03, 0, 0); hornG.add(collar);
+    for (let i = 0; i < 2; i++) { const pl = cyl(i ? 0.19 : 0.225, 0.04, M.plate, 'x'); pl.position.set(PLATE_AT + i * 0.045, 0, 0); hornG.add(pl); }
   }
   buildLever();
   // 손(주먹 중심) 위치: 패러럴 손잡이 가운데
   const handWorld = (ang, s) => { const c = Math.cos(ang), sn = Math.sin(ang), lx = R + 0.06, ly = 0.1; return V(P.x + lx * c - ly * sn, P.y + lx * sn + ly * c, GZ * s); };
   const pathPts = () => { const pts = []; for (let i = 0; i <= 40; i++) pts.push(handWorld(A0 + (A1 - A0) * i / 40, 1).setZ(GZ + 0.12)); return pts; };
+
+  // 겹침 검사: 다리 ↔ 기둥, 원판 ↔ 앞 다리·받침대·패드 (전 구간)
+  function segDist(p1, p2, q1, q2) {
+    const d1 = p2.clone().sub(p1), d2 = q2.clone().sub(q1), r = p1.clone().sub(q1);
+    const a = d1.dot(d1), e = d2.dot(d2), f = d2.dot(r), c = d1.dot(r), b = d1.dot(d2), den = a * e - b * b;
+    if (a < 1e-9) { const t0 = Math.min(1, Math.max(0, f / e)); return p1.distanceTo(q1.clone().add(d2.multiplyScalar(t0))); }
+    let s1 = den > 1e-9 ? Math.min(1, Math.max(0, (b * f - c * e) / den)) : 0;
+    let t = (b * s1 + f) / e; if (t < 0) { t = 0; s1 = Math.min(1, Math.max(0, -c / a)); } else if (t > 1) { t = 1; s1 = Math.min(1, Math.max(0, (b - c) / a)); }
+    return p1.clone().add(d1.multiplyScalar(s1)).distanceTo(q1.clone().add(d2.multiplyScalar(t)));
+  }
+  function checkOverlap() {
+    const { B } = human, res = {};
+    const frame = [];
+    for (const z of [-1, 1]) { frame.push([V(0.55, Y0, 0.34 * z), V(0.4, 0.42, 0.2 * z)], [V(0.4, 0.42, 0.2 * z), J.clone().setZ(0.05 * z)]); }
+    let legPost = 9, platesFrame = 9, platesPad = 9, platesBody = 9;
+    for (const p of [0, 0.25, 0.5, 0.75, 1]) {
+      poseBody(p);
+      for (const x of ['_l', '_r']) {
+        const hp = wpos(B['thigh' + x]), kn = wpos(B['calf' + x]), an = wpos(B['foot' + x]);
+        legPost = Math.min(legPost, segDist(hp, kn, postBase, postTop) - 0.085 - T / 2, segDist(kn, an, postBase, postTop) - 0.06 - T / 2);
+      }
+      const ang = A0 + (A1 - A0) * p, c = Math.cos(ang), sn = Math.sin(ang);
+      const hd = wpos(B.head), nk = wpos(B.neck_01), s3 = wpos(B.spine_03), s1b = wpos(B.spine_01);
+      for (const off of [PLATE_AT, PLATE_AT + 0.045]) {
+        const ha = ang + HORN_BEND, hx = R + 0.02, hy = -0.02;
+        const base = V(P.x + hx * c - hy * sn, P.y + hx * sn + hy * c);
+        const pc = base.clone().add(V(Math.cos(ha) * off, Math.sin(ha) * off));
+        const c2 = Math.cos(ha), s2 = Math.sin(ha);
+        for (let k = 0; k < 24; k++) {
+          const t = k / 24 * Math.PI * 2, pt = pc.clone().add(V(-s2 * Math.sin(t) * 0.225, c2 * Math.sin(t) * 0.225, Math.cos(t) * 0.225)); // 원판 면은 봉과 함께 기울어짐
+          platesBody = Math.min(platesBody, pt.distanceTo(hd) - 0.13, segDist(pt, pt, nk, s3) - 0.16, segDist(pt, pt, s3, s1b) - 0.17);
+          for (const [a, b] of frame) platesFrame = Math.min(platesFrame, segDist(pt, pt, a, b) - T / 2);
+          platesFrame = Math.min(platesFrame, segDist(pt, pt, restBar.position.clone().setZ(-0.18), restBar.position.clone().setZ(0.18)) - 0.025);
+          platesPad = Math.min(platesPad, Math.abs(pt.clone().sub(padCenter).dot(n)) < PADT / 2 && Math.abs(pt.clone().sub(padCenter).dot(u)) < PADL / 2 && Math.abs(pt.z) < 0.17 ? -1 : 9);
+        }
+      }
+    }
+    res.A0 = +(A0 * 57.3).toFixed(1); res.A1 = +(A1 * 57.3).toFixed(1); res.R = +R.toFixed(3); res.P = [P.x, P.y];
+    res.legPost = +legPost.toFixed(3); res.platesFrame = +platesFrame.toFixed(3); res.platesPad = platesPad; res.platesBody = +platesBody.toFixed(3);
+    // 겹침이 생기면 개발자 콘솔에 알림 (기구 치수를 바꿀 때 확인용)
+    if (['legPost', 'platesFrame', 'platesPad', 'platesBody'].some((k) => res[k] < 0)) console.warn('티바 로우: 겹치는 부분이 있어요', res);
+  }
 
   // 기댄 자세: 몸통을 패드 기울기에 맞추고 가슴을 패드에 올림, 다리는 뒤 발판으로
   function poseBody(p) {
@@ -517,7 +573,7 @@ function tBarRowRig(ctx) {
     const a = surf.clone().sub(chest).dot(n);
     const b = padTop.clone().add(u.clone().multiplyScalar(0.06)).sub(S).dot(u);
     moveBody(n.clone().multiplyScalar(a).add(u.clone().multiplyScalar(b)).setZ(0));
-    for (const s of [-1, 1]) leg(s, V(human.footX, human.footY + human.len.ankleH, 0.12 * s), V(1, 0.05, 0.08 * s).normalize());
+    for (const s of [-1, 1]) leg(s, V(human.footX, human.footY + human.len.ankleH, 0.17 * s), V(1, 0.05, 0.3 * s).normalize());
   }
 
   return {
@@ -533,7 +589,10 @@ function tBarRowRig(ctx) {
       human.footX = hip.x - Math.sin(lean) * L;
       human.footY = Math.max(0.06, hip.y - Math.cos(lean) * L - len.ankleH);
       const hiStep = human.footY > 0.12;
+
       stepG.position.set(human.footX + (hiStep ? -0.18 : 0.12), human.footY - (hiStep ? 0.15 : 0.02), 0);
+      if (stepLink) { mach.remove(stepLink); stepLink.geometry.dispose(); }
+      stepLink = tube(V(postX, 0.06), V(stepG.position.x + 0.1, Math.max(0.06, stepG.position.y - 0.03)), 0.06, M.frame, mach);
       poseBody(0);
       // 시작: 팔을 아래로 다 뻗어 손잡이를 잡음 (손이 어깨보다 약간 앞)
       const S0 = wpos(B.upperarm_r);
@@ -557,7 +616,14 @@ function tBarRowRig(ctx) {
         const toPad = G.clone().sub(padCenter).dot(n);              // 패드 중심면 기준 높이 (음수 = 패드 아래)
         if (toPad > -(PADT / 2 + 0.11) || G.distanceTo(S1) < 0.24) break;
       }
+      // 손잡이 받침대: 시작 위치에서 Y자 받침 바로 아래
+      const yk = V(R - 0.16, -0.06), c0 = Math.cos(A0), s0 = Math.sin(A0);
+      const rb = V(P.x + yk.x * c0 - yk.y * s0, P.y + yk.x * s0 + yk.y * c0 - 0.03);
+      restBar.position.copy(rb);
+      for (const s of [-1, 1]) { const rp = restBar.userData['post' + s]; const z = 0.17 * s; rp.position.set(rb.x, rb.y / 2, z); rp.scale.y = rb.y; }
+      restBar.scale.y = 1.15;
       setPath(pathPts());
+      checkOverlap();
     },
     poseMachine(p) { if (lever) lever.rotation.z = A0 + (A1 - A0) * p; },
     poseHuman(p) {
