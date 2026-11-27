@@ -398,66 +398,13 @@ var MOTIONS={
   },
   draw:function(G,p,ph){G.p=p;G.ph=ph;if(G.api)G.api.draw(p,ph)}
  },
- bench:{
-  // 한 번 반복(초): 준비 0.6 → 내리기 2.0 → 멈춤 0.3 → 올리기 1.0 → 정점 0.5
-  phases:[
+ bench:motion3d('createBenchPress',[
    {name:'준비 자세',cue:'숨 고르기',dur:.6,from:0,to:0,breath:'in'},
    {name:'천천히 내리기',cue:'숨 들이마시기',dur:2,from:0,to:1,breath:'in'},
    {name:'가슴 터치',cue:'잠깐 멈춤',dur:.3,from:1,to:1,breath:'in'},
-   {name:'밀어 올리기',cue:'숨 내쉬기',dur:1,from:1,to:0,breath:'out'},
+   {name:'밀어 올리기',cue:'숨 내쉬기',dur:1.2,from:1,to:0,breath:'out'},
    {name:'정점',cue:'팔꿈치 가볍게 펴기',dur:.5,from:0,to:0,breath:'out'}
-  ],
-  build:function(svg){
-   var g={};
-   el('rect',{x:0,y:232,width:400,height:18,fill:'#0b0d0c'},svg);
-   el('line',{x1:0,y1:232,x2:400,y2:232,stroke:'#2c3331','stroke-width':2},svg);
-   // 랙 기둥과 J훅 (머리 쪽)
-   el('rect',{x:104,y:34,width:9,height:198,rx:2,fill:'#59605c'},svg);
-   el('rect',{x:113,y:58,width:18,height:6,rx:2,fill:'#59605c'},svg);
-   el('rect',{x:125,y:50,width:6,height:14,rx:2,fill:'#59605c'},svg);
-   // 바가 지나가는 길 (J커브)
-   var path='';for(var i=0;i<=20;i++){var p=i/20,P=this.bar(p);path+=(i?'L':'M')+P[0].toFixed(1)+' '+P[1].toFixed(1)}
-   el('path',{d:path,fill:'none',stroke:'#FE6201','stroke-width':1.6,'stroke-dasharray':'3 5',opacity:.55},svg);
-   // 벤치
-   el('rect',{x:92,y:182,width:10,height:50,rx:2,fill:'#3a403d'},svg);
-   el('rect',{x:270,y:182,width:10,height:50,rx:2,fill:'#3a403d'},svg);
-   el('rect',{x:80,y:206,width:212,height:7,rx:3,fill:'#3a403d'},svg);
-   el('rect',{x:66,y:170,width:236,height:13,rx:6,fill:'#4a524e'},svg);
-   // 몸 (다리 → 몸통 → 머리 → 가슴 강조 → 원판 → 팔)
-   var body='#e9ecea';
-   el('path',{d:'M232 160 L286 138 L300 226',fill:'none',stroke:body,'stroke-width':17,'stroke-linecap':'round','stroke-linejoin':'round'},svg);
-   el('path',{d:'M296 228 L318 230',stroke:body,'stroke-width':8,'stroke-linecap':'round'},svg);
-   el('line',{x1:124,y1:157,x2:232,y2:160,stroke:body,'stroke-width':25,'stroke-linecap':'round'},svg);
-   el('line',{x1:100,y1:157,x2:118,y2:157,stroke:body,'stroke-width':10,'stroke-linecap':'round'},svg);
-   el('circle',{cx:88,cy:153,r:13,fill:body},svg);
-   g.chest=el('ellipse',{cx:150,cy:149,rx:22,ry:8,fill:'#FE6201',opacity:.3},svg);
-   g.tri=el('line',{x1:0,y1:0,x2:0,y2:0,stroke:'#FE6201','stroke-width':7,'stroke-linecap':'round',opacity:.0},svg);
-   g.plate=el('g',{},svg);
-   el('circle',{cx:0,cy:0,r:25,fill:'rgba(140,150,146,.22)',stroke:'#8c9692','stroke-width':3},g.plate);
-   el('circle',{cx:0,cy:0,r:16,fill:'none',stroke:'#8c9692','stroke-width':1.2,opacity:.6},g.plate);
-   el('circle',{cx:0,cy:0,r:4.5,fill:'#c9cfcc'},g.plate);
-   g.upper=el('line',{stroke:body,'stroke-width':12,'stroke-linecap':'round'},svg);
-   g.fore=el('line',{stroke:body,'stroke-width':10,'stroke-linecap':'round'},svg);
-   g.hand=el('circle',{r:6.5,fill:body},svg);
-   el('circle',{cx:126,cy:153,r:7,fill:body},svg);
-   return g;
-  },
-  // p=0 정점(팔 뻗음), p=1 가슴 터치. 내려갈수록 가슴 쪽, 올라오며 어깨 위로 돌아가는 J커브
-  bar:function(p){return [128+26*Math.sqrt(p),64+78*p]},
-  draw:function(g,p,ph){
-   var S=[126,153],W=this.bar(p),E=ik(S,W,52,50,true);
-   g.plate.setAttribute('transform','translate('+W[0].toFixed(1)+' '+W[1].toFixed(1)+')');
-   g.upper.setAttribute('x1',S[0]);g.upper.setAttribute('y1',S[1]);g.upper.setAttribute('x2',E[0].toFixed(1));g.upper.setAttribute('y2',E[1].toFixed(1));
-   g.fore.setAttribute('x1',E[0].toFixed(1));g.fore.setAttribute('y1',E[1].toFixed(1));g.fore.setAttribute('x2',W[0].toFixed(1));g.fore.setAttribute('y2',W[1].toFixed(1));
-   g.hand.setAttribute('cx',W[0].toFixed(1));g.hand.setAttribute('cy',W[1].toFixed(1));
-   // 힘이 들어가는 근육 강조: 내릴 때 가슴이 늘어나고, 밀 때 가슴·삼두가 수축
-   var work=ph===3?1:ph===1||ph===2?.55:.25;
-   g.chest.setAttribute('opacity',(.18+.6*work*(.6+.4*p)).toFixed(2));
-   g.tri.setAttribute('x1',(S[0]+(E[0]-S[0])*.35).toFixed(1));g.tri.setAttribute('y1',(S[1]+(E[1]-S[1])*.35).toFixed(1));
-   g.tri.setAttribute('x2',(S[0]+(E[0]-S[0])*.9).toFixed(1));g.tri.setAttribute('y2',(S[1]+(E[1]-S[1])*.9).toFixed(1));
-   g.tri.setAttribute('opacity',ph===3?.85:.0);
-  }
- }
+ ])
 };
 
 /* ============================================================
