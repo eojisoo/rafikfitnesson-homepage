@@ -823,7 +823,7 @@ function lateralRaiseRig(ctx) {
 // ============================================================
 // 기구 4: 바벨 벤치프레스 (일반 플랫 벤치 + 랙)
 //  - 벤치에 등을 대고 누움 (머리는 랙 쪽, 발은 바닥 양옆)
-//  - 어깨너비 약 1.5배 그립, 바는 J자 궤적: 위에서는 어깨 위, 아래에서는 가슴 중앙(명치 위)에 터치
+//  - 어깨너비 약 1.5배 그립, 바는 J자 궤적: 위에서는 어깨 위, 아래에서는 가슴 중앙(유두선 높이)에 터치
 //  - 팔꿈치는 몸통과 45~70°, 손목은 바 아래 곧게
 // ============================================================
 function benchPressRig(ctx) {
@@ -891,6 +891,15 @@ function benchPressRig(ctx) {
       leg(s, V(hp.x + 0.5, len.ankleH, 0.3 * s), V(0.3, 1, 0.3 * s).normalize());
     }
   }
+  // 가슴 표면 높이: 몸 가운데(z=0)에서 위→아래로 직선을 쏴 몸 메시와 만나는 높이
+  const ray = new THREE.Raycaster();
+  function chestSurfaceY(x) {
+    const meshes = []; human.root.traverse((o) => { if (o.isSkinnedMesh && o.geometry.attributes._muscle) { o.skeleton.update(); meshes.push(o); } });
+    human.root.updateMatrixWorld(true);
+    ray.set(V(x, 2.5, 0), V(0, -1, 0));
+    const hit = ray.intersectObjects(meshes, false)[0];
+    return hit ? hit.point.y : wpos(human.B.spine_03).y + 0.12;
+  }
   function poseFull(p) {
     poseBody(p); applyFist();
     const b = barAt(p);
@@ -927,7 +936,7 @@ function benchPressRig(ctx) {
       const hd = wpos(B.head), nk = wpos(B.neck_01), s3 = wpos(B.spine_03);
       r.barFace = Math.min(r.barFace, segDist(hd, hd, V(b.x, b.y, -0.2), V(b.x, b.y, 0.2)) - 0.13 - BAR_R);
       r.barNeck = Math.min(r.barNeck, segDist(nk, nk, V(b.x, b.y, -0.2), V(b.x, b.y, 0.2)) - 0.09 - BAR_R);
-      if (p === 1) r.barChestGap = b.y - (s3.y + 0.11);   // 가슴에 '살짝' 닿는지 (0에 가까워야 함)
+      if (p === 1) r.barChestGap = b.y - BAR_R - chestSurfaceY(b.x);   // 바 아랫면과 가슴 사이 (0에 가까워야 살짝 닿음)
     }
     for (const k in r) r[k] = +r[k].toFixed(3);
     human.benchCheck = r;
@@ -947,7 +956,9 @@ function benchPressRig(ctx) {
       const dz = GRIP - Math.abs(S.z);
       const reach = Math.sqrt(Math.pow((len.upper + len.fore + len.palm) * 0.97, 2) - dz * dz);
       top = V(S.x + 0.01, S.y + reach);                          // 팔을 뻗은 위치: 어깨 바로 위
-      bottom = V(s3.x + 0.06, s3.y + 0.11 + 0.035);              // 가슴 중앙(명치 위)에 바가 살짝 닿음
+      // 바가 닿는 곳: 유두선(가슴 중앙) — 어깨 관절에서 발 쪽으로 약 11cm. 위에서 몸에 직선을 쏴 실제 가슴 표면 높이를 찾음
+      const touchX = S.x + 0.11;
+      bottom = V(touchX, chestSurfaceY(touchX) + BAR_R + 0.006);
       rackX = top.x - 0.16; hookY = top.y + 0.02;
       buildRackAndBar();
       const pts = []; for (let i = 0; i <= 40; i++) { const b = barAt(i / 40); pts.push(V(b.x, b.y, GRIP + 0.1)); }
