@@ -193,8 +193,15 @@ function createStage(container, makeRig) {
   function arm(side, G, pole) {
     const { B, len } = human, x = side < 0 ? '_l' : '_r';
     const S = wpos(B['upperarm' + x]);
-    let E = ik(S, G, len.upper, len.fore + len.palm, pole);
-    for (let k = 0; k < 6 && Math.abs(E.z) < Math.abs(S.z) + 0.03; k++) { pole = pole.clone().add(V(0, 0, 0.3 * side)).normalize(); E = ik(S, G, len.upper, len.fore + len.palm, pole); }
+    const solve = (t) => ik(S, G, len.upper, len.fore + len.palm, pole.clone().add(V(0, 0, t * side)).normalize());
+    const inside = (e) => Math.abs(S.z) + 0.03 - Math.abs(e.z);   // > 0 이면 팔꿈치가 몸통 쪽으로 들어감
+    let E = solve(0);
+    if (inside(E) > 0) {
+      // 필요한 만큼만 바깥으로: 이분 탐색으로 최소 보정값을 찾아 자세가 끊기지 않고 연속으로 바뀜
+      let lo = 0, hi = 3;
+      if (inside(solve(hi)) <= 0) { for (let k = 0; k < 22; k++) { const m = (lo + hi) / 2; if (inside(solve(m)) > 0) lo = m; else hi = m; } }
+      E = solve(hi);
+    }
     aim(B['upperarm' + x], B['lowerarm' + x], E);
     const Ew = wpos(B['lowerarm' + x]);
     const dir = G.clone().sub(Ew).normalize();
