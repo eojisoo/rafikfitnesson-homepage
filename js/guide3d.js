@@ -140,6 +140,13 @@ function createStage(container, makeRig) {
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.6), new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, depthWrite: false }));
   glow.rotation.x = -Math.PI / 2; glow.position.set(-0.25, 0.002, 0); scene.add(glow);
 
+  // 바닥 로고: 짐스테이션 로고를 고무 매트에 인쇄한 것처럼 (그림자도 받음)
+  const LOGO_URL = 'assets/gymstation/logo-orange.png';
+  const logoMat = new THREE.MeshStandardMaterial({ transparent: true, opacity: 0.9, roughness: 0.85, metalness: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+  const logo = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2 * 230 / 600), logoMat);
+  logo.rotation.x = -Math.PI / 2; logo.receiveShadow = true; logo.renderOrder = 1; logo.visible = false; scene.add(logo);
+  new THREE.TextureLoader().load(LOGO_URL, (tex) => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = renderer.capabilities.getMaxAnisotropy(); logoMat.map = tex; logoMat.needsUpdate = true; logo.visible = true; render(); });
+
   // 손잡이가 지나가는 길 (점선)
   const path = new THREE.Line(new THREE.BufferGeometry(), M.path); scene.add(path);
   const setPath = (pts) => { path.geometry.setFromPoints(pts); path.computeLineDistances(); };
@@ -230,6 +237,7 @@ function createStage(container, makeRig) {
 
   const ctx = { THREE, V, M, scene, human, anat, wpos, aim, resetBody, moveBody, leg, arm, applyFist, setPath, tube, bent, cyl, box, plates, ik };
   const rig = makeRig(ctx);
+  const lp = rig.logoAt || V(rig.target.x, 0, 1.05); logo.position.set(lp.x, 0.004, lp.z);
   for (const [k, v] of Object.entries(rig.muscles || {})) anat.uniforms.uAct.value[MUSCLE[k]] = v;
 
   const draco = new DRACOLoader().setDecoderPath(DRACO_URL);
@@ -398,6 +406,7 @@ function highRowRig(ctx) {
 
   return {
     muscles: { lats: 1, midback: 0.8, drear: 0.75, biceps: 0.65 },
+    logoAt: V(0.1, 0, -0.95),   // 바닥 로고: 기구 뒤쪽 바닥 (카메라가 높아 앞쪽 바닥은 화면 밖)
     target: V(-0.25, 1.05, 0),
     views: { side: V(-0.2, 1.3, 3.75), front: V(3.2, 1.4, 0.5), diag: V(2.1, 1.75, 2.6), back: V(-3.3, 1.65, 1.2) },
     // 실제 하이 로우 궤적에 맞춰 좌석 높이·레버 길이·각도를 계산
@@ -561,6 +570,7 @@ function tBarRowRig(ctx) {
 
   return {
     muscles: { midback: 1, lats: 0.9, drear: 0.8, biceps: 0.6, traps: 0.45 },
+    logoAt: V(0.35, 0, 0.72),
     target: V(-0.25, 0.75, 0),
     views: { side: V(-0.2, 0.95, 4.1), front: V(3.3, 1.2, 0.8), diag: V(2.2, 1.5, 3.0), back: V(-3.4, 1.4, 1.4) },
     fit() {
