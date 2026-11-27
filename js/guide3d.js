@@ -1082,7 +1082,7 @@ function latPulldownRig(ctx) {
     poseBody(p); applyFist();
     const b = barAt(p);
     // 팔꿈치: 옆·아래로 내려오며 몸통 쪽으로 (광배근으로 당기기)
-    for (const s of [-1, 1]) arm(s, V(b.x, b.y, GRIP * s), V(-0.35, -1, 0.75 * s).normalize());
+    for (const s of [-1, 1]) arm(s, V(b.x, b.y, GRIP * s), V(-0.08, -1, 0.75 * s).normalize());
   }
 
   function checkOverlap() {
@@ -1115,7 +1115,12 @@ function latPulldownRig(ctx) {
       top = V(S.x + 0.16, S.y + Math.sqrt(reach * reach - 0.16 * 0.16));   // 팔을 위·살짝 앞으로 뻗음
       poseBody(1);
       const S1 = wpos(B.upperarm_r), s3 = wpos(B.spine_03);
-      bottom = V(s3.x + 0.17, S1.y - 0.07);                                 // 윗가슴(쇄골 아래) 바로 앞
+      // 끝 지점: 등으로 당겨 팔꿈치가 몸통 옆선(어깨 줄)까지 내려온 곳에서 멈춤 — 팔꿈치가 등 뒤로 빠질 만큼 누르지 않음
+      const lean1 = 18 * Math.PI / 180, fwd = V(Math.cos(lean1), Math.sin(lean1));
+      const bx = s3.x + 0.19;
+      let yHi = S1.y + 0.2, yLo = S1.y - 0.07;
+      const behind = (y) => { bottom = V(bx, y); poseFull(1); let m = 9; for (const x of ['_l', '_r']) m = Math.min(m, wpos(B['lowerarm' + x]).sub(wpos(B['upperarm' + x])).dot(fwd)); return m; };
+      if (behind(yLo) < -0.02) { for (let i = 0; i < 16; i++) { const m = (yHi + yLo) / 2; if (behind(m) < -0.02) yLo = m; else yHi = m; } bottom = V(bx, yHi); } else bottom = V(bx, yLo);
       pulley = V(top.x + 0.02, PULLEY_Y);
       poseBody(0);
       build();
