@@ -158,8 +158,8 @@ export function createHighRow(container) {
   const mach = new THREE.Group(); scene.add(mach);
   const T = 0.075, Y0 = 0.04;
   const P = V(-0.9, 1.9);             // 레버 회전축 (머리 뒤 위쪽)
-  const R = 1.36;                      // 회전축 → 손잡이 길이
-  const A0 = -15 * Math.PI / 180; let A1 = -45 * Math.PI / 180; // 시작(팔 뻗음) / 끝(당김) 각도
+  let R = 1.36;                        // 회전축 → 손잡이 길이 (사람 체형에 맞춰 다시 계산)
+  let A0 = -15 * Math.PI / 180, A1 = -45 * Math.PI / 180; // 시작(팔 뻗음) / 끝(당김) 각도
   // 바닥 프레임
   for (const z of [-0.55, 0.55]) tube(V(-1.55, Y0, z), V(0.72, Y0, z * 0.62), T, M.frame, mach);
   tube(V(-1.55, Y0, -0.55), V(-1.55, Y0, 0.55), T, M.frame, mach);
@@ -198,27 +198,34 @@ export function createHighRow(container) {
   for (const s of [-1, 1]) { const roll = cyl(0.062, 0.2, M.pad, 'z'); roll.position.set(0.4, 0.8, 0.13 * s); padG.add(roll); }
   const rollAxle = cyl(0.02, 0.06, M.chrome, 'z'); rollAxle.position.set(0.4, 0.8, 0); padG.add(rollAxle);
 
-  // 레버 (좌우 따로 움직이는 팔)
-  const levers = [];
-  for (const s of [-1, 1]) {
-    const pivot = new THREE.Group(); pivot.position.set(P.x, P.y, 0.42 * s); scene.add(pivot);
-    const arm = new THREE.Group(); pivot.add(arm);
-    tube(V(-0.42, 0, 0), V(R - 0.08, 0, -0.12 * s), 0.08, M.frame, arm);
-    // 손잡이: 아래로 꺾인 봉 + 고무 그립
-    tube(V(R - 0.1, 0.02, -0.12 * s), V(R, -0.04, -0.12 * s), 0.06, M.frame, arm);
-    const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.019, 0.019, 0.17, 18), M.rubber);
-    grip.position.set(R + 0.005, -0.12, -0.12 * s); grip.rotation.z = 0.25; grip.castShadow = true; arm.add(grip);
-    const gripEnd = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.02, 18), M.chrome); gripEnd.position.set(R + 0.027, -0.205, -0.12 * s); gripEnd.rotation.z = 0.25; arm.add(gripEnd);
-    // 뒤쪽 원판 봉 + 원판 2장
-    const horn = cyl(0.026, 0.26, M.chrome, 'z'); horn.position.set(-0.42, 0, 0.13 * s); arm.add(horn);
-    for (let i = 0; i < 2; i++) {
-      const pl = cyl(i ? 0.19 : 0.225, 0.04, M.plate, 'z'); pl.position.set(-0.42, 0, (0.07 + i * 0.045) * s); arm.add(pl);
-      const hubp = cyl(0.045, 0.045, M.frameEdge, 'z'); hubp.position.copy(pl.position); arm.add(hubp);
+  // 레버 (좌우 따로 움직이는 팔) — 길이 R이 바뀌면 다시 만듭니다
+  const GZ = 0.27;                     // 손잡이 좌우 위치 (몸 중심에서)
+  let levers = [];
+  function buildLevers() {
+    for (const lv of levers) { scene.remove(lv.pivot); lv.pivot.traverse((o) => { if (o.geometry) o.geometry.dispose(); }); }
+    levers = [];
+    for (const s of [-1, 1]) {
+      const pivot = new THREE.Group(); pivot.position.set(P.x, P.y, 0.42 * s); scene.add(pivot);
+      const arm = new THREE.Group(); pivot.add(arm);
+      const dz = (GZ - 0.42) * s;
+      tube(V(-0.42, 0, 0), V(R - 0.08, 0, dz), 0.08, M.frame, arm);
+      // 손잡이: 아래로 꺾인 봉 + 고무 그립
+      tube(V(R - 0.1, 0.02, dz), V(R, -0.04, dz), 0.06, M.frame, arm);
+      const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.019, 0.019, 0.17, 18), M.rubber);
+      grip.position.set(R + 0.005, -0.12, dz); grip.rotation.z = 0.25; grip.castShadow = true; arm.add(grip);
+      const gripEnd = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.02, 18), M.chrome); gripEnd.position.set(R + 0.027, -0.205, dz); gripEnd.rotation.z = 0.25; arm.add(gripEnd);
+      // 뒤쪽 원판 봉 + 원판 2장
+      const horn = cyl(0.026, 0.26, M.chrome, 'z'); horn.position.set(-0.42, 0, 0.13 * s); arm.add(horn);
+      for (let i = 0; i < 2; i++) {
+        const pl = cyl(i ? 0.19 : 0.225, 0.04, M.plate, 'z'); pl.position.set(-0.42, 0, (0.07 + i * 0.045) * s); arm.add(pl);
+        const hubp = cyl(0.045, 0.045, M.frameEdge, 'z'); hubp.position.copy(pl.position); arm.add(hubp);
+      }
+      levers.push({ pivot, arm, s });
     }
-    levers.push({ pivot, arm, s });
   }
+  buildLevers();
   // 손잡이 그립 위치 (레버 회전에 따라)
-  const handWorld = (ang, s, z = 0.30) => { const lx = R + 0.005, ly = -0.12, c = Math.cos(ang), n = Math.sin(ang); return V(P.x + lx * c - ly * n, P.y + lx * n + ly * c, z * s); };
+  const handWorld = (ang, s, z = GZ) => { const lx = R + 0.005, ly = -0.12, c = Math.cos(ang), n = Math.sin(ang); return V(P.x + lx * c - ly * n, P.y + lx * n + ly * c, z * s); };
 
   // 손잡이가 지나가는 길 (점선 호)
   const pathPts = []; for (let i = 0; i <= 40; i++) { const a = A0 + (A1 - A0) * i / 40; pathPts.push(handWorld(a, 1, 0.43)); }
@@ -269,24 +276,29 @@ export function createHighRow(container) {
       thigh: d('thigh_l', 'calf_l'), shin: d('calf_l', 'foot_l'), ankleH: wpos(B.foot_l).y, foot: d('foot_l', 'ball_l')
     };
     Object.assign(human, { root, B, rest, len });
-    // 좌석 높이 맞추기: 팔을 거의 다 뻗었을 때 시작 손잡이에 닿는 높이 (실제 기구에서 좌석을 맞추는 것과 같음)
-    const reach = (len.upper + len.fore + len.palm) * 0.97;
-    let lo = 0.5, hi = 0.8;
-    for (let i = 0; i < 16; i++) {
-      const mid = (lo + hi) / 2; human.hipY = mid; poseBody(0);
-      const S = wpos(B.upperarm_r), H = handWorld(A0, 1);
-      if (S.distanceTo(H) > reach) lo = mid; else hi = mid;
-    }
-    human.hipY = (lo + hi) / 2;
+    setupFist();
+    // 실제 하이 로우 궤적에 맞춰 좌석 높이·레버 길이·각도를 계산합니다
+    //  시작: 팔을 위·앞으로 거의 다 뻗어 손잡이를 잡음 (어깨에서 약 42° 위)
+    //  끝: 손은 윗가슴 앞(어깨보다 14cm 앞, 13cm 아래), 팔꿈치는 옆구리 뒤·바깥
+    human.hipY = 0.65; poseBody(0);
+    const S0 = wpos(B.upperarm_r), shH = S0.y - human.hipY;
+    const dz = GZ - Math.abs(S0.z);
+    const reach = Math.sqrt(Math.pow((len.upper + len.fore + len.palm) * 0.96, 2) - dz * dz);
+    const th = 42 * Math.PI / 180;
+    const a = { x: reach * Math.cos(th), y: reach * Math.sin(th) }, b = { x: 0.14, y: -0.13 };
+    const c = (b.x * b.x + b.y * b.y - a.x * a.x - a.y * a.y) / 2;
+    let Sy = P.y - (c - (b.x - a.x) * (P.x - S0.x)) / (b.y - a.y);
+    human.hipY = Math.min(0.85, Math.max(0.5, Sy - shH)); Sy = human.hipY + shH;
+    const G0 = { x: S0.x + a.x, y: Sy + a.y }, G1 = { x: S0.x + b.x, y: Sy + b.y };
+    const dist = Math.hypot(G0.x - P.x, G0.y - P.y);
+    R = Math.sqrt(Math.max(0.01, dist * dist - 0.0144)) - 0.005;
+    const off = Math.atan2(-0.12, R + 0.005);
+    A0 = Math.atan2(G0.y - P.y, G0.x - P.x) - off;
+    A1 = Math.atan2(G1.y - P.y, G1.x - P.x) - off;
+    buildLevers();
     seatG.position.y = human.hipY - 0.085 - 0.57;
     padG.position.y = human.hipY + 0.07 + 0.065 - 0.8;
-    // 당기기 끝: 손(그립)이 어깨선보다 약간 앞에서 멈추는 각도 → 팔꿈치가 몸통 뒤로 과하게 빠지지 않음
-    human.hipY = (lo + hi) / 2; poseBody(1);
-    const S1 = wpos(B.upperarm_r);
-    let a1 = A0;
-    for (let a = A0; a > -1.6; a -= 0.005) { const g = handWorld(a, 1); a1 = a; if (g.x <= S1.x + 0.05 || g.y < S1.y - 0.36) break; }
-    A1 = a1;
-    const pts = []; for (let i = 0; i <= 40; i++) pts.push(handWorld(A0 + (A1 - A0) * i / 40, 1, 0.43));
+    const pts = []; for (let i = 0; i <= 40; i++) pts.push(handWorld(A0 + (A1 - A0) * i / 40, 1, GZ + 0.12));
     path.geometry.setFromPoints(pts); path.computeLineDistances();
     human.ready = true;
   }
@@ -324,41 +336,52 @@ export function createHighRow(container) {
     }
   }
 
-  // 손가락을 손바닥 쪽으로 말아 손잡이를 쥔 모양으로
-  function rotWorld(bone, axis, angle) {
-    bone.updateWorldMatrix(true, false);
-    const q = new THREE.Quaternion().setFromAxisAngle(axis, angle);
-    const bw = bone.getWorldQuaternion(new THREE.Quaternion()), pw = bone.parent.getWorldQuaternion(new THREE.Quaternion());
-    bone.quaternion.copy(pw.invert().multiply(q.multiply(bw)));
-    bone.updateWorldMatrix(false, true);
-  }
-  function curlFingers(sfx) {
-    const root = human.root, g = (n) => root.getObjectByName(n + sfx);
-    const hand = g('hand'), hp = wpos(hand);
-    const nrm = wpos(g('index_01')).sub(hp).cross(wpos(g('pinky_01')).sub(hp)).normalize();
-    if (nrm.dot(wpos(g('thumb_02')).sub(hp)) < 0) nrm.negate(); // 손바닥 쪽
-    for (const fn of ['index', 'middle', 'ring', 'pinky']) {
-      for (const [k, a] of [['01', 1.0], ['02', 1.25], ['03', 0.85]]) {
-        const b = g(fn + '_' + k), nx = k === '03' ? null : g(fn + '_0' + (+k + 1));
-        const bp = wpos(b), dir = nx ? wpos(nx).sub(bp).normalize() : wpos(b).sub(wpos(g(fn + '_02'))).normalize();
-        const axis = dir.clone().cross(nrm).normalize();
-        if (axis.lengthSq() > 1e-6) rotWorld(b, axis, a);
+  // 손은 모든 운동에서 주먹 모양
+  // 기본 자세에서 각 손가락 뼈가 "손바닥 쪽으로 접히는 축"을 한 번 찾아 두고, 매 프레임 그 축으로 접습니다.
+  const FIST = [['01', 1.5], ['02', 1.7], ['03', 1.3]];
+  function setupFist() {
+    const { root, rest } = human; const g = (n) => root.getObjectByName(n);
+    const axes = [V(1, 0, 0), V(-1, 0, 0), V(0, 1, 0), V(0, -1, 0), V(0, 0, 1), V(0, 0, -1)];
+    const plan = [];
+    for (const sfx of ['_l', '_r']) {
+      rest.forEach((q, b) => b.quaternion.copy(q)); root.updateWorldMatrix(true, true);
+      const hand = g('hand' + sfx), hp = wpos(hand);
+      const inward = V(0, 0, -Math.sign(hp.z));                         // 기본 자세에서 손바닥은 몸 쪽을 봄
+      const pick = (bone, child, toward) => {
+        let best = null, bestScore = -1e9; const r = bone.quaternion.clone(), c0 = wpos(child);
+        for (const ax of axes) {
+          bone.quaternion.copy(r).multiply(new THREE.Quaternion().setFromAxisAngle(ax, 0.7)); bone.updateWorldMatrix(false, true);
+          const sc = wpos(child).sub(c0).dot(toward); if (sc > bestScore) { bestScore = sc; best = ax; }
+        }
+        bone.quaternion.copy(r); bone.updateWorldMatrix(false, true); return best;
+      };
+      for (const fn of ['index', 'middle', 'ring', 'pinky']) {
+        const b1 = g(fn + '_01' + sfx), b2 = g(fn + '_02' + sfx), b3 = g(fn + '_03' + sfx);
+        const a1 = pick(b1, b2, inward), a2 = pick(b2, b3, inward);
+        plan.push([b1, a1, FIST[0][1]], [b2, a2, FIST[1][1]], [b3, a2, FIST[2][1]]);
       }
+      const t1 = g('thumb_01' + sfx), t2 = g('thumb_02' + sfx), t3 = g('thumb_03' + sfx);
+      const across = wpos(g('middle_02' + sfx)).sub(wpos(t2)).normalize();   // 엄지는 검지·중지 위로 덮음
+      plan.push([t2, pick(t2, t3, across), 0.7], [t3, pick(t2, t3, across), 0.6]);
     }
-    const t2 = g('thumb_02'), t3 = g('thumb_03'), td = wpos(t3).sub(wpos(t2)).normalize();
-    const ta = td.clone().cross(nrm).normalize(); if (ta.lengthSq() > 1e-6) { rotWorld(t2, ta, 0.5); rotWorld(t3, ta, 0.5); }
+    rest.forEach((q, b) => b.quaternion.copy(q)); root.updateWorldMatrix(true, true);
+    human.fist = plan;
+  }
+  function applyFist() {
+    for (const [b, ax, a] of human.fist) b.quaternion.copy(human.rest.get(b)).multiply(new THREE.Quaternion().setFromAxisAngle(ax, a));
   }
 
   function poseHuman(p, ang) {
     const { B, len } = human;
     poseBody(p);
+    applyFist();
     for (const [u, l, h, s] of [['upperarm_l', 'lowerarm_l', 'hand_l', -1], ['upperarm_r', 'lowerarm_r', 'hand_r', 1]]) {
       const S = wpos(B[u]), G = handWorld(ang, s);
-      // 팔꿈치는 아래·바깥으로 (뒤쪽 성분은 작게)
-      let pole = V(-0.12, -1, 0.7 * s).normalize();
+      // 팔꿈치는 아래·뒤·바깥으로 (옆구리를 스치듯 내려감)
+      let pole = V(-0.55, -0.8, 0.32 * s).normalize();
       let E = ik(S, G, len.upper, len.fore + len.palm, pole);
-      // 관절 한계: 팔꿈치가 몸통 뒷면(어깨 관절보다 9cm 뒤)을 넘어가지 않게
-      for (let k = 0; k < 8 && E.x < S.x - 0.09; k++) { pole = pole.add(V(0.25, 0, 0)).normalize(); E = ik(S, G, len.upper, len.fore + len.palm, pole); }
+      // 몸통을 뚫지 않게: 팔꿈치가 어깨보다 안쪽으로 들어가면 바깥쪽으로
+      for (let k = 0; k < 6 && Math.abs(E.z) < Math.abs(S.z) + 0.03; k++) { pole = pole.add(V(0, 0, 0.3 * s)).normalize(); E = ik(S, G, len.upper, len.fore + len.palm, pole); }
       aim(B[u], B[l], E);
       const Ew = wpos(B[l]);
       const W = Ew.clone().add(G.clone().sub(Ew).normalize().multiplyScalar(len.fore));
@@ -366,7 +389,6 @@ export function createHighRow(container) {
       // 손바닥이 손잡이를 감싸도록 손을 팔뚝 방향으로
       const Wp = wpos(B[h]);
       aim(B[h], B[s < 0 ? 'middle_01_l' : 'middle_01_r'], Wp.clone().add(G.clone().sub(Ew).normalize().multiplyScalar(0.1)).add(V(0, -0.02, 0)));
-      curlFingers(s < 0 ? '_l' : '_r');
     }
   }
 
