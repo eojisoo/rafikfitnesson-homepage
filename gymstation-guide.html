@@ -16,6 +16,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,800;1,800;1,900&display=swap">
 <style>
 /* 짐스테이션 운동 가이드: 기구별 운동법 검색 + 모션 재생 */
@@ -49,6 +50,7 @@ ul,ol{list-style:none}
 .hero p{margin-top:6px;color:rgba(255,255,255,.7);font-size:15px}
 .search{position:relative;margin-top:18px;z-index:1}
 .search input{width:100%;height:54px;padding:0 48px 0 48px;border:0;border-radius:14px;background:#fff;font:600 16px var(--font);color:var(--black);-webkit-appearance:none;appearance:none}
+.search input::-webkit-search-cancel-button,.search input::-webkit-search-decoration{-webkit-appearance:none;appearance:none;display:none}
 .search input:focus{outline:3px solid var(--orange);outline-offset:0}
 .search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;stroke:var(--gray);fill:none;stroke-width:2.4;stroke-linecap:round}
 .search .clear{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:38px;height:38px;border:0;border-radius:50%;background:none;font-size:20px;color:var(--gray);cursor:pointer}
@@ -105,6 +107,20 @@ ul,ol{list-style:none}
 .stage__cue.out i{background:var(--orange)}
 .stage__rep{position:absolute;right:14px;top:12px;font:800 12px var(--en);letter-spacing:.1em;color:rgba(255,255,255,.55)}
 .stage__view{position:absolute;left:14px;bottom:12px;font-size:12px;color:rgba(255,255,255,.5);font-weight:600}
+.stage__view[hidden]{display:none}
+.scene3d{position:relative;width:100%;aspect-ratio:4/3;background:radial-gradient(85% 75% at 50% 42%,#3a403e 0%,#1f2422 55%,#121514 100%)}
+.scene3d__load[hidden]{display:none}
+.scene3d[hidden]{display:none}
+.scene3d canvas{display:block;width:100%!important;height:100%!important;cursor:grab}
+.scene3d canvas:active{cursor:grabbing}
+.scene3d__load{position:absolute;inset:0;display:grid;place-items:center;color:rgba(255,255,255,.6);font-size:14px;font-weight:700}
+.views{position:absolute;left:12px;bottom:12px;display:flex;gap:4px;padding:4px;border-radius:12px;background:rgba(13,15,14,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.views[hidden]{display:none}
+.views button{height:30px;padding:0 11px;border:0;border-radius:8px;background:none;color:rgba(255,255,255,.7);font-size:13px;font-weight:800;cursor:pointer}
+.views button.on{background:var(--orange);color:#fff}
+.drag-hint{position:absolute;left:14px;top:12px;font-size:12px;font-weight:700;color:rgba(255,255,255,.55);pointer-events:none;transition:opacity .4s}
+.drag-hint[hidden]{display:none}
+.ex__3d{display:inline-block;margin-left:6px;padding:2px 6px;border-radius:6px;background:var(--black);color:#fff;font:italic 900 10px var(--en);letter-spacing:.06em;vertical-align:1px}
 .ctrl{display:flex;align-items:center;gap:10px;padding:12px 14px 14px;border-top:1px solid var(--black-3)}
 .play{flex:none;width:44px;height:44px;border:0;border-radius:50%;background:var(--orange);color:#fff;display:grid;place-items:center;cursor:pointer}
 .play svg{width:18px;height:18px;fill:#fff}
@@ -207,7 +223,10 @@ ul,ol{list-style:none}
     <div class="stage__top"><div class="stage__phase"><b id="phNo">1</b><span id="phName"></span></div><div class="stage__cue" id="cue"><i></i><span id="cueText"></span></div></div>
     <div class="stage">
      <svg id="scene" viewBox="46 26 300 222" role="img" aria-label="운동 동작 모션"></svg>
-     <div class="stage__view">옆에서 본 모습</div>
+     <div class="scene3d" id="scene3d" hidden><p class="scene3d__load" id="load3d">3D 불러오는 중…</p></div>
+     <div class="stage__view" id="viewLabel">옆에서 본 모습</div>
+     <div class="views" id="views" hidden><button type="button" data-v="side">옆</button><button type="button" data-v="front">앞</button><button type="button" class="on" data-v="diag">대각선</button><button type="button" data-v="back">뒤</button></div>
+     <p class="drag-hint" id="dragHint" hidden>손가락으로 돌려 보세요</p>
      <div class="stage__rep" id="rep">REP 1</div>
     </div>
     <div class="ctrl">
@@ -258,6 +277,26 @@ var EXERCISES=[
   safety:'무거운 무게는 보조자와 함께 하거나 세이프티 바를 꼭 맞춰 주세요. 원판 클립도 잊지 마세요.'},
  {id:'incline-bench',name:'인클라인 벤치프레스',en:'INCLINE BENCH PRESS',cat:'가슴',equip:'인클라인 벤치 · 바벨',alias:['인클라인','윗가슴'],main:['윗가슴']},
  {id:'chest-press',name:'체스트 프레스 머신',en:'CHEST PRESS MACHINE',cat:'가슴',equip:'체스트 프레스 머신',alias:['머신','체스트'],main:['가슴']},
+ {id:'high-row',name:'하이 로우 머신',en:'PLATE LOADED HIGH ROW',cat:'등',equip:'하이 로우 머신 (원판식)',
+  alias:['하이로우','하이 로우','로우','머신로우','광배','등운동','highrow','high row','원판','마스터프로'],
+  desc:'위에서 아래로 당겨 등(광배근)을 키우는 머신이에요. 양팔이 따로 움직여 좌우 힘의 균형을 맞추기 좋아요.',
+  main:['광배근(등)'],sub:['능형근·승모근 중하부','이두(팔 앞)','후면 어깨'],
+  motion:'highrow',
+  steps:[
+   {t:'좌석과 허벅지 패드 맞추기',d:'앉아서 팔을 쭉 뻗으면 손잡이에 겨우 닿는 높이로 좌석을 맞추고, 허벅지 패드가 허벅지를 단단히 눌러 주게 해요.',ph:0},
+   {t:'손잡이 잡고 자세 잡기',d:'가슴을 펴고 허리는 곧게, 어깨는 귀에서 멀리 내려요.',ph:0},
+   {t:'당기기 (1초)',d:'숨을 내쉬며 팔꿈치를 옆구리 아래·뒤로 끌어내려요. 손이 아니라 팔꿈치로 당긴다는 느낌.',ph:1},
+   {t:'등 꽉 조이기',d:'손잡이가 가슴 옆에 오면 날개뼈를 모으고 1초 멈춰요.',ph:2},
+   {t:'천천히 되돌리기 (2초)',d:'숨을 들이마시며 무게에 끌려가지 않게 팔을 다시 뻗어 등을 늘려요.',ph:3}
+  ],
+  mistakes:[
+   {b:'몸을 뒤로 젖혀 반동을 줘요',d:'상체는 거의 고정, 등 힘으로 당기기'},
+   {b:'어깨가 귀 쪽으로 올라가요',d:'어깨를 내린 채로 시작하고 끝내기'},
+   {b:'팔로만 당겨요',d:'팔꿈치가 먼저 내려간다고 생각하기'},
+   {b:'끝까지 펴지 않아요',d:'팔을 다 펴서 등이 늘어나는 느낌까지'}
+  ],
+  reco:[['세트','3세트'],['횟수','10~12회'],['쉬는 시간','60~90초']],
+  safety:'원판은 양쪽 무게를 맞춰 끼우고, 운동이 끝나면 손잡이를 천천히 되돌린 뒤 놓아 주세요. 사용한 원판은 제자리에 꽂아 주세요.'},
  {id:'lat-pulldown',name:'랫풀다운',en:'LAT PULLDOWN',cat:'등',equip:'랫풀다운 머신',alias:['랫풀','풀다운','광배'],main:['광배근(등)']},
  {id:'seated-row',name:'시티드 로우',en:'SEATED CABLE ROW',cat:'등',equip:'케이블 로우 머신',alias:['로우','케이블'],main:['등 가운데']},
  {id:'squat',name:'바벨 스쿼트',en:'BARBELL SQUAT',cat:'하체',equip:'스쿼트 랙 · 바벨',alias:['스쿼트','허벅지'],main:['허벅지 앞','엉덩이']},
@@ -276,6 +315,23 @@ function ik(S,W,a,b,down){var dx=W[0]-S[0],dy=W[1]-S[1],d=Math.min(Math.hypot(dx
 function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
 
 var MOTIONS={
+ highrow:{
+  kind:'3d',
+  phases:[
+   {name:'준비 자세',cue:'숨 고르기',dur:.7,from:0,to:0,breath:'in'},
+   {name:'당기기',cue:'숨 내쉬기',dur:1.1,from:0,to:1,breath:'out'},
+   {name:'등 조이기',cue:'1초 멈춤',dur:.6,from:1,to:1,breath:'out'},
+   {name:'천천히 되돌리기',cue:'숨 들이마시기',dur:2,from:1,to:0,breath:'in'},
+   {name:'팔 다 펴기',cue:'등 늘리기',dur:.5,from:0,to:0,breath:'in'}
+  ],
+  build:function(){
+   var box=document.getElementById('scene3d'),G={p:0,ph:0,api:null,dead:false};
+   import('./js/guide3d.js').then(function(m){if(G.dead)return;var ld=document.getElementById('load3d');if(ld)ld.hidden=true;G.api=m.createHighRow(box);G.api.draw(G.p,G.ph)})
+    .catch(function(){var ld=document.getElementById('load3d');if(ld)ld.textContent='3D를 불러오지 못했어요. 새로고침해 주세요.'});
+   return G;
+  },
+  draw:function(G,p,ph){G.p=p;G.ph=ph;if(G.api)G.api.draw(p,ph)}
+ },
  bench:{
   // 한 번 반복(초): 준비 0.6 → 내리기 2.0 → 멈춤 0.3 → 올리기 1.0 → 정점 0.5
   phases:[
@@ -355,13 +411,14 @@ var MOTIONS={
  function match(x,t){if(!t)return true;var h=hay(x);if(h.indexOf(t)>=0)return true;return /^[ㄱ-ㅎ]+$/.test(t)&&cho(h).indexOf(t)>=0}
 
  var mini='<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="40" width="48" height="5" rx="2" fill="#4a524e"/><line x1="16" y1="36" x2="44" y2="37" stroke="#e9ecea" stroke-width="7" stroke-linecap="round"/><circle cx="11" cy="35" r="4.5" fill="#e9ecea"/><path d="M18 35 L20 22" stroke="#e9ecea" stroke-width="3.5" stroke-linecap="round"/><circle cx="20" cy="18" r="7" fill="none" stroke="#FE6201" stroke-width="2.5"/><path d="M44 37 L52 31 L54 46" fill="none" stroke="#e9ecea" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+ var miniRow='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 56 L20 12 L28 12" stroke="#4a524e" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M20 12 L52 24" stroke="#6b716e" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="11" r="5" fill="#4a524e"/><rect x="28" y="44" width="16" height="4" rx="2" fill="#4a524e"/><circle cx="34" cy="20" r="4.5" fill="#e9ecea"/><path d="M33 26 L32 42 M32 42 L46 42 L47 56 M33 29 L44 32 L50 26" stroke="#e9ecea" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M31 30 L30 38" stroke="#FE6201" stroke-width="5" stroke-linecap="round"/></svg>';
  var miniSoon='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 32h6M44 32h6M20 24v16M44 24v16M20 32h24" stroke="#6b716e" stroke-width="4" stroke-linecap="round" fill="none"/></svg>';
 
  function renderList(){
   var t=norm(q.value),rows=EXERCISES.filter(function(x){return(!cat||x.cat===cat)&&match(x,t)});
   rows.sort(function(a,b){return(b.motion?1:0)-(a.motion?1:0)});
   $('count').textContent=rows.length+'개';
-  grid.innerHTML=rows.length?rows.map(function(x){return '<button type="button" class="ex'+(x.motion?'':' soon')+'" data-id="'+x.id+'"><span class="ex__icon">'+(x.motion?mini:miniSoon)+'</span><span class="ex__body"><span class="ex__name">'+x.name+'</span><span class="ex__meta">'+x.cat+' · '+x.equip+'</span><span class="ex__tag '+(x.motion?'ready">▶ 모션 보기':'soon">모션 준비 중')+'</span></span></button>'}).join('')
+  grid.innerHTML=rows.length?rows.map(function(x){return '<button type="button" class="ex'+(x.motion?'':' soon')+'" data-id="'+x.id+'"><span class="ex__icon">'+(x.motion==='highrow'?miniRow:x.motion?mini:miniSoon)+'</span><span class="ex__body"><span class="ex__name">'+x.name+(x.motion&&MOTIONS[x.motion].kind==='3d'?'<span class="ex__3d">3D</span>':'')+'</span><span class="ex__meta">'+x.cat+' · '+x.equip+'</span><span class="ex__tag '+(x.motion?'ready">▶ 모션 보기':'soon">모션 준비 중')+'</span></span></button>'}).join('')
    :'<div class="empty"><b>찾는 운동이 없어요</b>다른 이름이나 부위로 검색해 보세요.</div>';
   $('qClear').hidden=!q.value;
  }
@@ -388,6 +445,8 @@ var MOTIONS={
  $('play').addEventListener('click',function(){setPlay(!playing);if(playing)track('motion_play',{exercise:location.hash.slice(1)})});
  $('scrub').addEventListener('input',function(){setPlay(false);time=this.value/1000*total;render()});
  [].forEach.call(document.querySelectorAll('#speed button'),function(b){b.addEventListener('click',function(){speed=+b.dataset.s;[].forEach.call(document.querySelectorAll('#speed button'),function(x){x.classList.toggle('on',x===b)})})});
+ [].forEach.call(document.querySelectorAll('#views button'),function(b){b.addEventListener('click',function(){if(G&&G.api)G.api.setView(b.dataset.v);[].forEach.call(document.querySelectorAll('#views button'),function(x){x.classList.toggle('on',x===b)});track('motion_view',{view:b.dataset.v})})});
+ $('scene3d').addEventListener('pointerdown',function(){$('dragHint').style.opacity=0;[].forEach.call(document.querySelectorAll('#views button'),function(x){x.classList.remove('on')})});
  function jump(i){var acc=0;for(var j=0;j<i;j++)acc+=M.phases[j].dur;time=acc+.001;render()}
  // 화면 밖에서는 재생을 멈춰 배터리를 아낍니다
  if('IntersectionObserver'in window)new IntersectionObserver(function(es){if(!M)return;if(!es[0].isIntersecting){cancelAnimationFrame(raf)}else if(playing){last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}}).observe($('player'));
@@ -399,7 +458,11 @@ var MOTIONS={
   $('dMistakes').innerHTML=x.mistakes.map(function(m){return '<li><span><b>'+m.b+'</b> — '+m.d+'</span></li>'}).join('');
   $('dReco').innerHTML=x.reco.map(function(r){return '<div><small>'+r[0]+'</small><b>'+r[1]+'</b></div>'}).join('');
   $('dSafety').textContent=x.safety;
-  M=MOTIONS[x.motion];var svg=$('scene');svg.innerHTML='';G=M.build(svg);
+  if(G&&G.api){G.dead=true;G.api.dispose()}else if(G)G.dead=true;
+  M=MOTIONS[x.motion];var svg=$('scene'),is3d=M.kind==='3d';
+  svg.style.display=is3d?'none':'';$('scene3d').hidden=!is3d;$('views').hidden=!is3d;$('dragHint').hidden=!is3d;$('viewLabel').hidden=is3d;
+  if(is3d){$('load3d').hidden=false;$('load3d').textContent='3D 불러오는 중…';[].forEach.call(document.querySelectorAll('#views button'),function(b){b.classList.toggle('on',b.dataset.v==='diag')})}
+  svg.innerHTML='';G=M.build(svg);
   total=M.phases.reduce(function(s,p){return s+p.dur},0);time=0;rep=1;curPh=-1;$('rep').textContent='REP 1';
   $('phases').innerHTML=M.phases.map(function(p,i){return '<button type="button">'+(i+1)+'. '+p.name+'</button>'}).join('');
   [].forEach.call(document.querySelectorAll('#phases button'),function(b,i){b.addEventListener('click',function(){setPlay(false);jump(i)})});
@@ -412,7 +475,7 @@ var MOTIONS={
  function route(){
   var id=decodeURIComponent(location.hash.slice(1)),x=EXERCISES.find(function(y){return y.id===id&&y.motion});
   $('list').hidden=!!x;$('detail').hidden=!x;document.querySelector('.hero').hidden=!!x;
-  if(x){open(x);scrollTo(0,0)}else{cancelAnimationFrame(raf);M=null;document.title='짐스테이션 운동 가이드 | 기구별 운동법'}
+  if(x){open(x);scrollTo(0,0)}else{cancelAnimationFrame(raf);if(G){G.dead=true;if(G.api)G.api.dispose();G=null}M=null;document.title='짐스테이션 운동 가이드 | 기구별 운동법'}
  }
  $('back').addEventListener('click',function(){location.hash=''});
  addEventListener('hashchange',route);
