@@ -297,6 +297,26 @@ var EXERCISES=[
   ],
   reco:[['세트','3세트'],['횟수','10~12회'],['쉬는 시간','60~90초']],
   safety:'원판은 양쪽 무게를 맞춰 끼우고, 운동이 끝나면 손잡이를 천천히 되돌린 뒤 놓아 주세요. 사용한 원판은 제자리에 꽂아 주세요.'},
+ {id:'t-bar-row',name:'티바 로우 (체스트 서포트)',en:'CHEST SUPPORTED T-BAR ROW',cat:'등',equip:'티바 로우 머신 (원판식)',
+  alias:['티바','티바로우','티바 로우','t바','tbar','t-bar','tbarrow','로우','체스트서포트','체스트 서포트','등운동','광배','중부승모','능형근'],
+  desc:'가슴을 패드에 기댄 채 손잡이를 끌어올려 등 가운데(능형근·승모근 중부)와 광배근을 키우는 머신이에요. 허리 부담이 적어 처음 하는 분도 안정적으로 할 수 있어요.',
+  main:['능형근·승모근 중부','광배근(등)'],sub:['후면 어깨','이두(팔 앞)','승모근'],
+  motion:'tbarrow',
+  steps:[
+   {t:'발판과 패드 위치 잡기',d:'발판에 올라서서 가슴 윗부분이 패드 위쪽 끝에 오도록 서요. 키에 따라 위·아래 발판을 골라요.',ph:0},
+   {t:'손잡이 잡기',d:'팔을 쭉 편 채로 손잡이를 잡고, 가슴은 패드에 붙인 채 시선은 자연스럽게 앞쪽 아래를 봐요.',ph:0},
+   {t:'끌어올리기 (1초)',d:'숨을 내쉬며 팔꿈치를 뒤·위로 끌어올려요. 가슴은 패드에서 떨어지지 않게.',ph:1},
+   {t:'날개뼈 모으기',d:'손잡이가 패드 아래 가슴 가까이 오면 날개뼈를 꽉 모으고 1초 멈춰요.',ph:2},
+   {t:'천천히 내리기 (2초)',d:'숨을 들이마시며 팔이 다 펴질 때까지 천천히 내려 등을 늘려요.',ph:3}
+  ],
+  mistakes:[
+   {b:'가슴이 패드에서 떨어져요',d:'상체 반동 없이 가슴을 패드에 붙인 채로'},
+   {b:'어깨를 으쓱하며 당겨요',d:'어깨는 귀에서 멀리 내린 채로'},
+   {b:'무릎·허리를 펴며 들어 올려요',d:'하체는 고정, 팔꿈치와 등으로만'},
+   {b:'끝까지 내리지 않아요',d:'팔이 다 펴져 등이 늘어날 때까지'}
+  ],
+  reco:[['세트','3세트'],['횟수','8~12회'],['쉬는 시간','90초']],
+  safety:'원판은 손잡이를 받침대에 내려놓은 상태에서 끼우고 빼 주세요. 운동이 끝나면 손잡이를 천천히 내려놓고 원판은 제자리에 정리해 주세요.'},
  {id:'lat-pulldown',name:'랫풀다운',en:'LAT PULLDOWN',cat:'등',equip:'랫풀다운 머신',alias:['랫풀','풀다운','광배'],main:['광배근(등)']},
  {id:'seated-row',name:'시티드 로우',en:'SEATED CABLE ROW',cat:'등',equip:'케이블 로우 머신',alias:['로우','케이블'],main:['등 가운데']},
  {id:'squat',name:'바벨 스쿼트',en:'BARBELL SQUAT',cat:'하체',equip:'스쿼트 랙 · 바벨',alias:['스쿼트','허벅지'],main:['허벅지 앞','엉덩이']},
@@ -314,7 +334,25 @@ function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k i
 function ik(S,W,a,b,down){var dx=W[0]-S[0],dy=W[1]-S[1],d=Math.min(Math.hypot(dx,dy),a+b-.01),base=Math.atan2(dy,dx),al=Math.acos(Math.max(-1,Math.min(1,(a*a+d*d-b*b)/(2*a*d))));var e1=[S[0]+a*Math.cos(base+al),S[1]+a*Math.sin(base+al)],e2=[S[0]+a*Math.cos(base-al),S[1]+a*Math.sin(base-al)];return (e1[1]>e2[1])===down?e1:e2}
 function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
 
+// 3D 모션 공통: factory = js/guide3d.js에서 부를 기구 함수 이름
+function motion3d(factory,phases){return{
+  kind:'3d',phases:phases,
+  build:function(){
+   var box=document.getElementById('scene3d'),G={p:0,ph:0,api:null,dead:false};
+   import('./js/guide3d.js').then(function(m){if(G.dead)return;var ld=document.getElementById('load3d');G.api=m[factory](box);G.api.draw(G.p,G.ph);if(ld){ld.textContent='사람 모델 불러오는 중…';G.api.ready.then(function(){ld.hidden=true}).catch(function(){ld.textContent='모델을 불러오지 못했어요. 새로고침해 주세요.'})}})
+    .catch(function(){var ld=document.getElementById('load3d');if(ld)ld.textContent='3D를 불러오지 못했어요. 새로고침해 주세요.'});
+   return G;
+  },
+  draw:function(G,p,ph){G.p=p;G.ph=ph;if(G.api)G.api.draw(p,ph)}
+ }}
 var MOTIONS={
+ tbarrow:motion3d('createTBarRow',[
+   {name:'준비 자세',cue:'숨 고르기',dur:.7,from:0,to:0,breath:'in'},
+   {name:'끌어올리기',cue:'숨 내쉬기',dur:1,from:0,to:1,breath:'out'},
+   {name:'날개뼈 모으기',cue:'1초 멈춤',dur:.6,from:1,to:1,breath:'out'},
+   {name:'천천히 내리기',cue:'숨 들이마시기',dur:2,from:1,to:0,breath:'in'},
+   {name:'팔 다 펴기',cue:'등 늘리기',dur:.5,from:0,to:0,breath:'in'}
+ ]),
  highrow:{
   kind:'3d',
   phases:[
@@ -418,7 +456,7 @@ var MOTIONS={
   var t=norm(q.value),rows=EXERCISES.filter(function(x){return(!cat||x.cat===cat)&&match(x,t)});
   rows.sort(function(a,b){return(b.motion?1:0)-(a.motion?1:0)});
   $('count').textContent=rows.length+'개';
-  grid.innerHTML=rows.length?rows.map(function(x){return '<button type="button" class="ex'+(x.motion?'':' soon')+'" data-id="'+x.id+'"><span class="ex__icon">'+(x.motion==='highrow'?miniRow:x.motion?mini:miniSoon)+'</span><span class="ex__body"><span class="ex__name">'+x.name+(x.motion&&MOTIONS[x.motion].kind==='3d'?'<span class="ex__3d">3D</span>':'')+'</span><span class="ex__meta">'+x.cat+' · '+x.equip+'</span><span class="ex__tag '+(x.motion?'ready">▶ 모션 보기':'soon">모션 준비 중')+'</span></span></button>'}).join('')
+  grid.innerHTML=rows.length?rows.map(function(x){return '<button type="button" class="ex'+(x.motion?'':' soon')+'" data-id="'+x.id+'"><span class="ex__icon">'+(x.motion==='highrow'||x.motion==='tbarrow'?miniRow:x.motion?mini:miniSoon)+'</span><span class="ex__body"><span class="ex__name">'+x.name+(x.motion&&MOTIONS[x.motion].kind==='3d'?'<span class="ex__3d">3D</span>':'')+'</span><span class="ex__meta">'+x.cat+' · '+x.equip+'</span><span class="ex__tag '+(x.motion?'ready">▶ 모션 보기':'soon">모션 준비 중')+'</span></span></button>'}).join('')
    :'<div class="empty"><b>찾는 운동이 없어요</b>다른 이름이나 부위로 검색해 보세요.</div>';
   $('qClear').hidden=!q.value;
  }
