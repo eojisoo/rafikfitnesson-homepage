@@ -1258,9 +1258,499 @@ function rackDeadliftRig(ctx) {
   };
 }
 
+// ============================================================
+// 추가 운동 공통 도우미
+// ============================================================
+function mkPlaceRod(scene, r, mat) { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 1, 10), mat); m.castShadow = true; scene.add(m); return m; }
+function placeRodBetween(m, a, b) { const d = b.clone().sub(a); m.position.copy(a).add(b).multiplyScalar(0.5); m.scale.set(1, Math.max(1e-4, d.length()), 1); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize()); }
+function cableMat() { return new THREE.MeshStandardMaterial({ color: 0x2b2f2e, roughness: 0.5, metalness: 0.3 }); }
+// 무게 스택(위 6장은 움직임) — 반환: 움직이는 그룹
+function weightStack(mach, M, x, z = 0) {
+  const fixed = new THREE.Group(), move = new THREE.Group(); mach.add(fixed); mach.add(move);
+  for (const s of [-1, 1]) { const rod = cyl(0.012, 1.4, M.chrome, 'y'); rod.position.set(x, 0.8, z + 0.09 * s); mach.add(rod); }
+  for (let i = 0; i < 12; i++) { const pl = box(0.12, 0.045, 0.26, i < 6 ? M.frameEdge : M.frame); pl.position.set(x, 0.1 + i * 0.05, z); (i < 6 ? move : fixed).add(pl); }
+  const pin = cyl(0.012, 0.2, new THREE.MeshStandardMaterial({ color: 0xf2c200, roughness: 0.4 }), 'z'); pin.position.set(x, 0.1 + 5 * 0.05, z + 0.12); move.add(pin);
+  return move;
+}
+// 파워랙 (기둥 4개 + J훅 + 안전바)
+function powerRack(mach, M, x0, x1, rz, hookY, pinY) {
+  const T = 0.07, Y0 = 0.04;
+  for (const x of [x0, x1]) for (const s of [-1, 1]) tube(V(x, Y0, rz * s), V(x, 2.2, rz * s), T, M.frame, mach);
+  for (const s of [-1, 1]) { tube(V(x0, Y0, rz * s), V(x1, Y0, rz * s), T, M.frame, mach); tube(V(x0, 2.2, rz * s), V(x1, 2.2, rz * s), T, M.frame, mach); }
+  for (const x of [x0, x1]) { tube(V(x, 2.2, -rz), V(x, 2.2, rz), T, M.frame, mach); tube(V(x, Y0, -rz), V(x, Y0, rz), T, M.frame, mach); }
+  for (const s of [-1, 1]) {
+    // J훅 (앞 기둥 안쪽)
+    tube(V(x1, hookY - 0.03, rz * s), V(x1 - 0.07, hookY - 0.03, rz * s), 0.04, M.frame, mach);
+    tube(V(x1 - 0.07, hookY - 0.03, rz * s), V(x1 - 0.07, hookY + 0.04, rz * s), 0.03, M.frame, mach);
+    if (pinY != null) { const sb = cyl(0.025, x1 - x0 + 0.1, M.chrome, 'x'); sb.position.set((x0 + x1) / 2, pinY, (rz - 0.06) * s); mach.add(sb); }
+  }
+  const plat = box(x1 - x0 + 0.1, 0.02, 2 * rz + 0.1, M.rubber); plat.position.set((x0 + x1) / 2, 0.01, 0); mach.add(plat);
+}
+// 덤벨 (손잡이는 z축 방향)
+function makeDumbbell(M) {
+  const g = new THREE.Group();
+  const h = cyl(0.017, 0.13, M.chrome, 'z'); g.add(h);
+  for (const s of [-1, 1]) { const head = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.07, 6), M.plate); head.rotation.x = Math.PI / 2; head.position.set(0, 0, 0.1 * s); head.castShadow = true; g.add(head); }
+  return g;
+}
+// 앉은 자세 공통: 골반 위치, 상체 기울기(+ = 뒤로), 발 위치
+function seatedPose(ctx, hip, leanBack, feet, kneePole, look = 0.0) {
+  const { human, wpos, aim, resetBody, leg } = ctx; const { B } = human;
+  resetBody(hip);
+  const sp = wpos(B.spine_01), Ls = wpos(B.neck_01).distanceTo(sp);
+  aim(B.spine_01, B.neck_01, sp.clone().add(V(-Math.sin(leanBack) * Ls, Math.cos(leanBack) * Ls, 0)));
+  const nk = wpos(B.neck_01), hl = wpos(B.head).distanceTo(nk);
+  aim(B.neck_01, B.head, nk.clone().add(V(Math.sin(look), Math.cos(look)).multiplyScalar(hl)));
+  for (const s of [-1, 1]) leg(s, feet(s), kneePole(s));
+}
+function sampleSmooth(table, p) { const n = table.length - 1, f = Math.min(n, Math.max(0, p * n)), i = Math.min(n - 1, Math.floor(f)), t = f - i, a = table[i], b = table[i + 1], o = {}; for (const k in a) o[k] = typeof a[k] === 'number' ? a[k] + (b[k] - a[k]) * t : a[k]; return o; }
+
+// ============================================================
+// 기구 7: 바벨 백 스쿼트 (파워랙)
+// ============================================================
+function squatRig(ctx) {
+  const { scene, M, human, wpos, aim, resetBody, leg, arm, applyFist, setPath } = ctx;
+  const mach = new THREE.Group(); scene.add(mach);
+  const GRIP = 0.33, FOOTZ = 0.17;
+  let table = [], bar = null, midX = 0.05;
+  function poseAt(phi, px, py) {
+    const { B, len } = human;
+    resetBody(V(px, py, 0));
+    const d = V(Math.sin(phi), Math.cos(phi));
+    aim(B.pelvis, B.spine_01, wpos(B.pelvis).add(d));
+    aim(B.spine_01, B.neck_01, wpos(B.spine_01).add(d));
+    const nk = wpos(B.neck_01), hl = wpos(B.head).distanceTo(nk), look = phi * 0.55;
+    aim(B.neck_01, B.head, nk.clone().add(V(Math.sin(look), Math.cos(look)).multiplyScalar(hl)));
+    for (const s of [-1, 1]) leg(s, V(0, len.ankleH, FOOTZ * s), V(1, 0, 0.4 * s).normalize());
+  }
+  function poseHip(phi, H) { const { B } = human; let px = H.x, py = H.y + 0.02; for (let k = 0; k < 3; k++) { poseAt(phi, px, py); const J = wpos(B.thigh_r); px += H.x - J.x; py += H.y - J.y; } poseAt(phi, px, py); return { px, py }; }
+  // 바 위치: 양 어깨 가운데에서 등 쪽 7cm, 위로 4cm (승모근 위 하이바)
+  function barPos(phi) { const { B } = human; const mid = wpos(B.upperarm_l).add(wpos(B.upperarm_r)).multiplyScalar(0.5); return mid.add(V(-Math.cos(phi) * 0.075, Math.sin(phi) * 0.075, 0)).add(V(Math.sin(phi) * 0.04, Math.cos(phi) * 0.04, 0)).setZ(0); }
+  function solvePhi(H) { let lo = 0, hi = 1.2; for (let i = 0; i < 18; i++) { const m = (lo + hi) / 2; poseHip(m, H); if (barPos(m).x < midX) lo = m; else hi = m; } return (lo + hi) / 2; }
+  function poseFull(p) {
+    const t = sampleSmooth(table, p);
+    poseAt(t.phi, t.px, t.py); applyFist();
+    const b = V(t.bx, t.by);
+    for (const s of [-1, 1]) arm(s, V(b.x, b.y, GRIP * s), V(-0.7, -0.7, 0.3 * s).normalize());
+    return b;
+  }
+  return {
+    muscles: { quad: 1, glute: 0.9, ham: 0.45, erector: 0.6, calf: 0.25 },
+    target: V(0.0, 1.0, 0), logoAt: V(0.1, 0, 1.05),
+    views: { side: V(1.2, 1.45, 3.6), front: V(3.4, 1.5, 0.9), diag: V(2.4, 1.8, 2.7), back: V(-3.3, 1.6, 1.1) },
+    fit() {
+      const { B, len } = human;
+      const A = V(0, len.ankleH);
+      const sample = (beta, alpha) => {
+        const K = A.clone().add(V(Math.sin(alpha) * len.shin, Math.cos(alpha) * len.shin));
+        const H = K.clone().add(V(-Math.sin(beta) * len.thigh, Math.cos(beta) * len.thigh));
+        const phi = solvePhi(H), r = poseHip(phi, H), b = barPos(phi);
+        return { phi, px: r.px, py: r.py, bx: b.x, by: b.y };
+      };
+      // 깊이: 허벅지 각도 6°(선 자세) → 84°(허벅지가 바닥과 거의 평행), 정강이 3° → 34°
+      table = [];
+      for (let i = 0; i <= 30; i++) { const p = i / 30; table.push(sample((6 + 78 * p) * Math.PI / 180, (3 + 31 * p) * Math.PI / 180)); }
+      const topY = table[0].by, botY = table[30].by;
+      powerRack(mach, M, midX - 0.6, midX + 0.5, 0.6, topY - 0.02, botY - 0.12);
+      bar = makeBarbell(M); scene.add(bar);
+      setPath(table.map((t) => V(t.bx, t.by, GRIP + 0.12)));
+      // 겹침 검사
+      const r = { barNeck: 9, platesRack: 9, kneesInside: 9, platesFloor: 9 };
+      for (const p of [0, 0.25, 0.5, 0.75, 1]) {
+        const b = poseFull(p), nk = wpos(B.neck_01), hd = wpos(B.head);
+        r.barNeck = Math.min(r.barNeck, segDistG(nk, hd, V(b.x, b.y, -0.2), V(b.x, b.y, 0.2)) - 0.06);
+        for (const s of [-1, 1]) for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2, pt = V(b.x + Math.cos(a) * 0.225, b.y + Math.sin(a) * 0.225, 0.86 * s); for (const x of [midX - 0.6, midX + 0.5]) r.platesRack = Math.min(r.platesRack, segDistG(pt, pt, V(x, 0, 0.6 * s), V(x, 2.2, 0.6 * s)) - 0.035); r.platesFloor = Math.min(r.platesFloor, pt.y); }
+        r.kneesInside = Math.min(r.kneesInside, Math.abs(wpos(B.calf_r).z) - 0.08);
+      }
+      for (const k in r) r[k] = +r[k].toFixed(3); human.sqCheck = r;
+      if (Object.values(r).some((v) => v < 0)) console.warn('스쿼트: 겹치는 부분이 있어요', r);
+    },
+    poseMachine(p) { if (bar && table.length) { const t = sampleSmooth(table, p); bar.position.set(t.bx, t.by, 0); } },
+    poseHuman: (p) => { poseFull(p); }
+  };
+}
+
+// ============================================================
+// 기구 8: 인클라인 벤치프레스 (30°)
+// ============================================================
+function inclineBenchRig(ctx) {
+  const { scene, M, human, wpos, aim, resetBody, moveBody, leg, arm, applyFist, setPath } = ctx;
+  const mach = new THREE.Group(); scene.add(mach);
+  const TH = 30 * Math.PI / 180, t = V(-Math.cos(TH), Math.sin(TH)), nF = V(Math.sin(TH), Math.cos(TH));
+  const GRIP = 0.4, BAR_R = 0.0145, J = V(0.05, 0.47), SEAT_Y = 0.46;
+  let top = V(0, 1.5), bottom = V(0, 1.1), bar = null;
+  function poseBody(p) {
+    const { B, len } = human;
+    resetBody(V(0.18, SEAT_Y + 0.09, 0));
+    aim(B.pelvis, B.spine_01, wpos(B.pelvis).add(V(-0.35, 1, 0).normalize()));
+    aim(B.spine_01, B.neck_01, wpos(B.spine_01).add(t));
+    const nk = wpos(B.neck_01), hl = wpos(B.head).distanceTo(nk);
+    aim(B.neck_01, B.head, nk.clone().add(V(-Math.cos(TH + 0.12), Math.sin(TH + 0.12)).multiplyScalar(hl)));
+    for (const [c, u] of [['clavicle_l', 'upperarm_l'], ['clavicle_r', 'upperarm_r']]) aim(B[c], B[u], wpos(B[u]).add(nF.clone().multiplyScalar(-0.012)));
+    // 등이 등받이 면(J를 지나고 기울기 TH)에 닿게
+    const back = wpos(B.spine_02).add(nF.clone().multiplyScalar(-0.115));
+    moveBody(nF.clone().multiplyScalar(-back.clone().sub(J).dot(nF)));
+    for (const s of [-1, 1]) { const hp = wpos(B[s < 0 ? 'thigh_l' : 'thigh_r']); leg(s, V(hp.x + 0.55, len.ankleH, 0.3 * s), V(0.3, 1, 0.3 * s).normalize()); }
+  }
+  const barAt = (p) => { const k = 1 - (1 - p) * (1 - p); return V(top.x + (bottom.x - top.x) * k, top.y + (bottom.y - top.y) * p); };
+  function poseFull(p) { poseBody(p); applyFist(); const b = barAt(p); for (const s of [-1, 1]) arm(s, V(b.x, b.y, GRIP * s), V(0.5, -0.9, 0.55 * s).normalize()); return b; }
+  return {
+    muscles: { pec: 1, dfront: 0.85, triceps: 0.6 },
+    target: V(-0.15, 0.95, 0), logoAt: V(0.1, 0, -0.95),
+    views: { side: V(0.0, 2.3, 2.9), front: V(3.0, 1.7, 0.7), diag: V(2.1, 1.9, 2.3), back: V(-3.0, 1.8, 1.0) },
+    fit() {
+      const { B, len } = human;
+      poseBody(0);
+      const S = wpos(B.upperarm_r), dz = GRIP - Math.abs(S.z);
+      const reach = Math.sqrt(Math.pow((len.upper + len.fore + len.palm) * 0.97, 2) - dz * dz);
+      top = V(S.x + 0.02, S.y + reach);
+      // 윗가슴: 어깨에서 몸통 따라 발 쪽 8cm 지점의 가슴 표면 (위에서 직선을 쏴 찾음)
+      const ray = new THREE.Raycaster(), meshes = [];
+      human.root.traverse((o) => { if (o.isSkinnedMesh && o.geometry.attributes._muscle) { o.skeleton.update(); meshes.push(o); } });
+      human.root.updateMatrixWorld(true);
+      const c = S.clone().add(t.clone().multiplyScalar(-0.08)).setZ(0);
+      ray.set(c.clone().add(nF.clone().multiplyScalar(1.2)), nF.clone().negate());
+      const hit = ray.intersectObjects(meshes, false)[0];
+      const surf = hit ? hit.point : c.clone().add(nF.clone().multiplyScalar(0.12));
+      bottom = V(surf.x, surf.y + BAR_R + 0.006);
+      // 벤치: 앉는 판 + 30° 등받이 + 머리 쪽 받침대(J훅)
+      const pad = box(0.82, 0.07, 0.28, M.pad); pad.position.copy(J.clone().add(t.clone().multiplyScalar(0.43)).add(nF.clone().multiplyScalar(-0.035))); pad.rotation.z = Math.PI - TH; mach.add(pad);
+      const seat = box(0.46, 0.07, 0.3, M.pad); seat.position.set(J.x + 0.24, SEAT_Y - 0.035, 0); mach.add(seat);
+      const pb = J.clone().add(t.clone().multiplyScalar(0.55)).add(nF.clone().multiplyScalar(-0.1));
+      tube(V(pb.x, 0.04), pb, 0.07, M.frame, mach); tube(V(J.x + 0.3, 0.04), V(J.x + 0.3, SEAT_Y - 0.08), 0.07, M.frame, mach);
+      tube(V(pb.x - 0.15, 0.04), V(J.x + 0.45, 0.04), 0.07, M.frame, mach);
+      const ux = top.x - 0.14;
+      for (const s of [-1, 1]) {
+        tube(V(ux, 0.04, 0.56 * s), V(ux, top.y + 0.12, 0.56 * s), 0.06, M.frame, mach);
+        tube(V(ux, top.y - 0.02, 0.56 * s), V(ux + 0.07, top.y - 0.02, 0.56 * s), 0.04, M.frame, mach);
+        tube(V(ux + 0.07, top.y - 0.02, 0.56 * s), V(ux + 0.07, top.y + 0.05, 0.56 * s), 0.03, M.frame, mach);
+        tube(V(ux - 0.2, 0.04, 0.56 * s), V(ux + 0.15, 0.04, 0.56 * s), 0.06, M.frame, mach);
+      }
+      tube(V(ux - 0.2, 0.04, -0.56), V(ux - 0.2, 0.04, 0.56), 0.06, M.frame, mach);
+      tube(V(ux - 0.2, 0.04), V(pb.x, 0.04), 0.06, M.frame, mach);
+      bar = makeBarbell(M); scene.add(bar);
+      const pts = []; for (let i = 0; i <= 40; i++) { const b = barAt(i / 40); pts.push(V(b.x, b.y, GRIP + 0.1)); } setPath(pts);
+      const r = { barFace: 9, barRack: 9, platesRack: 9, chestGap: 9 };
+      for (const p of [0, 0.25, 0.5, 0.75, 1]) {
+        const b = poseFull(p), hd = wpos(B.head).add(V(0, 0.05, 0));
+        r.barFace = Math.min(r.barFace, segDistG(hd, hd, V(b.x, b.y, -0.2), V(b.x, b.y, 0.2)) - 0.13);
+        for (const s of [-1, 1]) { r.barRack = Math.min(r.barRack, segDistG(V(b.x, b.y, -1.1), V(b.x, b.y, 1.1), V(ux, 0, 0.56 * s), V(ux, top.y + 0.12, 0.56 * s)) - 0.05); for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2, pt = V(b.x + Math.cos(a) * 0.225, b.y + Math.sin(a) * 0.225, 0.86 * s); r.platesRack = Math.min(r.platesRack, segDistG(pt, pt, V(ux, 0, 0.56 * s), V(ux, top.y + 0.12, 0.56 * s)) - 0.03); } }
+      }
+      r.chestGap = +(bottom.y - BAR_R - surf.y).toFixed(3);
+      for (const k in r) r[k] = +r[k].toFixed(3); human.ibCheck = r;
+      if (['barFace', 'barRack', 'platesRack'].some((k) => r[k] < 0)) console.warn('인클라인 벤치: 겹치는 부분이 있어요', r);
+    },
+    poseMachine(p) { if (bar) { const b = barAt(p); bar.position.set(b.x, b.y, 0); } },
+    poseHuman: (p) => { poseFull(p); }
+  };
+}
+
+// ============================================================
+// 기구 9: 체스트 프레스 머신 (원판식, 손잡이가 앞으로 밀리며 살짝 모임)
+// ============================================================
+function chestPressRig(ctx) {
+  const { scene, M, human, wpos, arm, applyFist, setPath } = ctx;
+  const mach = new THREE.Group(); scene.add(mach);
+  const SEAT = 0.5, LEAN = 10 * Math.PI / 180;
+  const piv = {}, g0 = {}, axis = {}, ang = {}, lev = {};
+  const body = (p) => seatedPose(ctx, V(-0.05, SEAT + 0.085, 0), LEAN, (s) => V(0.42, human.len.ankleH, 0.17 * s), (s) => V(1, 0.2, 0.2 * s).normalize());
+  const gripAt = (s, p) => g0[s].clone().sub(piv[s]).applyAxisAngle(axis[s], ang[s] * p).add(piv[s]);
+  function poseFull(p) { body(p); applyFist(); for (const s of [-1, 1]) arm(s, gripAt(s, p), V(-0.35, -1, 0.65 * s).normalize()); }
+  return {
+    muscles: { pec: 1, dfront: 0.7, triceps: 0.7 },
+    target: V(0.1, 1.1, 0), logoAt: V(0.4, 0, 0.95),
+    views: { side: V(0.1, 1.35, 3.7), front: V(3.2, 1.55, 1.2), diag: V(2.3, 1.75, 2.6), back: V(-3.1, 1.7, 1.2) },
+    fit() {
+      const { B, len } = human;
+      body(0);
+      const reach = (len.upper + len.fore + len.palm) * 0.95;
+      for (const s of [-1, 1]) {
+        const S = wpos(B[s < 0 ? 'upperarm_l' : 'upperarm_r']);
+        g0[s] = S.clone().add(V(0.13, -0.11, 0.1 * s));                      // 시작: 가슴 옆 (팔꿈치는 뒤)
+        const g1 = S.clone().add(V(Math.sqrt(reach * reach - 0.1 * 0.1 - 0.05 * 0.05), -0.1, -0.05 * s)); // 끝: 앞으로 뻗고 살짝 모임
+        // 회전축: 어깨 뒤·위 (두 손잡이 위치에서 같은 거리)
+        const P = V(0, S.y + 0.55, (Math.abs(S.z) + 0.16) * s);
+        const c0 = (P.y - g0[s].y) ** 2 + (P.z - g0[s].z) ** 2, c1 = (P.y - g1.y) ** 2 + (P.z - g1.z) ** 2;
+        P.x = (g1.x * g1.x - g0[s].x * g0[s].x + c1 - c0) / (2 * (g1.x - g0[s].x));
+        piv[s] = P;
+        const a = g0[s].clone().sub(P), b = g1.clone().sub(P);
+        axis[s] = a.clone().cross(b).normalize(); ang[s] = a.angleTo(b);
+        // 레버: 회전축 → 손잡이 (막대 2개) + 세로 손잡이 + 원판
+        const o = lev[s] = { g: new THREE.Group() }; scene.add(o.g);
+        o.rod = mkPlaceRod(scene, 0.03, M.frame); o.grip = mkPlaceRod(scene, 0.019, M.rubber);
+        o.horn = mkPlaceRod(scene, 0.026, M.chrome);
+        o.plates = [cyl(0.225, 0.04, M.plate, 'y'), cyl(0.19, 0.04, M.plate, 'y')]; o.plates.forEach((m) => scene.add(m));
+        const hub = cyl(0.06, 0.12, M.frameEdge, 'y'); hub.position.copy(P); hub.quaternion.setFromUnitVectors(V(0, 1, 0), axis[s]); mach.add(hub);
+        tube(V(P.x - 0.05, 0.04, P.z), V(P.x - 0.05, P.y + 0.1, P.z), 0.075, M.frame, mach);
+      }
+      tube(V(piv[1].x - 0.05, piv[1].y + 0.1, piv[-1].z), V(piv[1].x - 0.05, piv[1].y + 0.1, piv[1].z), 0.075, M.frame, mach);
+      tube(V(piv[1].x - 0.05, 0.04, piv[-1].z), V(piv[1].x - 0.05, 0.04, piv[1].z), 0.075, M.frame, mach);
+      // 의자 + 등받이 (10° 뒤로)
+      const seat = box(0.42, 0.08, 0.36, M.pad); seat.position.set(0.0, SEAT - 0.04, 0); mach.add(seat);
+      const back = box(0.08, 0.62, 0.34, M.pad); back.position.set(-0.17 - Math.sin(LEAN) * 0.31, SEAT + 0.34, 0); back.rotation.z = LEAN; mach.add(back);
+      tube(V(0, 0.04), V(0, SEAT - 0.08), 0.07, M.frame, mach); tube(V(-0.24, SEAT - 0.06), V(-0.24 - Math.sin(LEAN) * 0.4, SEAT + 0.3), 0.06, M.frame, mach);
+      tube(V(piv[1].x - 0.05, 0.04), V(0.05, 0.04), 0.07, M.frame, mach);
+      const pts = []; for (let i = 0; i <= 40; i++) pts.push(gripAt(1, i / 40).add(V(0, 0, 0.1))); setPath(pts);
+      const r = { leverHead: 9, leverBody: 9, platesBody: 9 };
+      for (const p of [0, 0.5, 1]) { poseFull(p); this.poseMachine(p); const hd = wpos(B.head), s3 = wpos(B.spine_03), pel = wpos(B.pelvis); for (const s of [-1, 1]) { const g = gripAt(s, p); r.leverHead = Math.min(r.leverHead, segDistG(hd, hd, piv[s], g) - 0.12 - 0.03); r.leverBody = Math.min(r.leverBody, segDistG(piv[s], g, pel, s3) - 0.17 - 0.03); const pc = lev[s].plates[0].position; r.platesBody = Math.min(r.platesBody, segDistG(pc, pc, pel, s3) - 0.17 - 0.225, pc.distanceTo(hd) - 0.13 - 0.225); } }
+      for (const k in r) r[k] = +r[k].toFixed(3); human.cpCheck = r;
+      if (Object.values(r).some((v) => v < 0)) console.warn('체스트 프레스: 겹치는 부분이 있어요', r);
+    },
+    poseMachine(p) {
+      for (const s of [-1, 1]) {
+        const o = lev[s]; if (!o) continue;
+        const g = gripAt(s, p), P = piv[s];
+        placeRodBetween(o.rod, P, g.clone().add(V(0, 0.09, 0)));
+        placeRodBetween(o.grip, g.clone().add(V(0, -0.08, 0)), g.clone().add(V(0, 0.09, 0)));
+        // 원판: 회전축 바깥쪽 봉 (레버와 함께 돌아감)
+        const out = axis[s].clone().multiplyScalar(s * axis[s].z >= 0 ? 1 : -1);
+        const dirBack = P.clone().sub(g).normalize();
+        const hc = P.clone().add(dirBack.clone().multiplyScalar(0.25));
+        placeRodBetween(o.horn, hc, hc.clone().add(out.clone().multiplyScalar(0.25)));
+        o.plates.forEach((pl, i) => { pl.position.copy(hc).add(out.clone().multiplyScalar(0.1 + i * 0.045)); pl.quaternion.setFromUnitVectors(V(0, 1, 0), out); });
+      }
+    },
+    poseHuman: (p) => { poseFull(p); }
+  };
+}
+
+// ============================================================
+// 기구 10: 시티드 케이블 로우 (V 손잡이)
+// ============================================================
+function seatedRowRig(ctx) {
+  const { scene, M, human, wpos, arm, applyFist, setPath } = ctx;
+  const mach = new THREE.Group(); scene.add(mach);
+  const SEAT = 0.42, PLATE_X = 0.62, COLX = 1.0, PUL = V(0.78, 0.36);
+  let h0 = V(0, 0), h1 = V(0, 0), handle = null, cable = null, cable2 = null, stack = null, d0 = 0;
+  const lean = (p) => (-14 + 18 * p) * Math.PI / 180;          // 시작 앞으로 14° → 끝 뒤로 4°
+  const body = (p) => seatedPose(ctx, V(-0.1, SEAT + 0.085, 0), lean(p), (s) => V(PLATE_X - 0.08, 0.3 + human.len.ankleH * 0.5, 0.13 * s), (s) => V(0.2, 1, 0.2 * s).normalize());
+  const hAt = (p) => h0.clone().lerp(h1, p);
+  function poseFull(p) { body(p); applyFist(); const h = hAt(p); for (const s of [-1, 1]) arm(s, V(h.x, h.y, 0.055 * s), V(-1, -0.15, 0.25 * s).normalize()); }
+  return {
+    muscles: { midback: 1, lats: 0.9, biceps: 0.55, drear: 0.5 },
+    target: V(0.25, 0.85, 0), logoAt: V(-0.3, 0, 0.9),
+    views: { side: V(0.25, 1.25, 3.6), front: V(2.9, 1.6, 1.6), diag: V(-1.9, 1.7, 2.6), back: V(-3.0, 1.5, 1.0) },
+    fit() {
+      const { B, len } = human;
+      body(0);
+      const S = wpos(B.upperarm_r), reach = (len.upper + len.fore + len.palm) * 0.96;
+      h0 = V(S.x + Math.sqrt(reach * reach - 0.2 * 0.2 - 0.12 * 0.12), S.y - 0.2);
+      body(1);
+      const pel = wpos(B.pelvis);
+      h1 = V(pel.x + 0.2, pel.y + 0.22);                        // 배꼽 앞
+      body(0);
+      // 의자·발판·기둥
+      const seat = box(0.9, 0.08, 0.3, M.pad); seat.position.set(-0.25, SEAT - 0.04, 0); mach.add(seat);
+      tube(V(-0.6, 0.04), V(-0.6, SEAT - 0.08), 0.07, M.frame, mach); tube(V(0.1, 0.04), V(0.1, SEAT - 0.08), 0.07, M.frame, mach);
+      tube(V(-0.7, 0.04), V(COLX, 0.04), 0.08, M.frame, mach);
+      const fp = box(0.05, 0.36, 0.46, M.rubber); fp.position.set(PLATE_X, 0.3, 0); fp.rotation.z = 0.35; mach.add(fp);
+      tube(V(PLATE_X + 0.05, 0.04), V(PLATE_X - 0.02, 0.2), 0.06, M.frame, mach);
+      for (const s of [-1, 1]) tube(V(COLX, 0.04, 0.18 * s), V(COLX, 2.0, 0.18 * s), 0.075, M.frame, mach);
+      tube(V(COLX, 2.0, -0.18), V(COLX, 2.0, 0.18), 0.075, M.frame, mach);
+      stack = weightStack(mach, M, COLX - 0.1);
+      const pw = cyl(0.05, 0.04, M.frameEdge, 'z'); pw.position.copy(PUL); mach.add(pw);
+      tube(V(PUL.x, 0.04), V(PUL.x, PUL.y), 0.05, M.frame, mach);
+      // V 손잡이
+      handle = new THREE.Group(); scene.add(handle);
+      for (const s of [-1, 1]) { tube(V(0.0, 0, 0), V(-0.02, -0.06, 0.055 * s), 0.025, M.chrome, handle); const g = cyl(0.019, 0.13, M.rubber, 'y'); g.position.set(-0.02, -0.06, 0.055 * s); handle.add(g); }
+      const cm = cableMat(); cable = mkPlaceRod(scene, 0.004, cm); cable2 = mkPlaceRod(scene, 0.004, cm);
+      d0 = h0.distanceTo(PUL);
+      const pts = []; for (let i = 0; i <= 30; i++) { const h = hAt(i / 30); pts.push(V(h.x, h.y, 0.2)); } setPath(pts);
+      const r = { handleKnees: 9, cableLegs: 9, handleTorso: 9 };
+      for (const p of [0, 0.25, 0.5, 0.75, 1]) { poseFull(p); const h = hAt(p); for (const x of ['_l', '_r']) { const kn = wpos(B['calf' + x]), th = wpos(B['thigh' + x]), an = wpos(B['foot' + x]); r.handleKnees = Math.min(r.handleKnees, segDistG(V(h.x, h.y - 0.06, -0.08), V(h.x, h.y - 0.06, 0.08), th, kn) - 0.07); r.cableLegs = Math.min(r.cableLegs, segDistG(h, PUL, kn, an) - 0.06, segDistG(h, PUL, th, kn) - 0.075); } const pel = wpos(B.pelvis), s3 = wpos(B.spine_03); r.handleTorso = Math.min(r.handleTorso, segDistG(V(h.x, h.y, 0), V(h.x, h.y, 0), pel, s3) - 0.16); }
+      for (const k in r) r[k] = +r[k].toFixed(3); human.srCheck = r;
+      if (Object.values(r).some((v) => v < 0)) console.warn('시티드 로우: 겹치는 부분이 있어요', r);
+    },
+    poseMachine(p) {
+      if (!handle) return;
+      const h = hAt(p); handle.position.set(h.x + 0.02, h.y + 0.06, 0);
+      placeRodBetween(cable, V(h.x + 0.02, h.y + 0.06, 0), PUL);
+      const lift = h.distanceTo(PUL) - d0; stack.position.y = Math.max(0, lift);
+      placeRodBetween(cable2, V(COLX - 0.1, 1.95, 0), V(COLX - 0.1, 0.4 + Math.max(0, lift), 0));
+    },
+    poseHuman: (p) => { poseFull(p); }
+  };
+}
+
+// ============================================================
+// 기구 11: 45° 레그 프레스 (원판식)
+// ============================================================
+function legPressRig(ctx) {
+  const { scene, M, human, wpos, aim, resetBody, leg, arm, applyFist, setPath } = ctx;
+  const mach = new THREE.Group(); scene.add(mach);
+  const BACK = 40 * Math.PI / 180;                               // 등받이: 수평에서 40°
+  const tH = V(-Math.cos(BACK), Math.sin(BACK));                   // 엉덩이 → 머리 방향
+  const RAIL = 45 * Math.PI / 180, r = V(Math.cos(RAIL), Math.sin(RAIL));
+  const HIP = V(0, 0.55);
+  let a0 = V(0, 0), sled = null, s1 = 0, footDir = V(-Math.sin(RAIL), Math.cos(RAIL));
+  function body(p) {
+    const { B } = human;
+    resetBody(HIP.clone().add(V(0, 0.02)));
+    aim(B.pelvis, B.spine_01, wpos(B.pelvis).add(V(-0.5, 1, 0).normalize()));
+    aim(B.spine_01, B.neck_01, wpos(B.spine_01).add(tH));
+    const nk = wpos(B.neck_01), hl = wpos(B.head).distanceTo(nk);
+    aim(B.neck_01, B.head, nk.clone().add(V(-Math.cos(BACK + 0.35), Math.sin(BACK + 0.35)).multiplyScalar(hl)));
+    const A = a0.clone().sub(r.clone().multiplyScalar(s1 * p));
+    for (const s of [-1, 1]) {
+      const x = s < 0 ? '_l' : '_r';
+      leg(s, A.clone().setZ(0.16 * s), V(-0.2, 1, 0.3 * s).normalize());
+      const Af = wpos(B['foot' + x]);
+      aim(B['foot' + x], B['ball' + x], Af.clone().add(footDir.clone().multiplyScalar(human.len.foot)));   // 발바닥은 발판에 평평하게
+    }
+  }
+  function poseFull(p) { body(p); applyFist(); const { B } = human; const hp = wpos(B.thigh_r); for (const s of [-1, 1]) arm(s, V(hp.x + 0.05, hp.y + 0.02, 0.33 * s), V(0.2, -1, 0.5 * s).normalize()); }
+  return {
+    muscles: { quad: 1, glute: 0.8, ham: 0.4, calf: 0.25 },
+    target: V(0.25, 0.8, 0), logoAt: V(-0.4, 0, 1.0),
+    views: { side: V(0.3, 1.3, 3.9), front: V(3.3, 1.7, 1.4), diag: V(2.3, 1.9, 2.8), back: V(-3.0, 1.7, 1.2) },
+    fit() {
+      const { B, len } = human;
+      const L = len.thigh + len.shin;
+      // 다 폈을 때: 엉덩이에서 레일 방향과 비슷하게 다리 길이 93% 지점 / 내렸을 때: 무릎이 약 90°
+      body(0);
+      const H = wpos(B.thigh_r);
+      const dirA = V(Math.cos(38 * Math.PI / 180), Math.sin(38 * Math.PI / 180));
+      a0 = H.clone().add(dirA.multiplyScalar(L * 0.93)).setZ(0);
+      // 무릎 90°가 되는 거리까지 레일을 따라 내려옴
+      const target = Math.sqrt(len.thigh ** 2 + len.shin ** 2) * 0.98;
+      s1 = 0; for (let k = 0; k < 400; k++) { const A = a0.clone().sub(r.clone().multiplyScalar(s1)); if (A.distanceTo(V(H.x, H.y)) <= target) break; s1 += 0.002; }
+      // 기구: 바닥 프레임, 레일, 썰매(발판+원판 봉), 의자·등받이, 손잡이
+      tube(V(-0.8, 0.04), V(1.7, 0.04), 0.08, M.frame, mach); tube(V(-0.8, 0.04, -0.4), V(-0.8, 0.04, 0.4), 0.08, M.frame, mach); tube(V(1.7, 0.04, -0.4), V(1.7, 0.04, 0.4), 0.08, M.frame, mach);
+      const railStart = a0.clone().sub(r.clone().multiplyScalar(s1 + 0.45)).add(V(0.12, -0.25));
+      for (const s of [-1, 1]) { const rs = railStart.clone().setZ(0.32 * s); tube(rs, rs.clone().add(r.clone().multiplyScalar(1.75)), 0.07, M.chrome, mach); tube(V(rs.x, 0.04, rs.z), rs, 0.07, M.frame, mach); const re = rs.clone().add(r.clone().multiplyScalar(1.75)); tube(V(re.x, 0.04, re.z), re, 0.08, M.frame, mach); }
+      sled = new THREE.Group(); scene.add(sled);
+      const plate = box(0.05, 0.62, 0.62, M.frameEdge); plate.rotation.z = -RAIL + Math.PI / 2 - Math.PI / 2 + RAIL - RAIL; plate.quaternion.setFromUnitVectors(V(1, 0, 0), r); sled.add(plate);
+      const grip = box(0.02, 0.6, 0.6, M.rubber); grip.position.copy(r.clone().multiplyScalar(-0.03)); grip.quaternion.setFromUnitVectors(V(1, 0, 0), r); sled.add(grip);
+      for (const s of [-1, 1]) {
+        const car = box(0.5, 0.06, 0.06, M.frame); car.position.copy(r.clone().multiplyScalar(0.05)).add(V(0, -0.2, 0.32 * s)); car.quaternion.setFromUnitVectors(V(1, 0, 0), r); sled.add(car);
+        const horn = cyl(0.026, 0.25, M.chrome, 'z'); horn.position.set(0.1, -0.05, (0.36 + 0.12) * s); sled.add(horn);
+        for (let i = 0; i < 2; i++) { const pl = cyl(i ? 0.19 : 0.225, 0.045, M.plate, 'z'); pl.position.set(0.1, -0.05, (0.42 + i * 0.05) * s); sled.add(pl); }
+      }
+      const seat = box(0.45, 0.08, 0.4, M.pad); seat.position.set(HIP.x + 0.05, HIP.y - 0.13, 0); seat.rotation.z = -0.25; mach.add(seat);
+      const back = box(0.75, 0.08, 0.4, M.pad); back.position.copy(HIP.clone().add(tH.clone().multiplyScalar(0.42)).add(V(Math.sin(BACK) * -0.13, -Math.cos(BACK) * 0.13))); back.rotation.z = Math.PI - BACK; mach.add(back);
+      tube(V(HIP.x, 0.04), V(HIP.x, HIP.y - 0.17), 0.08, M.frame, mach);
+      const bb = HIP.clone().add(tH.clone().multiplyScalar(0.55)).add(V(Math.sin(BACK) * -0.2, -Math.cos(BACK) * 0.2));
+      tube(V(bb.x, 0.04), bb, 0.07, M.frame, mach);
+      for (const s of [-1, 1]) { tube(V(HIP.x + 0.05, HIP.y - 0.15, 0.3 * s), V(HIP.x + 0.05, HIP.y + 0.05, 0.33 * s), 0.035, M.frame, mach); }
+      setPath(Array.from({ length: 31 }, (_, i) => a0.clone().sub(r.clone().multiplyScalar(s1 * i / 30)).setZ(0.4)));
+      const res = { kneesPlate: 9, kneesChest: 9 };
+      for (const p of [0, 0.5, 1]) { poseFull(p); const A = a0.clone().sub(r.clone().multiplyScalar(s1 * p)); for (const x of ['_l', '_r']) { const kn = wpos(B['calf' + x]); res.kneesPlate = Math.min(res.kneesPlate, (A.clone().add(r.clone().multiplyScalar(0.06))).clone().sub(kn).dot(r)); const s3 = wpos(B.spine_03); res.kneesChest = Math.min(res.kneesChest, kn.distanceTo(s3) - 0.25); } }
+      for (const k in res) res[k] = +res[k].toFixed(3); human.lpressCheck = res;
+      if (Object.values(res).some((v) => v < 0)) console.warn('레그 프레스: 겹치는 부분이 있어요', res);
+    },
+    poseMachine(p) { if (sled) { const A = a0.clone().sub(r.clone().multiplyScalar(s1 * p)); sled.position.copy(A.clone().add(r.clone().multiplyScalar(0.1)).add(footDir.clone().multiplyScalar(0.06))); } },
+    poseHuman: (p) => { poseFull(p); }
+  };
+}
+
+// ============================================================
+// 기구 12: 덤벨 숄더 프레스 (등받이 벤치)
+// ============================================================
+function shoulderPressRig(ctx) {
+  const { scene, M, human, wpos, arm, applyFist, setPath } = ctx;
+  const mach = new THREE.Group(); scene.add(mach);
+  const SEAT = 0.48, LEAN = 8 * Math.PI / 180;
+  const db = {}, lo = {}, hi = {};
+  const body = () => seatedPose(ctx, V(-0.05, SEAT + 0.085, 0), LEAN, (s) => V(0.4, human.len.ankleH, 0.22 * s), (s) => V(1, 0.2, 0.25 * s).normalize());
+  const handAt = (s, p) => { const k = Math.sin(p * Math.PI / 2); return lo[s].clone().lerp(hi[s], p).add(V(0.0, 0, 0)); };
+  function poseFull(p) { body(); applyFist(); for (const s of [-1, 1]) arm(s, handAt(s, p), V(0.1, -0.35, 1 * s).normalize()); }
+  return {
+    muscles: { dfront: 1, dside: 0.75, triceps: 0.7, traps: 0.45 },
+    target: V(0.0, 1.25, 0), logoAt: V(0.5, 0, 0.9),
+    views: { side: V(0.05, 1.5, 3.7), front: V(3.3, 1.7, 0.6), diag: V(2.3, 1.9, 2.6), back: V(-3.0, 1.8, 1.2) },
+    fit() {
+      const { B, len } = human;
+      body();
+      const reach = (len.upper + len.fore + len.palm) * 0.95;
+      for (const s of [-1, 1]) {
+        const S = wpos(B[s < 0 ? 'upperarm_l' : 'upperarm_r']);
+        lo[s] = S.clone().add(V(0.04, 0.12, 0.26 * s));                                   // 귀 옆 높이, 팔꿈치는 손 바로 아래
+        hi[s] = S.clone().add(V(0.03, Math.sqrt(reach * reach - 0.03 * 0.03 - 0.07 * 0.07), 0.07 * s));
+        db[s] = makeDumbbell(M); scene.add(db[s]);
+      }
+      // 등받이 벤치 (거의 수직)
+      const seat = box(0.42, 0.08, 0.34, M.pad); seat.position.set(-0.02, SEAT - 0.04, 0); mach.add(seat);
+      const back = box(0.08, 0.72, 0.32, M.pad); back.position.set(-0.2 - Math.sin(LEAN) * 0.36, SEAT + 0.38, 0); back.rotation.z = LEAN; mach.add(back);
+      tube(V(-0.02, 0.04), V(-0.02, SEAT - 0.08), 0.07, M.frame, mach); tube(V(-0.27, SEAT - 0.06), V(-0.27 - Math.sin(LEAN) * 0.5, SEAT + 0.45), 0.06, M.frame, mach);
+      tube(V(-0.45, 0.04), V(0.3, 0.04), 0.07, M.frame, mach); tube(V(-0.45, 0.04, -0.25), V(-0.45, 0.04, 0.25), 0.07, M.frame, mach); tube(V(0.3, 0.04, -0.22), V(0.3, 0.04, 0.22), 0.07, M.frame, mach);
+      setPath(Array.from({ length: 31 }, (_, i) => handAt(1, i / 30).add(V(0, 0, 0.12))));
+      const r = { dbHead: 9, dbEach: 9, elbowsBack: 9 };
+      for (const p of [0, 0.5, 1]) { poseFull(p); this.poseMachine(p); const hd = wpos(B.head).add(V(0, 0.06, 0)); for (const s of [-1, 1]) { for (const e of [-1, 1]) { const head = db[s].localToWorld(V(0, 0, 0.1 * e)); r.dbHead = Math.min(r.dbHead, head.distanceTo(hd) - 0.11 - 0.075); } const el = wpos(B[s < 0 ? 'lowerarm_l' : 'lowerarm_r']), sh = wpos(B[s < 0 ? 'upperarm_l' : 'upperarm_r']); r.elbowsBack = Math.min(r.elbowsBack, el.x - (sh.x - 0.1)); } r.dbEach = Math.min(r.dbEach, db[1].localToWorld(V(0, 0, -0.1)).distanceTo(db[-1].localToWorld(V(0, 0, 0.1))) - 0.15); }
+      for (const k in r) r[k] = +r[k].toFixed(3); human.spCheck = r;
+      if (Object.values(r).some((v) => v < 0)) console.warn('숄더 프레스: 겹치는 부분이 있어요', r);
+    },
+    poseMachine(p) { for (const s of [-1, 1]) if (db[s]) { const h = handAt(s, p); db[s].position.copy(h); db[s].rotation.set(0, 0, 0); } },
+    poseHuman: (p) => { poseFull(p); }
+  };
+}
+
+// ============================================================
+// 기구 13: 케이블 푸시다운 (스트레이트 바)
+// ============================================================
+function pushdownRig(ctx) {
+  const { scene, M, human, wpos, aim, resetBody, leg, arm, applyFist, setPath } = ctx;
+  const mach = new THREE.Group(); scene.add(mach);
+  const COLX = 0.62, PUL = V(0.42, 2.05), LEAN = 10 * Math.PI / 180;
+  const E = {}; let foreL = 0.3, bar = null, cable = null, cable2 = null, stack = null, d0 = 0;
+  const A0 = 20 * Math.PI / 180, A1 = -82 * Math.PI / 180;      // 팔뚝 각도: 수평 위 20° → 거의 수직 아래
+  function body() {
+    const { B, len } = human;
+    resetBody(V(-0.02, (len.thigh + len.shin) * 0.97 + len.ankleH + 0.016, 0));
+    const sp = wpos(B.spine_01), Ls = wpos(B.neck_01).distanceTo(sp);
+    aim(B.spine_01, B.neck_01, sp.clone().add(V(Math.sin(LEAN) * Ls, Math.cos(LEAN) * Ls, 0)));
+    const nk = wpos(B.neck_01), hl = wpos(B.head).distanceTo(nk);
+    aim(B.neck_01, B.head, nk.clone().add(V(Math.sin(0.1), Math.cos(0.1)).multiplyScalar(hl)));
+    for (const s of [-1, 1]) leg(s, V(0.02, len.ankleH, 0.15 * s), V(1, 0, 0.15 * s).normalize());
+  }
+  const handAt = (s, p) => { const a = A0 + (A1 - A0) * p; return E[s].clone().add(V(Math.cos(a) * foreL, Math.sin(a) * foreL, -0.02 * s)); };
+  function poseFull(p) { body(); applyFist(); const { B } = human; for (const s of [-1, 1]) { const S = wpos(B[s < 0 ? 'upperarm_l' : 'upperarm_r']); arm(s, handAt(s, p), E[s].clone().sub(S).normalize().add(V(-0.3, 0, 0))); } }
+  return {
+    muscles: { triceps: 1, forearm: 0.3 },
+    target: V(0.15, 1.15, 0), logoAt: V(-0.5, 0, 0.85),
+    views: { side: V(0.1, 1.4, 3.6), front: V(2.6, 1.7, 2.0), diag: V(-1.8, 1.8, 2.8), back: V(-3.1, 1.7, 1.0) },
+    fit() {
+      const { B, len } = human;
+      body();
+      foreL = len.fore + len.palm;
+      for (const s of [-1, 1]) { const S = wpos(B[s < 0 ? 'upperarm_l' : 'upperarm_r']); E[s] = S.clone().add(V(0.05, -len.upper * 0.995, -0.03 * s)); }  // 팔꿈치는 옆구리에 고정
+      for (const s of [-1, 1]) tube(V(COLX, 0.04, 0.18 * s), V(COLX, 2.25, 0.18 * s), 0.075, M.frame, mach);
+      tube(V(COLX, 2.25, -0.18), V(COLX, 2.25, 0.18), 0.075, M.frame, mach);
+      tube(V(COLX, 2.15), V(PUL.x, PUL.y + 0.06), 0.06, M.frame, mach);
+      tube(V(COLX - 0.2, 0.04, -0.35), V(COLX - 0.2, 0.04, 0.35), 0.075, M.frame, mach); tube(V(COLX - 0.2, 0.04), V(COLX + 0.3, 0.04), 0.075, M.frame, mach);
+      const pw = cyl(0.05, 0.04, M.frameEdge, 'z'); pw.position.copy(PUL); mach.add(pw);
+      stack = weightStack(mach, M, COLX - 0.1);
+      bar = new THREE.Group(); scene.add(bar);
+      tube(V(0, 0, -0.24), V(0, 0, 0.24), 0.026, M.chrome, bar); for (const s of [-1, 1]) { const g = cyl(0.018, 0.1, M.rubber, 'z'); g.position.set(0, 0, 0.13 * s); bar.add(g); }
+      const cm = cableMat(); cable = mkPlaceRod(scene, 0.004, cm); cable2 = mkPlaceRod(scene, 0.004, cm);
+      const c0 = handAt(1, 0).setZ(0); d0 = c0.distanceTo(PUL);
+      setPath(Array.from({ length: 31 }, (_, i) => handAt(1, i / 30).setZ(0.25)));
+      const r = { barTorso: 9, cableFace: 9, elbowsInside: 9 };
+      for (const p of [0, 0.25, 0.5, 0.75, 1]) { poseFull(p); const h = handAt(1, p).setZ(0), hd = wpos(B.head).add(V(0, 0.05, 0)), s3 = wpos(B.spine_03), pel = wpos(B.pelvis); r.barTorso = Math.min(r.barTorso, segDistG(V(h.x, h.y, -0.2), V(h.x, h.y, 0.2), pel, s3) - 0.16); r.cableFace = Math.min(r.cableFace, segDistG(hd, hd, h, PUL) - 0.12); for (const x of ['_l', '_r']) r.elbowsInside = Math.min(r.elbowsInside, Math.abs(wpos(B['lowerarm' + x]).z) - 0.16); }
+      for (const k in r) r[k] = +r[k].toFixed(3); human.pdCheck = r;
+      if (Object.values(r).some((v) => v < 0)) console.warn('푸시다운: 겹치는 부분이 있어요', r);
+    },
+    poseMachine(p) {
+      if (!bar) return;
+      const h = handAt(1, p).setZ(0); bar.position.copy(h);
+      placeRodBetween(cable, h, PUL);
+      const lift = Math.max(0, d0 - 0 + (h.distanceTo(PUL) - d0)); stack.position.y = h.distanceTo(PUL) - d0;
+      placeRodBetween(cable2, V(COLX - 0.1, 2.15, 0), V(COLX - 0.1, 0.4 + Math.max(0, h.distanceTo(PUL) - d0), 0));
+    },
+    poseHuman: (p) => { poseFull(p); }
+  };
+}
+
+
 export function createHighRow(container) { return createStage(container, highRowRig); }
 export function createTBarRow(container) { return createStage(container, tBarRowRig); }
 export function createLateralRaise(container) { return createStage(container, lateralRaiseRig); }
 export function createBenchPress(container) { return createStage(container, benchPressRig); }
 export function createLatPulldown(container) { return createStage(container, latPulldownRig); }
 export function createRackDeadlift(container) { return createStage(container, rackDeadliftRig); }
+export function createSquat(container) { return createStage(container, squatRig); }
+export function createInclineBench(container) { return createStage(container, inclineBenchRig); }
+export function createChestPress(container) { return createStage(container, chestPressRig); }
+export function createSeatedRow(container) { return createStage(container, seatedRowRig); }
+export function createLegPress(container) { return createStage(container, legPressRig); }
+export function createShoulderPress(container) { return createStage(container, shoulderPressRig); }
+export function createPushdown(container) { return createStage(container, pushdownRig); }
