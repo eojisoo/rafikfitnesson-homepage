@@ -332,7 +332,8 @@ var NS='http://www.w3.org/2000/svg';
 function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
 // 두 관절(어깨-팔꿈치-손목) 위치 계산: 손 위치가 정해지면 팔꿈치 위치를 구합니다
 function ik(S,W,a,b,down){var dx=W[0]-S[0],dy=W[1]-S[1],d=Math.min(Math.hypot(dx,dy),a+b-.01),base=Math.atan2(dy,dx),al=Math.acos(Math.max(-1,Math.min(1,(a*a+d*d-b*b)/(2*a*d))));var e1=[S[0]+a*Math.cos(base+al),S[1]+a*Math.sin(base+al)],e2=[S[0]+a*Math.cos(base-al),S[1]+a*Math.sin(base-al)];return (e1[1]>e2[1])===down?e1:e2}
-function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2}
+// 속도 곡선: 출발·멈춤에서 속도와 가속도가 모두 0으로 이어져 툭 끊기지 않음 (smootherstep)
+function ease(t){return t*t*t*(t*(t*6-15)+10)}
 
 // 3D 모션 공통: factory = js/guide3d.js에서 부를 기구 함수 이름
 function motion3d(factory,phases){return{
@@ -357,9 +358,9 @@ var MOTIONS={
   kind:'3d',
   phases:[
    {name:'준비 자세',cue:'숨 고르기',dur:.7,from:0,to:0,breath:'in'},
-   {name:'당기기',cue:'숨 내쉬기',dur:1.1,from:0,to:1,breath:'out'},
+   {name:'당기기',cue:'숨 내쉬기',dur:1.4,from:0,to:1,breath:'out'},
    {name:'등 조이기',cue:'1초 멈춤',dur:.6,from:1,to:1,breath:'out'},
-   {name:'천천히 되돌리기',cue:'숨 들이마시기',dur:2,from:1,to:0,breath:'in'},
+   {name:'천천히 되돌리기',cue:'숨 들이마시기',dur:2.3,from:1,to:0,breath:'in'},
    {name:'팔 다 펴기',cue:'등 늘리기',dur:.5,from:0,to:0,breath:'in'}
   ],
   build:function(){
