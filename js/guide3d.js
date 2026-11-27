@@ -4,6 +4,12 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+
+// 사람 모델: MakeHuman(CC0)으로 만든 인체 + 게임엔진용 뼈대
+const HUMAN_URL = 'assets/gymstation/guide/trainee.glb';
+const DRACO_URL = 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/gltf/';
 
 const V = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 const UP = V(0, 1, 0);
@@ -117,7 +123,7 @@ export function createHighRow(container) {
   const T = 0.075, Y0 = 0.04;
   const P = V(-0.9, 1.9);             // 레버 회전축 (머리 뒤 위쪽)
   const R = 1.36;                      // 회전축 → 손잡이 길이
-  const A0 = -6.3 * Math.PI / 180, A1 = -41.4 * Math.PI / 180; // 시작(팔 뻗음) / 끝(당김) 각도
+  const A0 = -15 * Math.PI / 180, A1 = -51 * Math.PI / 180; // 시작(팔 뻗음) / 끝(당김) 각도
   // 바닥 프레임
   for (const z of [-0.55, 0.55]) tube(V(-1.55, Y0, z), V(0.72, Y0, z * 0.62), T, M.frame, mach);
   tube(V(-1.55, Y0, -0.55), V(-1.55, Y0, 0.55), T, M.frame, mach);
@@ -142,15 +148,19 @@ export function createHighRow(container) {
   tube(V(-0.78, 1.28, -0.5), V(-0.78, 1.28, 0.5), T * 0.9, M.frame, mach);
   tube(V(-1.05, 2.06, 0), V(0.15, 2.06, 0), 0.09, M.frame, mach);
   tube(V(-0.93, 2.0, 0), V(-1.05, 2.06, 0), 0.09, M.frame, mach);
-  // 좌석
-  tube(V(-0.02, Y0, 0), V(-0.02, 0.48, 0), 0.07, M.frame, mach);
-  const seatPost = box(0.05, 0.3, 0.05, M.chrome); seatPost.position.set(-0.02, 0.36, 0.045); mach.add(seatPost);
-  const seat = box(0.44, 0.08, 0.36, M.pad); seat.position.set(0.02, 0.53, 0); mach.add(seat);
-  const seatBase = box(0.38, 0.03, 0.3, M.frame); seatBase.position.set(0.02, 0.48, 0); mach.add(seatBase);
-  // 허벅지 고정 패드
-  bent([V(0.6, Y0, 0), V(0.6, 0.66, 0), V(0.42, 0.82, 0)], 0.065, M.frame, mach);
-  for (const s of [-1, 1]) { const roll = cyl(0.062, 0.2, M.pad, 'z'); roll.position.set(0.4, 0.8, 0.13 * s); mach.add(roll); }
-  const rollAxle = cyl(0.02, 0.06, M.chrome, 'z'); rollAxle.position.set(0.4, 0.8, 0); mach.add(rollAxle);
+  // 좌석 (높이 조절식): 사람 체형에 맞춰 높이를 맞춥니다
+  tube(V(-0.02, Y0, 0), V(-0.02, 0.36, 0), 0.07, M.frame, mach);
+  const seatG = new THREE.Group(); mach.add(seatG);
+  const seatPost = box(0.05, 0.42, 0.05, M.chrome); seatPost.position.set(-0.02, 0.3, 0); seatG.add(seatPost);
+  const seat = box(0.44, 0.08, 0.36, M.pad); seat.position.set(0.02, 0.53, 0); seatG.add(seat);
+  const seatBase = box(0.38, 0.03, 0.3, M.frame); seatBase.position.set(0.02, 0.48, 0); seatG.add(seatBase);
+  // 허벅지 고정 패드 (높이 조절식)
+  tube(V(0.6, Y0, 0), V(0.6, 0.5, 0), 0.065, M.frame, mach);
+  const padG = new THREE.Group(); mach.add(padG);
+  const padPost = box(0.045, 0.4, 0.045, M.chrome); padPost.position.set(0.6, 0.5, 0); padG.add(padPost);
+  bent([V(0.6, 0.66, 0), V(0.42, 0.82, 0)], 0.06, M.frame, padG);
+  for (const s of [-1, 1]) { const roll = cyl(0.062, 0.2, M.pad, 'z'); roll.position.set(0.4, 0.8, 0.13 * s); padG.add(roll); }
+  const rollAxle = cyl(0.02, 0.06, M.chrome, 'z'); rollAxle.position.set(0.4, 0.8, 0); padG.add(rollAxle);
 
   // 레버 (좌우 따로 움직이는 팔)
   const levers = [];
@@ -178,34 +188,117 @@ export function createHighRow(container) {
   const pathPts = []; for (let i = 0; i <= 40; i++) { const a = A0 + (A1 - A0) * i / 40; pathPts.push(handWorld(a, 1, 0.43)); }
   const path = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pathPts), M.path); path.computeLineDistances(); scene.add(path);
 
-  // ---------------- 마네킹 ----------------
-  const man = new THREE.Group(); scene.add(man);
-  const hip = V(0.02, 0.66, 0);
-  const pelvis = ball(0.13, M.body, man); pelvis.scale.set(1.0, 0.8, 1.35); pelvis.position.copy(hip);
-  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.135, 0.36, 8, 20), M.body); torso.castShadow = true; man.add(torso);
-  const chest = ball(0.15, M.body, man);
-  const neck = limb(0.045, M.body, man);
-  const head = ball(0.1, M.body, man); head.scale.set(0.95, 1.12, 0.9);
-  const face = ball(0.02, M.joint, man); // 얼굴 방향 표시 (코)
-  const lats = [-1, 1].map(() => { const m = ball(0.1, M.muscle, man); m.scale.set(0.55, 1.55, 0.6); m.castShadow = false; return m; });
-  const bis = [-1, 1].map(() => { const m = ball(0.05, M.muscle, man); m.scale.set(0.85, 1.9, 0.85); m.castShadow = false; return m; });
-  const L = {};
-  for (const s of [-1, 1]) {
-    L[s] = {
-      thigh: limb(0.072, M.body, man), shin: limb(0.052, M.body, man),
-      upper: limb(0.048, M.body, man), fore: limb(0.04, M.body, man),
-      knee: ball(0.058, M.joint, man), ankle: ball(0.045, M.joint, man), shoulder: ball(0.062, M.joint, man), elbow: ball(0.045, M.joint, man), hand: ball(0.046, M.body, man),
-      hip: ball(0.075, M.body, man), foot: box(0.2, 0.06, 0.09, M.body)
-    };
-    man.add(L[s].foot);
+  // ---------------- 사람 (실사형 인체) ----------------
+  const human = { ready: false };
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0xff6a10, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+  const glows = [0, 1].map(() => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.1, 24, 16), glowMat); m.scale.set(0.55, 1.45, 0.7); m.renderOrder = 5; scene.add(m); return m; });
+  const draco = new DRACOLoader().setDecoderPath(DRACO_URL);
+  const loader = new GLTFLoader().setDRACOLoader(draco);
+  const loadP = new Promise((resolve, reject) => loader.load(HUMAN_URL, (g) => { try { setupHuman(g.scene); resolve(); } catch (e) { reject(e); } }, undefined, reject));
+
+  const tmpQ = new THREE.Quaternion(), tmpQ2 = new THREE.Quaternion(), tmpV = new THREE.Vector3();
+  function wpos(o) { return o.getWorldPosition(new THREE.Vector3()); }
+  // 뼈를 돌려서 자식 뼈(child)가 목표 지점을 향하게 함
+  function aim(bone, child, target) {
+    bone.updateWorldMatrix(true, true);
+    const b = wpos(bone), c = wpos(child);
+    const cur = c.sub(b).normalize(), des = target.clone().sub(b).normalize();
+    if (cur.lengthSq() < 1e-8 || des.lengthSq() < 1e-8) return;
+    const dq = tmpQ.setFromUnitVectors(cur, des);
+    const bw = bone.getWorldQuaternion(new THREE.Quaternion());
+    const pw = bone.parent.getWorldQuaternion(tmpQ2);
+    bone.quaternion.copy(pw.invert().multiply(dq.multiply(bw)));
+    bone.updateWorldMatrix(false, true);
   }
 
-  // 다리는 고정 (허벅지 패드 아래)
-  for (const s of [-1, 1]) {
-    const h = V(hip.x, hip.y, 0.1 * s), k = V(0.44, 0.66, 0.12 * s), a = V(0.47, 0.13, 0.13 * s);
-    L[s].hip.position.copy(h); L[s].thigh.set(h, k); L[s].shin.set(k, a);
-    L[s].knee.position.copy(k); L[s].ankle.position.copy(a);
-    L[s].foot.position.set(0.55, 0.075, 0.13 * s);
+  function setupHuman(root) {
+    root.rotation.y = Math.PI / 2; // 모델 정면(+z) → 기구 앞쪽(+x)
+    root.scale.setScalar(1.06);    // 키 약 165cm 성인 비율
+    root.traverse((o) => {
+      if (o.isMesh) {
+        o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
+        const m = o.material;
+        if (m && m.map && /ponytail|eyebrow|eyelash|high-poly/i.test(o.name + m.name)) { m.transparent = false; m.alphaTest = 0.45; m.depthWrite = true; m.side = THREE.DoubleSide; }
+        if (m) { m.envMapIntensity = 0.6; if (m.roughness !== undefined) m.roughness = Math.max(m.roughness, 0.55); }
+      }
+    });
+    scene.add(root);
+    const B = {};
+    ['Root', 'pelvis', 'spine_01', 'spine_02', 'spine_03', 'neck_01', 'head', 'clavicle_l', 'clavicle_r', 'upperarm_l', 'upperarm_r', 'lowerarm_l', 'lowerarm_r', 'hand_l', 'hand_r',
+      'middle_01_l', 'middle_01_r', 'thigh_l', 'thigh_r', 'calf_l', 'calf_r', 'foot_l', 'foot_r', 'ball_l', 'ball_r'].forEach((n) => { B[n] = root.getObjectByName(n); if (!B[n]) throw Error('bone ' + n); });
+    const rest = new Map(); root.traverse((o) => { if (o.isBone) rest.set(o, o.quaternion.clone()); });
+    root.updateWorldMatrix(true, true);
+    const d = (a, b) => wpos(B[a]).distanceTo(wpos(B[b]));
+    const len = {
+      upper: d('upperarm_l', 'lowerarm_l'), fore: d('lowerarm_l', 'hand_l'), palm: d('hand_l', 'middle_01_l') * 0.9,
+      thigh: d('thigh_l', 'calf_l'), shin: d('calf_l', 'foot_l'), ankleH: wpos(B.foot_l).y, foot: d('foot_l', 'ball_l')
+    };
+    Object.assign(human, { root, B, rest, len });
+    // 좌석 높이 맞추기: 팔을 거의 다 뻗었을 때 시작 손잡이에 닿는 높이 (실제 기구에서 좌석을 맞추는 것과 같음)
+    const reach = (len.upper + len.fore + len.palm) * 0.97;
+    let lo = 0.5, hi = 0.8;
+    for (let i = 0; i < 16; i++) {
+      const mid = (lo + hi) / 2; human.hipY = mid; poseBody(0);
+      const S = wpos(B.upperarm_r), H = handWorld(A0, 1);
+      if (S.distanceTo(H) > reach) lo = mid; else hi = mid;
+    }
+    human.hipY = (lo + hi) / 2;
+    seatG.position.y = human.hipY - 0.085 - 0.57;
+    padG.position.y = human.hipY + 0.07 + 0.065 - 0.8;
+    human.ready = true;
+  }
+
+  // 몸통·다리 자세 (팔은 별도)
+  function poseBody(p) {
+    const { root, B, rest, len } = human;
+    rest.forEach((q, b) => b.quaternion.copy(q));
+    root.position.set(0, 0, 0); root.updateWorldMatrix(true, true);
+    const pel = wpos(B.pelvis);
+    root.position.set(0.02 - pel.x, human.hipY - pel.y, -pel.z);
+    root.updateWorldMatrix(true, true);
+    // 상체: 살짝 뒤로 기대고(6°→11°), 당길 때 가슴을 엶
+    const lean = 0.1 + 0.08 * p;
+    const sp = wpos(B.spine_01), nk = wpos(B.neck_01), L = nk.distanceTo(sp);
+    aim(B.spine_01, B.neck_01, sp.clone().add(V(-Math.sin(lean) * L, Math.cos(lean) * L, 0)));
+    // 머리는 정면 보기
+    const hd = wpos(B.head);
+    aim(B.neck_01, B.head, wpos(B.neck_01).add(V(0.02, hd.distanceTo(wpos(B.neck_01)), 0)));
+    // 날개뼈 모으기: 당길 때 어깨를 뒤·아래로
+    for (const [c, u, s] of [['clavicle_l', 'upperarm_l', -1], ['clavicle_r', 'upperarm_r', 1]]) {
+      const cp = wpos(B[c]), up = wpos(B[u]);
+      aim(B[c], B[u], up.clone().add(V(-0.035 * p, -0.02 * p + 0.01, 0)));
+    }
+    // 다리: 허벅지는 앞으로(패드 아래), 발은 바닥에
+    for (const [t, c, f, b, s] of [['thigh_l', 'calf_l', 'foot_l', 'ball_l', -1], ['thigh_r', 'calf_r', 'foot_r', 'ball_r', 1]]) {
+      const T = wpos(B[t]);
+      const K = T.clone().add(V(len.thigh * Math.cos(-0.05), len.thigh * Math.sin(-0.05), 0.02 * s));
+      aim(B[t], B[c], K);
+      const ay = len.ankleH, dy = K.y - ay;
+      const A = dy < len.shin ? V(K.x + Math.min(0.3, Math.sqrt(len.shin * len.shin - dy * dy)), ay, K.z + 0.01 * s) : K.clone().add(V(0.03, -len.shin, 0));
+      aim(B[c], B[f], A);
+      const Af = wpos(B[f]);
+      aim(B[f], B[b], V(Af.x + len.foot, Math.max(0.02, Af.y - len.foot * 0.55), Af.z));
+    }
+  }
+
+  function poseHuman(p, ang) {
+    const { B, len } = human;
+    poseBody(p);
+    for (const [u, l, h, s] of [['upperarm_l', 'lowerarm_l', 'hand_l', -1], ['upperarm_r', 'lowerarm_r', 'hand_r', 1]]) {
+      const S = wpos(B[u]), G = handWorld(ang, s);
+      const pole = V(-0.5, -1, 0.85 * s).normalize();
+      const E = ik(S, G, len.upper, len.fore + len.palm, pole);
+      aim(B[u], B[l], E);
+      const Ew = wpos(B[l]);
+      const W = Ew.clone().add(G.clone().sub(Ew).normalize().multiplyScalar(len.fore));
+      aim(B[l], B[h], W);
+      // 손바닥이 손잡이를 감싸도록 손을 팔뚝 방향으로
+      const Wp = wpos(B[h]);
+      aim(B[h], B[s < 0 ? 'middle_01_l' : 'middle_01_r'], Wp.clone().add(G.clone().sub(Ew).normalize().multiplyScalar(0.1)).add(V(0, -0.02, 0)));
+    }
+    // 강조 근육(광배근) 위치: 등 옆구리
+    const s2 = wpos(B.spine_02), s3 = wpos(B.spine_03);
+    glows.forEach((g, i) => { const z = i ? 0.115 : -0.115; g.position.set((s2.x + s3.x) / 2 - 0.085, (s2.y + s3.y) / 2 - 0.02, z); g.rotation.z = 0.12; });
   }
 
   // ---------------- 카메라 ----------------
@@ -252,36 +345,20 @@ export function createHighRow(container) {
     last = { p, ph };
     const ang = A0 + (A1 - A0) * p;
     for (const lv of levers) lv.arm.rotation.z = ang;
-    // 상체: 당길 때 가슴을 살짝 열고(뒤로 3°) 날개뼈를 모음
-    const lean = 0.06 + 0.05 * p;
-    const shC = V(hip.x - Math.sin(lean) * 0.6 - 0.02 * p, hip.y + Math.cos(lean) * 0.6 - 0.02 * p, 0);
-    const mid = hip.clone().add(shC).multiplyScalar(0.5);
-    torso.position.copy(mid); torso.quaternion.setFromUnitVectors(UP, shC.clone().sub(hip).normalize()); torso.scale.set(1, 1, 1.32);
-    chest.position.copy(shC).add(V(0.03, -0.12, 0)); chest.scale.set(0.95, 0.85, 1.45);
-    const nb = shC.clone().add(V(0, 0.04, 0)), hd = shC.clone().add(V(-0.01, 0.2, 0));
-    neck.set(nb, hd.clone().add(V(0, -0.06, 0))); head.position.copy(hd); face.position.copy(hd).add(V(0.095, -0.005, 0));
-    for (const s of [-1, 1]) {
-      const S = shC.clone().add(V(-0.015 * p, 0, (0.19 - 0.025 * p) * s));
-      const H = handWorld(ang, s);
-      const pole = V(-0.55, -1, 0.9 * s).normalize();
-      const E = ik(S, H, 0.3, 0.29, pole);
-      L[s].shoulder.position.copy(S); L[s].upper.set(S, E); L[s].fore.set(E, H); L[s].elbow.position.copy(E); L[s].hand.position.copy(H);
-      // 강조 근육: 광배근(등 옆) + 이두
-      lats[s === -1 ? 0 : 1].position.copy(shC).add(V(-0.06, -0.2, 0.135 * s));
-      const bi = bis[s === -1 ? 0 : 1]; bi.position.copy(S.clone().lerp(E, 0.5)).add(V(0.02, 0, 0)); bi.quaternion.setFromUnitVectors(UP, E.clone().sub(S).normalize());
-    }
-    const work = ph === 1 || ph === 2 ? 1 : ph === 3 ? 0.55 : 0.2;
-    M.muscle.emissiveIntensity = 0.15 + 0.85 * work;
-    M.muscle.opacity = 0.55 + 0.4 * work;
+    if (human.ready) poseHuman(p, ang);
+    const work = ph === 1 || ph === 2 ? 1 : ph === 3 ? 0.55 : 0.15;
+    glowMat.opacity = 0.05 + 0.33 * work;
     render();
   }
   function render() { renderer.render(scene, camera); }
 
   placeView('diag'); resize(); pose(0, 0);
+  loadP.then(() => pose(last.p, last.ph)).catch((e) => console.error('human load failed', e));
 
   return {
     draw: pose,
+    ready: loadP,
     setView,
-    dispose() { cancelAnimationFrame(tween); pmrem.dispose(); ro.disconnect(); controls.dispose(); renderer.dispose(); renderer.domElement.remove(); }
+    dispose() { cancelAnimationFrame(tween); pmrem.dispose(); draco.dispose(); ro.disconnect(); controls.dispose(); renderer.dispose(); renderer.domElement.remove(); }
   };
 }

@@ -326,7 +326,7 @@ var MOTIONS={
   ],
   build:function(){
    var box=document.getElementById('scene3d'),G={p:0,ph:0,api:null,dead:false};
-   import('./js/guide3d.js').then(function(m){if(G.dead)return;var ld=document.getElementById('load3d');if(ld)ld.hidden=true;G.api=m.createHighRow(box);G.api.draw(G.p,G.ph)})
+   import('./js/guide3d.js').then(function(m){if(G.dead)return;var ld=document.getElementById('load3d');G.api=m.createHighRow(box);G.api.draw(G.p,G.ph);if(ld){ld.textContent='사람 모델 불러오는 중…';G.api.ready.then(function(){ld.hidden=true}).catch(function(){ld.textContent='모델을 불러오지 못했어요. 새로고침해 주세요.'})}})
     .catch(function(){var ld=document.getElementById('load3d');if(ld)ld.textContent='3D를 불러오지 못했어요. 새로고침해 주세요.'});
    return G;
   },
