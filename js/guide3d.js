@@ -970,7 +970,297 @@ function benchPressRig(ctx) {
   };
 }
 
+// ============================================================
+// 공통 도우미: 두 선분 사이 최단 거리 (겹침 검사용)
+// ============================================================
+function segDistG(p1, p2, q1, q2) {
+  const d1 = p2.clone().sub(p1), d2 = q2.clone().sub(q1), r = p1.clone().sub(q1);
+  const a = d1.dot(d1), e = d2.dot(d2), f = d2.dot(r), c = d1.dot(r), b = d1.dot(d2), den = a * e - b * b;
+  if (a < 1e-9 && e < 1e-9) return p1.distanceTo(q1);
+  if (a < 1e-9) { const t0 = Math.min(1, Math.max(0, f / e)); return p1.distanceTo(q1.clone().add(d2.multiplyScalar(t0))); }
+  if (e < 1e-9) { const s0 = Math.min(1, Math.max(0, -c / a)); return q1.distanceTo(p1.clone().add(d1.multiplyScalar(s0))); }
+  let s1 = den > 1e-9 ? Math.min(1, Math.max(0, (b * f - c * e) / den)) : 0;
+  let t = (b * s1 + f) / e; if (t < 0) { t = 0; s1 = Math.min(1, Math.max(0, -c / a)); } else if (t > 1) { t = 1; s1 = Math.min(1, Math.max(0, (b - c) / a)); }
+  return p1.clone().add(d1.multiplyScalar(s1)).distanceTo(q1.clone().add(d2.multiplyScalar(t)));
+}
+// 바벨 (가운데 봉 + 슬리브 + 원판 + 클립), z축 방향
+function makeBarbell(M, plateZ = 0.86) {
+  const g = new THREE.Group();
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.0145, 0.0145, 1.32, 20), M.chrome); shaft.rotation.x = Math.PI / 2; shaft.castShadow = true; g.add(shaft);
+  for (const s of [-1, 1]) {
+    const sl = cyl(0.025, 0.42, M.chrome, 'z'); sl.position.set(0, 0, (0.66 + 0.21) * s); g.add(sl);
+    const col = cyl(0.04, 0.03, M.chrome, 'z'); col.position.set(0, 0, 0.665 * s); g.add(col);
+    for (let i = 0; i < 2; i++) { const pl = cyl(i ? 0.19 : 0.225, 0.045, M.plate, 'z'); pl.position.set(0, 0, (plateZ + i * 0.05) * s); g.add(pl); const hb = cyl(0.04, 0.05, M.frameEdge, 'z'); hb.position.copy(pl.position); g.add(hb); }
+    const clip = cyl(0.035, 0.025, M.frameEdge, 'z'); clip.position.set(0, 0, (plateZ + 0.09) * s); g.add(clip);
+  }
+  return g;
+}
+
+// ============================================================
+// 기구 5: 랫풀다운 (케이블 머신, 와이드 그립)
+//  - 무릎 패드가 있는 의자에 기구를 마주 보고 앉음
+//  - 위에서 팔을 뻗어 바를 잡고, 상체를 살짝 뒤로 젖히며 바를 윗가슴(쇄골 아래)까지 당김
+//  - 바는 얼굴 앞을 지나가고, 케이블은 위 도르래 → 기둥 → 무게 스택으로 이어져 당기면 스택이 올라감
+// ============================================================
+function latPulldownRig(ctx) {
+  const { scene, M, human, wpos, aim, resetBody, leg, arm, applyFist, setPath } = ctx;
+  const T = 0.075, Y0 = 0.04, SEAT = 0.48;
+  const GRIP = 0.38, BAR_HALF = 0.6, BAR_R = 0.015;
+  const COLX = 0.72, PULLEY_Y = 2.3;
+  const mach = new THREE.Group(); scene.add(mach);
+  let top = V(0, 2), bottom = V(0, 1.2), pulley = V(0, PULLEY_Y), barG = null, cable = null, cable2 = null, stackMove = null, stack0 = 0;
+
+  // 의자 + 무릎 패드
+  tube(V(0, Y0), V(0, SEAT - 0.08), T, M.frame, mach);
+  const seat = box(0.42, 0.08, 0.36, M.pad); seat.position.set(0.0, SEAT - 0.04, 0); mach.add(seat);
+  tube(V(-0.1, Y0), V(COLX, Y0), T, M.frame, mach);
+  tube(V(-0.1, Y0, -0.3), V(-0.1, Y0, 0.3), T, M.frame, mach);
+  const kneeG = new THREE.Group(); mach.add(kneeG);
+  // 기둥 + 무게 스택 + 위 빔
+  for (const s of [-1, 1]) tube(V(COLX, Y0, 0.16 * s), V(COLX, PULLEY_Y + 0.1, 0.16 * s), T, M.frame, mach);
+  tube(V(COLX, Y0, -0.34), V(COLX, Y0, 0.34), T, M.frame, mach);
+  for (const s of [-1, 1]) tube(V(COLX - 0.12, Y0, 0.34 * s), V(COLX + 0.3, Y0, 0.34 * s), T, M.frame, mach);
+  for (const s of [-1, 1]) { const rod = cyl(0.012, 1.4, M.chrome, 'y'); rod.position.set(COLX - 0.1, 0.8, 0.09 * s); mach.add(rod); }
+  const stackFixed = new THREE.Group(); mach.add(stackFixed);
+  stackMove = new THREE.Group(); mach.add(stackMove);
+  for (let i = 0; i < 12; i++) {
+    const pl = box(0.12, 0.045, 0.26, i < 6 ? M.frameEdge : M.frame); pl.position.set(COLX - 0.1, 0.1 + i * 0.05, 0);
+    (i < 6 ? stackMove : stackFixed).add(pl);
+  }
+  const pin = cyl(0.012, 0.2, new THREE.MeshStandardMaterial({ color: 0xf2c200, roughness: 0.4 }), 'z'); pin.position.set(COLX - 0.1, 0.1 + 5 * 0.05, 0.12); stackMove.add(pin);
+  const shroud = box(0.04, 1.3, 0.34, M.frame); shroud.position.set(COLX + 0.0, 0.78, 0); mach.add(shroud);
+
+  function build() {
+    // 위 빔: 기둥 꼭대기 → 사용자 위 도르래
+    tube(V(COLX, PULLEY_Y + 0.1, -0.16), V(COLX, PULLEY_Y + 0.1, 0.16), T, M.frame, mach);
+    tube(V(COLX, PULLEY_Y + 0.1), V(pulley.x - 0.05, PULLEY_Y + 0.1), 0.09, M.frame, mach);
+    const pw = cyl(0.06, 0.04, M.frameEdge, 'z'); pw.position.copy(pulley).add(V(0, 0.02, 0)); mach.add(pw);
+    const pw2 = cyl(0.06, 0.04, M.frameEdge, 'z'); pw2.position.set(COLX - 0.1, PULLEY_Y + 0.02, 0); mach.add(pw2);
+    // 바: 가운데 곧은 부분 + 양 끝이 살짝 아래로 꺾인 랫 바 + 고무 그립
+    barG = new THREE.Group(); scene.add(barG);
+    tube(V(0, 0, -0.42), V(0, 0, 0.42), 0.03, M.chrome, barG);
+    for (const s of [-1, 1]) {
+      tube(V(0, 0, 0.42 * s), V(0, -0.07, BAR_HALF * s), 0.03, M.chrome, barG);
+      const g = cyl(0.019, 0.16, M.rubber, 'z'); g.position.set(0, 0, GRIP * s); g.rotation.x = Math.PI / 2; barG.add(g);
+    }
+    const hook = cyl(0.02, 0.04, M.frameEdge, 'y'); hook.position.set(0, 0.03, 0); barG.add(hook);
+    const cm = new THREE.MeshStandardMaterial({ color: 0x2b2f2e, roughness: 0.5, metalness: 0.3 });
+    cable = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 1, 8), cm); scene.add(cable);
+    cable2 = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 1, 8), cm); scene.add(cable2);
+    // 무릎 패드: 허벅지 바로 위
+    const { B } = human;
+    const kn = wpos(B.calf_r), th = wpos(B.thigh_r);
+    const kp = th.clone().lerp(kn, 0.78).add(V(0, 0.15, 0));
+    tube(V(0.36, Y0), V(0.36, kp.y - 0.06), 0.065, M.frame, kneeG);
+    tube(V(0.36, kp.y - 0.06), V(kp.x, kp.y - 0.06), 0.06, M.frame, kneeG);
+    for (const s of [-1, 1]) { const roll = cyl(0.065, 0.22, M.pad, 'z'); roll.position.set(kp.x, kp.y, 0.14 * s); kneeG.add(roll); }
+    tube(V(kp.x, kp.y - 0.06, 0), V(kp.x, kp.y, 0), 0.04, M.frame, kneeG);
+  }
+  function placeRod(m, a, b) { const d = b.clone().sub(a); m.position.copy(a).add(b).multiplyScalar(0.5); m.scale.set(1, d.length(), 1); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize()); }
+  // 바 진행: p=0 위(팔 뻗음), p=1 윗가슴. 얼굴을 피해 처음엔 수직으로 내려오다 가슴 쪽으로
+  const barAt = (p) => { const k = p * p; return V(top.x + (bottom.x - top.x) * k, top.y + (bottom.y - top.y) * p); };
+
+  // 앉은 자세: 당길수록 상체를 뒤로 (5° → 18°)
+  function poseBody(p) {
+    const { B, len } = human;
+    resetBody(V(0.0, SEAT + 0.085, 0));
+    const lean = (5 + 13 * p) * Math.PI / 180;
+    const sp = wpos(B.spine_01), Ls = wpos(B.neck_01).distanceTo(sp);
+    aim(B.spine_01, B.neck_01, sp.clone().add(V(-Math.sin(lean) * Ls, Math.cos(lean) * Ls, 0)));
+    const nk = wpos(B.neck_01);
+    aim(B.neck_01, B.head, nk.clone().add(V(Math.sin(0.12) , Math.cos(0.12), 0).multiplyScalar(wpos(B.head).distanceTo(nk))));
+    for (const [c, u] of [['clavicle_l', 'upperarm_l'], ['clavicle_r', 'upperarm_r']]) aim(B[c], B[u], wpos(B[u]).add(V(-0.025 * p, -0.03 * p + 0.015 * (1 - p), 0)));
+    for (const s of [-1, 1]) {
+      const Tp = wpos(B[s < 0 ? 'thigh_l' : 'thigh_r']);
+      const K = Tp.clone().add(V(len.thigh * Math.cos(-0.06), len.thigh * Math.sin(-0.06), 0.03 * s));
+      const dy = K.y - len.ankleH;
+      const Af = dy < len.shin ? V(K.x + Math.min(0.2, Math.sqrt(len.shin * len.shin - dy * dy)), len.ankleH, K.z + 0.02 * s) : K.clone().add(V(0.05, -len.shin, 0));
+      leg(s, Af, V(1, 0.2, 0.15 * s).normalize());
+    }
+  }
+  function poseFull(p) {
+    poseBody(p); applyFist();
+    const b = barAt(p);
+    // 팔꿈치: 옆·아래로 내려오며 몸통 쪽으로 (광배근으로 당기기)
+    for (const s of [-1, 1]) arm(s, V(b.x, b.y, GRIP * s), V(-0.35, -1, 0.75 * s).normalize());
+  }
+
+  function checkOverlap() {
+    const { B } = human, r = { barHead: 9, cableHead: 9, barKneePad: 9, elbowsSeat: 9, handsColumn: 9 };
+    for (const p of [0, 0.2, 0.4, 0.6, 0.8, 1]) {
+      poseFull(p);
+      const b = barAt(p), hd = wpos(B.head), nk = wpos(B.neck_01);
+      const headC = hd.clone().add(V(0, 0.06, 0));
+      r.barHead = Math.min(r.barHead, segDistG(headC, headC, V(b.x, b.y, -0.3), V(b.x, b.y, 0.3)) - 0.115 - BAR_R);
+      r.cableHead = Math.min(r.cableHead, segDistG(headC, headC, V(b.x, b.y), pulley) - 0.115);
+      for (const x of ['_l', '_r']) { const el = wpos(B['lowerarm' + x]); r.elbowsSeat = Math.min(r.elbowsSeat, el.y - SEAT - 0.05); }
+      r.handsColumn = Math.min(r.handsColumn, COLX - 0.06 - (b.x + 0.05));
+    }
+    for (const k in r) r[k] = +r[k].toFixed(3);
+    human.lpCheck = r;
+    if (Object.values(r).some((v) => v < 0)) console.warn('랫풀다운: 겹치는 부분이 있어요', r);
+  }
+
+  return {
+    muscles: { lats: 1, midback: 0.6, biceps: 0.6, drear: 0.45 },
+    target: V(0.05, 1.25, 0),
+    logoAt: V(-0.55, 0, 0.7),
+    // 앞은 기둥이 가리므로 앞쪽 대각선에서
+    views: { side: V(0.05, 1.45, 3.9), front: V(2.6, 1.75, 2.3), diag: V(-2.4, 1.9, 2.8), back: V(-3.3, 1.7, 1.0) },
+    fit() {
+      const { B, len } = human;
+      poseBody(0);
+      const S = wpos(B.upperarm_r), dz = GRIP - Math.abs(S.z);
+      const reach = Math.sqrt(Math.pow((len.upper + len.fore + len.palm) * 0.96, 2) - dz * dz);
+      top = V(S.x + 0.16, S.y + Math.sqrt(reach * reach - 0.16 * 0.16));   // 팔을 위·살짝 앞으로 뻗음
+      poseBody(1);
+      const S1 = wpos(B.upperarm_r), s3 = wpos(B.spine_03);
+      bottom = V(s3.x + 0.17, S1.y - 0.07);                                 // 윗가슴(쇄골 아래) 바로 앞
+      pulley = V(top.x + 0.02, PULLEY_Y);
+      poseBody(0);
+      build();
+      const pts = []; for (let i = 0; i <= 40; i++) { const b = barAt(i / 40); pts.push(V(b.x, b.y, GRIP + 0.1)); }
+      setPath(pts);
+      stack0 = barAt(0).distanceTo(pulley);
+      checkOverlap();
+    },
+    poseMachine(p) {
+      if (!barG) return;
+      const b = barAt(p);
+      barG.position.set(b.x, b.y, 0);
+      placeRod(cable, b.clone().add(V(0, 0.05, 0)), pulley);
+      placeRod(cable2, V(COLX - 0.1, PULLEY_Y, 0), V(COLX - 0.1, 0.1 + 6 * 0.05 + (b.distanceTo(pulley) - stack0), 0));
+      stackMove.position.y = b.distanceTo(pulley) - stack0;   // 케이블이 당겨진 만큼 스택이 올라감
+    },
+    poseHuman: (p) => poseFull(p)
+  };
+}
+
+// ============================================================
+// 기구 6: 랙 데드리프트 (랙 풀) — 파워랙 안전바 위 바벨
+//  - 안전바를 무릎 바로 아래 높이로 맞추고, 바는 발 중앙 위·정강이 앞에
+//  - 시작: 엉덩이를 뒤로 접고 등은 곧게(약 45°), 팔은 수직으로 바를 잡음
+//  - 끝: 엉덩이를 앞으로 밀어 완전히 일어섬 (바는 허벅지를 스치듯 수직으로 올라감)
+// ============================================================
+function rackDeadliftRig(ctx) {
+  const { scene, M, human, wpos, aim, resetBody, leg, arm, applyFist, setPath } = ctx;
+  const T = 0.07, Y0 = 0.04, GRIP = 0.25, BAR_R = 0.0145;
+  let RX0 = -0.55, RX1 = 0.5; const RZ = 0.6;     // 파워랙 기둥 위치 (바 위치에 맞춰 다시 정함)
+  const mach = new THREE.Group(); scene.add(mach);
+  let bar = null, barX = 0.1, pinY = 0.5, table = [], footX = 0;
+
+  function buildRack() {
+    for (const x of [RX0, RX1]) for (const s of [-1, 1]) {
+      tube(V(x, Y0, RZ * s), V(x, 2.2, RZ * s), T, M.frame, mach);
+      for (let k = 0; k < 18; k++) { const h = box(0.004, 0.02, 0.02, M.frameEdge); h.position.set(x + (x > 0 ? -0.037 : 0.037), 0.4 + k * 0.08, RZ * s); mach.add(h); }
+    }
+    for (const s of [-1, 1]) { tube(V(RX0, Y0, RZ * s), V(RX1, Y0, RZ * s), T, M.frame, mach); tube(V(RX0, 2.2, RZ * s), V(RX1, 2.2, RZ * s), T, M.frame, mach); }
+    for (const x of [RX0, RX1]) { tube(V(x, 2.2, -RZ), V(x, 2.2, RZ), T, M.frame, mach); tube(V(x, Y0, -RZ), V(x, Y0, RZ), T, M.frame, mach); }
+    // 안전바 (무릎 바로 아래 높이, 기둥 안쪽을 앞뒤로)
+    for (const s of [-1, 1]) {
+      const sb = cyl(0.025, RX1 - RX0 + 0.1, M.chrome, 'x'); sb.position.set((RX0 + RX1) / 2, pinY - BAR_R - 0.025, (RZ - 0.06) * s); mach.add(sb);
+      for (const x of [RX0, RX1]) { const pinp = cyl(0.015, 0.1, new THREE.MeshStandardMaterial({ color: 0xf2c200, roughness: 0.4 }), 'z'); pinp.position.set(x, pinY - BAR_R - 0.025, (RZ + 0.01) * s); mach.add(pinp); }
+    }
+    // 바닥 플랫폼
+    const plat = box(1.2, 0.02, 1.3, M.rubber); plat.position.set((RX0 + RX1) / 2, 0.01, 0); mach.add(plat);
+    bar = makeBarbell(M); scene.add(bar);
+  }
+
+  // 자세 표: 몸통 기울기 φ(수직 기준)와 엉덩이 위치를 미리 계산해 두고 재생 때 보간
+  function poseAt(phi, hipX, hipY) {
+    const { B, len } = human;
+    resetBody(V(hipX, hipY, 0));
+    const d = V(Math.sin(phi), Math.cos(phi));
+    aim(B.pelvis, B.spine_01, wpos(B.pelvis).add(d));
+    aim(B.spine_01, B.neck_01, wpos(B.spine_01).add(d));
+    const nk = wpos(B.neck_01), hl = wpos(B.head).distanceTo(nk);
+    const look = phi * 0.6;                                     // 목은 몸통과 거의 일직선 (시선은 앞쪽 바닥)
+    aim(B.neck_01, B.head, nk.clone().add(V(Math.sin(look), Math.cos(look)).multiplyScalar(hl)));
+    for (const s of [-1, 1]) leg(s, V(footX, len.ankleH, 0.13 * s), V(1, 0, 0.12 * s).normalize());
+  }
+  // 엉덩이 관절(허벅지 뼈 시작점)이 목표 위치 H에 오도록 골반을 맞춤 (골반 회전으로 생기는 차이를 두 번 보정)
+  function poseHip(phi, H) {
+    const { B } = human;
+    let px = H.x, py = H.y + 0.02;
+    for (let k = 0; k < 3; k++) { poseAt(phi, px, py); const J = wpos(B.thigh_r); px += H.x - J.x; py += H.y - J.y; }
+    poseAt(phi, px, py);
+    return { px, py };
+  }
+  // 엉덩이 위치가 정해졌을 때, 어깨가 바 바로 위(팔 수직)에 오는 몸통 기울기 φ
+  function solvePhi(H) {
+    const { B } = human;
+    let lo = 0, hi = 1.45;
+    for (let i = 0; i < 18; i++) { const m = (lo + hi) / 2; poseHip(m, H); if (wpos(B.upperarm_r).x > barX + 0.015) hi = m; else lo = m; }
+    return (lo + hi) / 2;
+  }
+  function poseFull(p) {
+    const n = table.length - 1, f = Math.min(n, Math.max(0, p * n)), i = Math.min(n - 1, Math.floor(f)), t = f - i;
+    const a = table[i], b = table[i + 1];
+    const phi = a.phi + (b.phi - a.phi) * t, hx = a.px + (b.px - a.px) * t, hy = a.py + (b.py - a.py) * t, by = a.by + (b.by - a.by) * t;
+    poseAt(phi, hx, hy); applyFist();
+    for (const s of [-1, 1]) arm(s, V(barX, by, GRIP * s), V(-0.2, 0, 1 * s).normalize());   // 팔은 곧게, 팔꿈치는 바깥
+    return by;
+  }
+
+  function checkOverlap() {
+    const { B } = human, r = { barShin: 9, barThighDepth: 9, barRack: 9, platesRack: 9, hands: 9, platesFloor: 9 };
+    for (const p of [0, 0.2, 0.4, 0.6, 0.8, 1]) {
+      const by = poseFull(p);
+      for (const x of ['_l', '_r']) {
+        const an = wpos(B['foot' + x]), kn = wpos(B['calf' + x]), th = wpos(B['thigh' + x]);
+        r.barShin = Math.min(r.barShin, segDistG(V(barX, by, -0.35), V(barX, by, 0.35), an, kn) - 0.055 - BAR_R);
+        r.barThighDepth = Math.min(r.barThighDepth, segDistG(V(barX, by, -0.35), V(barX, by, 0.35), kn, th) - 0.075 - BAR_R);
+      }
+      for (const x of [RX0, RX1]) for (const s of [-1, 1]) r.barRack = Math.min(r.barRack, segDistG(V(barX, by, -1.1), V(barX, by, 1.1), V(x, Y0, RZ * s), V(x, 2.2, RZ * s)) - 0.025 - T / 2);
+      for (const s of [-1, 1]) for (let k = 0; k < 16; k++) { const t = k / 16 * Math.PI * 2, pt = V(barX + Math.cos(t) * 0.225, by + Math.sin(t) * 0.225, 0.86 * s); for (const x of [RX0, RX1]) r.platesRack = Math.min(r.platesRack, segDistG(pt, pt, V(x, Y0, RZ * s), V(x, 2.2, RZ * s)) - T / 2); r.platesFloor = Math.min(r.platesFloor, pt.y - 0.02); }
+      for (const x of ['_l', '_r']) { const h = wpos(B['hand' + x]); r.hands = Math.min(r.hands, Math.abs(h.z) - 0.2); }
+    }
+    for (const k in r) r[k] = +r[k].toFixed(3);
+    human.dlCheck = r;
+    // 바가 정강이·허벅지를 '스치는' 건 정상이라 -2cm까지는 허용
+    if (r.barShin < -0.02 || r.barThighDepth < -0.02 || r.barRack < 0 || r.platesRack < 0 || r.platesFloor < 0) console.warn('랙 데드리프트: 겹치는 부분이 있어요', r);
+  }
+
+  return {
+    muscles: { glute: 1, ham: 0.9, erector: 0.9, quad: 0.45, traps: 0.55, lats: 0.4, forearm: 0.4 },
+    target: V(0.0, 0.95, 0),
+    logoAt: V(-0.1, 0, 1.05),
+    views: { side: V(0.0, 1.2, 3.8), front: V(3.4, 1.4, 0.8), diag: V(2.4, 1.7, 2.7), back: V(-3.4, 1.6, 1.0) },
+    fit() {
+      const { B, len } = human;
+      // 정강이는 수직(무릎이 발목 바로 위), 바는 무릎 바로 앞 → 바가 다리를 뚫지 않고 스치며 올라감
+      footX = 0.0;
+      const K = V(footX, len.ankleH + len.shin);
+      barX = footX + 0.06 + 0.0145 + 0.006;
+      pinY = K.y - 0.05;                                       // 안전바: 무릎 바로 아래
+      const armLen = (len.upper + len.fore + len.palm) * 0.98;
+      const hipAt = (beta) => K.clone().add(V(-Math.sin(beta) * len.thigh, Math.cos(beta) * len.thigh));
+      const sample = (beta) => { const H = hipAt(beta); const phi = solvePhi(H); const r = poseHip(phi, H); return { phi, px: r.px, py: r.py, by: wpos(B.upperarm_r).y - armLen }; };
+      // 시작 β0: 바 높이가 안전바 높이가 되는 허벅지 각도 (엉덩이를 뒤로 뺀 정도)
+      let lo = 0.2, hi = 1.3;
+      for (let i = 0; i < 16; i++) { const m = (lo + hi) / 2; if (sample(m).by > pinY) lo = m; else hi = m; }
+      const b0 = (lo + hi) / 2, bE = 10 * Math.PI / 180;      // 끝: 허벅지 10° (무릎 살짝 굽힘, 다리가 완전히 펴져 튀지 않게)
+      table = [];
+      for (let i = 0; i <= 30; i++) { const p = i / 30; const t = sample(b0 + (bE - b0) * p); t.by = Math.max(pinY, t.by); table.push(t); }
+      table[0].by = pinY;
+      // 랙은 바 위치 기준: 바보다 앞 45cm, 뒤 65cm
+      RX1 = barX + 0.45; RX0 = barX - 0.65;
+      buildRack();
+      setPath(table.map((t) => V(barX, t.by, GRIP + 0.12)));
+      checkOverlap();
+    },
+    poseMachine(p) {
+      if (!bar || !table.length) return;
+      const n = table.length - 1, f = Math.min(n, Math.max(0, p * n)), i = Math.min(n - 1, Math.floor(f)), t = f - i;
+      bar.position.set(barX, table[i].by + (table[i + 1].by - table[i].by) * t, 0);
+    },
+    poseHuman: (p) => { poseFull(p); }
+  };
+}
+
 export function createHighRow(container) { return createStage(container, highRowRig); }
 export function createTBarRow(container) { return createStage(container, tBarRowRig); }
 export function createLateralRaise(container) { return createStage(container, lateralRaiseRig); }
 export function createBenchPress(container) { return createStage(container, benchPressRig); }
+export function createLatPulldown(container) { return createStage(container, latPulldownRig); }
+export function createRackDeadlift(container) { return createStage(container, rackDeadliftRig); }
