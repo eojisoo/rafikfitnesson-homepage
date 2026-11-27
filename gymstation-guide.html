@@ -276,6 +276,26 @@ var EXERCISES=[
   reco:[['세트','3세트'],['횟수','10~12회'],['쉬는 시간','90초']],
   safety:'무거운 무게는 보조자와 함께 하거나 세이프티 바를 꼭 맞춰 주세요. 원판 클립도 잊지 마세요.'},
  {id:'incline-bench',name:'인클라인 벤치프레스',en:'INCLINE BENCH PRESS',cat:'가슴',equip:'인클라인 벤치 · 바벨',alias:['인클라인','윗가슴'],main:['윗가슴']},
+ {id:'lateral-raise',name:'사이드 레터럴 레이즈 머신',en:'SEATED LATERAL RAISE MACHINE',cat:'어깨',equip:'레터럴 레이즈 머신 (원판식)',
+  alias:['사레레','사이드','레터럴','레터럴레이즈','레터럴 레이즈','사이드레터럴','사이드 레터럴','측면어깨','어깨운동','짐80','gym80','lateral raise'],
+  desc:'팔을 옆으로 들어 올려 어깨 옆(측면 삼각근)을 키우는 머신이에요. 레버가 어깨와 같은 축으로 움직여 덤벨보다 자세가 안정적이에요.',
+  main:['측면 삼각근(어깨 옆)'],sub:['전면 삼각근','승모근 상부','후면 삼각근'],
+  motion:'latraise',
+  steps:[
+   {t:'자리 잡기',d:'벤치에 똑바로 앉아 어깨가 기구의 둥근 회전축과 나란히 오게 해요.',ph:0},
+   {t:'손잡이 잡기',d:'등을 펴고 손잡이를 가볍게 잡아요. 팔꿈치는 살짝만 굽혀요.',ph:0},
+   {t:'들어 올리기 (1~2초)',d:'숨을 내쉬며 팔을 옆(살짝 앞)으로 어깨 높이까지 들어 올려요. 손보다 팔꿈치가 먼저 올라간다는 느낌.',ph:1},
+   {t:'어깨 높이에서 멈춤',d:'어깨 높이에서 1초 멈춰요. 어깨를 으쓱 올리지 않아요.',ph:2},
+   {t:'천천히 내리기 (2초)',d:'숨을 들이마시며 무게를 버티면서 천천히 내려요.',ph:3}
+  ],
+  mistakes:[
+   {b:'어깨를 으쓱 올려요',d:'승모근으로 들게 돼요. 어깨는 내린 채로'},
+   {b:'반동으로 휘둘러요',d:'상체는 고정하고 천천히'},
+   {b:'어깨보다 높이 올려요',d:'어깨 높이까지만 들어도 충분해요'},
+   {b:'팔꿈치를 과하게 구부려요',d:'팔꿈치는 살짝만 굽힌 채 유지'}
+  ],
+  reco:[['세트','3세트'],['횟수','12~15회'],['쉬는 시간','60초']],
+  safety:'팔이 과도하게 구부러지거나 어깨에서 걸리는 느낌(충돌)이 있으면 바로 동작을 멈춰 주세요. 원판은 양쪽 무게를 똑같이 맞춰 끼워 주세요.'},
  {id:'chest-press',name:'체스트 프레스 머신',en:'CHEST PRESS MACHINE',cat:'가슴',equip:'체스트 프레스 머신',alias:['머신','체스트'],main:['가슴']},
  {id:'high-row',name:'하이 로우 머신',en:'PLATE LOADED HIGH ROW',cat:'등',equip:'하이 로우 머신 (원판식)',
   alias:['하이로우','하이 로우','로우','머신로우','광배','등운동','highrow','high row','원판','마스터프로'],
@@ -347,6 +367,13 @@ function motion3d(factory,phases){return{
   draw:function(G,p,ph){G.p=p;G.ph=ph;if(G.api)G.api.draw(p,ph)}
  }}
 var MOTIONS={
+ latraise:motion3d('createLateralRaise',[
+   {name:'준비 자세',cue:'숨 고르기',dur:.6,from:0,to:0,breath:'in'},
+   {name:'들어 올리기',cue:'숨 내쉬기',dur:1.5,from:0,to:1,breath:'out'},
+   {name:'어깨 높이에서 멈춤',cue:'1초 멈춤',dur:.5,from:1,to:1,breath:'out'},
+   {name:'천천히 내리기',cue:'숨 들이마시기',dur:2.2,from:1,to:0,breath:'in'},
+   {name:'팔 내리기',cue:'어깨 힘 빼기',dur:.5,from:0,to:0,breath:'in'}
+ ]),
  tbarrow:motion3d('createTBarRow',[
    {name:'준비 자세',cue:'숨 고르기',dur:.7,from:0,to:0,breath:'in'},
    {name:'끌어올리기',cue:'숨 내쉬기',dur:1,from:0,to:1,breath:'out'},
@@ -452,13 +479,14 @@ var MOTIONS={
  var mini='<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="40" width="48" height="5" rx="2" fill="#4a524e"/><line x1="16" y1="36" x2="44" y2="37" stroke="#e9ecea" stroke-width="7" stroke-linecap="round"/><circle cx="11" cy="35" r="4.5" fill="#e9ecea"/><path d="M18 35 L20 22" stroke="#e9ecea" stroke-width="3.5" stroke-linecap="round"/><circle cx="20" cy="18" r="7" fill="none" stroke="#FE6201" stroke-width="2.5"/><path d="M44 37 L52 31 L54 46" fill="none" stroke="#e9ecea" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
  var miniRow='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M10 56 L20 12 L28 12" stroke="#4a524e" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M20 12 L52 24" stroke="#6b716e" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="11" r="5" fill="#4a524e"/><rect x="28" y="44" width="16" height="4" rx="2" fill="#4a524e"/><circle cx="34" cy="20" r="4.5" fill="#e9ecea"/><path d="M33 26 L32 42 M32 42 L46 42 L47 56 M33 29 L44 32 L50 26" stroke="#e9ecea" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M31 30 L30 38" stroke="#FE6201" stroke-width="5" stroke-linecap="round"/></svg>';
  var miniTbar='<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="4" y="53" width="14" height="3" rx="1" fill="#4a524e"/><path d="M13 52 L53 41" stroke="#6b716e" stroke-width="3" stroke-linecap="round"/><circle cx="54" cy="41" r="7.5" fill="#3a403d" stroke="#6b716e" stroke-width="1.5"/><circle cx="54" cy="41" r="1.8" fill="#a9b0ac"/><circle cx="13" cy="52" r="2.6" fill="#f2c200"/><path d="M29 41 L41 32" stroke="#4a524e" stroke-width="5" stroke-linecap="round"/><path d="M33 40 L27 52 M41 33 L45 50" stroke="#4a524e" stroke-width="2.2" stroke-linecap="round"/><path d="M10 52 L25 37 L40 26" fill="none" stroke="#e9ecea" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="45" cy="21" r="4.5" fill="#e9ecea"/><path d="M40 26 L43 37 L45 44" fill="none" stroke="#e9ecea" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M29 31 L37 25" stroke="#FE6201" stroke-width="4.6" stroke-linecap="round"/></svg>';
+ var miniLat='<svg viewBox="0 0 64 64" aria-hidden="true"><rect x="16" y="47" width="32" height="4" rx="2" fill="#4a524e"/><path d="M8 12 V56 M56 12 V56" stroke="#3a403d" stroke-width="3" stroke-linecap="round"/><circle cx="32" cy="15" r="5" fill="#e9ecea"/><path d="M32 21 V40 M32 40 L25 47 L25 57 M32 40 L39 47 L39 57" fill="none" stroke="#e9ecea" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M27 24 L10 22 M37 24 L54 22" stroke="#e9ecea" stroke-width="3.6" stroke-linecap="round"/><path d="M24 23 C26 21 28 21 29 23 M40 23 C38 21 36 21 35 23" stroke="#FE6201" stroke-width="4" stroke-linecap="round" fill="none"/><circle cx="10" cy="22" r="2.6" fill="#a9b0ac"/><circle cx="54" cy="22" r="2.6" fill="#a9b0ac"/></svg>';
  var miniSoon='<svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 32h6M44 32h6M20 24v16M44 24v16M20 32h24" stroke="#6b716e" stroke-width="4" stroke-linecap="round" fill="none"/></svg>';
 
  function renderList(){
   var t=norm(q.value),rows=EXERCISES.filter(function(x){return(!cat||x.cat===cat)&&match(x,t)});
   rows.sort(function(a,b){return(b.motion?1:0)-(a.motion?1:0)});
   $('count').textContent=rows.length+'개';
-  grid.innerHTML=rows.length?rows.map(function(x){return '<button type="button" class="ex'+(x.motion?'':' soon')+'" data-id="'+x.id+'"><span class="ex__icon">'+(x.motion==='tbarrow'?miniTbar:x.motion==='highrow'?miniRow:x.motion?mini:miniSoon)+'</span><span class="ex__body"><span class="ex__name">'+x.name+(x.motion&&MOTIONS[x.motion].kind==='3d'?'<span class="ex__3d">3D</span>':'')+'</span><span class="ex__meta">'+x.cat+' · '+x.equip+'</span><span class="ex__tag '+(x.motion?'ready">▶ 모션 보기':'soon">모션 준비 중')+'</span></span></button>'}).join('')
+  grid.innerHTML=rows.length?rows.map(function(x){return '<button type="button" class="ex'+(x.motion?'':' soon')+'" data-id="'+x.id+'"><span class="ex__icon">'+(x.motion==='latraise'?miniLat:x.motion==='tbarrow'?miniTbar:x.motion==='highrow'?miniRow:x.motion?mini:miniSoon)+'</span><span class="ex__body"><span class="ex__name">'+x.name+(x.motion&&MOTIONS[x.motion].kind==='3d'?'<span class="ex__3d">3D</span>':'')+'</span><span class="ex__meta">'+x.cat+' · '+x.equip+'</span><span class="ex__tag '+(x.motion?'ready">▶ 모션 보기':'soon">모션 준비 중')+'</span></span></button>'}).join('')
    :'<div class="empty"><b>찾는 운동이 없어요</b>다른 이름이나 부위로 검색해 보세요.</div>';
   $('qClear').hidden=!q.value;
  }

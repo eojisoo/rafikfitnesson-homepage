@@ -626,5 +626,175 @@ function tBarRowRig(ctx) {
   };
 }
 
+// ============================================================
+// 기구 3: 사이드 레터럴 레이즈 머신 (gym80 원판식) — 사용 영상 기준
+//  - 낮고 긴 벤치에 똑바로 앉음 (기구를 등지고 앞을 봄)
+//  - 레버 회전축은 어깨 바로 뒤에 어깨와 같은 축으로 있어, 레버가 팔과 나란히 돌아감
+//  - 레버는 팔 바깥쪽을 따라 내려와 엉덩이 옆 세로 손잡이로 이어짐
+//  - 팔을 옆(약간 앞, 견갑면 20°)으로 어깨 높이까지 들어 올림, 팔꿈치는 살짝만 굽힘
+//  - 원판은 레버 바깥쪽 봉에 꽂혀 함께 돌아감
+// ============================================================
+function lateralRaiseRig(ctx) {
+  const { scene, M, human, wpos, aim, resetBody, leg, arm, applyFist, setPath } = ctx;
+  const T = 0.075, Y0 = 0.04;
+  const SEAT = 0.5;                          // 벤치 윗면 높이
+  const SCAP = 20 * Math.PI / 180;           // 견갑면 (정면에서 20° 앞쪽)
+  const TH0 = 8 * Math.PI / 180, TH1 = 84 * Math.PI / 180; // 팔 각도: 거의 내림 → 어깨 높이 바로 아래
+  const BACK = 0.12, OUT = 0.14;             // 회전축은 어깨에서 축 방향으로 12cm 뒤 / 레버는 팔 바깥 14cm
+  const mach = new THREE.Group(); scene.add(mach);
+  const S = {}, A = {}, Dn = V(0, -1, 0), Raise = {};
+  let Lg = 0.6;
+  const lev = {};
+
+  // 벤치
+  const seat = box(0.82, 0.08, 0.32, M.pad); seat.position.set(0.1, SEAT - 0.04, 0); mach.add(seat);
+  const seatBase = box(0.78, 0.04, 0.22, M.frame); seatBase.position.set(0.1, SEAT - 0.1, 0); mach.add(seatBase);
+  for (const x of [-0.22, 0.42]) { tube(V(x, Y0), V(x, SEAT - 0.12), T, M.frame, mach); tube(V(x, Y0, -0.18), V(x, Y0, 0.18), T, M.frame, mach); }
+  tube(V(-0.6, Y0), V(0.42, Y0), T, M.frame, mach);
+
+  // 막대·원통을 두 점 사이에 놓는 도우미 (매 프레임 레버 위치 갱신용)
+  function bar(r, mat) { const m = new THREE.Mesh(new THREE.BoxGeometry(1, r, r), mat); m.castShadow = m.receiveShadow = true; mach.add(m); return m; }
+  function rod(r, mat) { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 1, 20), mat); m.castShadow = m.receiveShadow = true; mach.add(m); return m; }
+  function placeBar(m, a, b) { const d = b.clone().sub(a); m.position.copy(a).add(b).multiplyScalar(0.5); m.scale.set(d.length(), 1, 1); m.quaternion.setFromUnitVectors(V(1, 0, 0), d.normalize()); }
+  function placeRod(m, a, b) { const d = b.clone().sub(a); m.position.copy(a).add(b).multiplyScalar(0.5); m.scale.set(1, d.length(), 1); m.quaternion.setFromUnitVectors(V(0, 1, 0), d.normalize()); }
+  function disc(r, t, mat) { const m = cyl(r, t, mat, 'y'); mach.add(m); return m; }
+
+  // 레버의 회전 좌표: u = 팔 방향, v = 바깥(회전면 안), w = 회전축(앞쪽)
+  function frame(s, th) {
+    const u = Dn.clone().multiplyScalar(Math.cos(th)).add(Raise[s].clone().multiplyScalar(Math.sin(th))).normalize();
+    let v = u.clone().cross(A[s]).normalize();
+    const v0 = Dn.clone().cross(A[s]); if (v0.z * s < 0) v.negate();     // 내렸을 때 바깥쪽을 향하도록
+    return { u, v, w: A[s].clone() };   // 축 벡터 원본은 건드리지 않도록 복사
+  }
+  const L = (s, th, a, b, c) => { const f = frame(s, th), hub = S[s].clone().sub(A[s].clone().multiplyScalar(BACK)); return hub.add(f.u.multiplyScalar(a)).add(f.v.multiplyScalar(b)).add(f.w.multiplyScalar(c)); };
+  const grip = (s, th) => L(s, th, Lg, 0, BACK);            // 주먹 중심 = 어깨에서 팔 방향으로 Lg
+  const plateC = (s, th) => L(s, th, 0.3, OUT + 0.2, -0.14);
+
+  function buildLevers() {
+    for (const s of [-1, 1]) {
+      const o = lev[s] = {};
+      o.k = [bar(0.06, M.frame), bar(0.06, M.frame), bar(0.05, M.frame), bar(0.04, M.frame)];
+      o.grip = rod(0.019, M.rubber); o.cap = rod(0.022, M.chrome);
+      o.hub = disc(0.06, 0.12, M.frameEdge); o.pin = disc(0.03, 0.15, M.chrome);
+      o.horn = rod(0.026, M.chrome); o.plates = [disc(0.225, 0.04, M.plate), disc(0.19, 0.04, M.plate)];
+      o.bracket = bar(0.05, M.frame);
+      // 회전축을 받치는 팔: 뒤쪽 기둥 → 회전축
+      const hub = S[s].clone().sub(A[s].clone().multiplyScalar(BACK));
+      const post = V(-0.62, Y0, 0.5 * s);
+      tube(post, V(-0.62, hub.y + 0.12, 0.5 * s), T, M.frame, mach);
+      bent([V(-0.62, hub.y + 0.08, 0.5 * s), V(hub.x - 0.12, hub.y + 0.08, hub.z), hub.clone().sub(A[s].clone().multiplyScalar(0.06))], 0.07, M.frame, mach);
+      // 원판 보관 봉
+      const h1 = cyl(0.026, 0.22, M.chrome, 'z'); h1.position.set(-0.62, 0.45, (0.5 + 0.13) * s); mach.add(h1);
+      plates2(mach, V(-0.62, 0.45, 0.5 * s), s);
+    }
+    tube(V(-0.62, Y0, -0.5), V(-0.62, Y0, 0.5), T, M.frame, mach);
+    tube(V(-0.62, 1.62, -0.5), V(-0.62, 1.62, 0.5), T, M.frame, mach);
+    for (const s of [-1, 1]) tube(V(-0.62, 1.62, 0.5 * s), V(-0.62, S[s].y + 0.2, 0.5 * s), T, M.frame, mach);
+  }
+  function plates2(parent, pos, s) {
+    for (let i = 0; i < 2; i++) { const pl = cyl(i ? 0.19 : 0.225, 0.04, M.plate, 'z'); pl.position.copy(pos).add(V(0, 0, (0.07 + i * 0.045) * s)); parent.add(pl); }
+  }
+  function placeLever(s, th) {
+    const o = lev[s]; if (!o) return;
+    const hub = L(s, th, 0, 0, 0), k1 = L(s, th, 0, OUT, 0), k2 = L(s, th, Lg, OUT, 0), k3 = L(s, th, Lg, OUT, BACK), g = grip(s, th);
+    placeBar(o.k[0], hub, k1); placeBar(o.k[1], k1, k2); placeBar(o.k[2], k2, k3); placeBar(o.k[3], k3, g);
+    const f = frame(s, th);
+    placeRod(o.grip, g.clone().sub(f.u.clone().multiplyScalar(0.08)), g.clone().add(f.u.clone().multiplyScalar(0.08)));
+    placeRod(o.cap, g.clone().add(f.u.clone().multiplyScalar(0.08)), g.clone().add(f.u.clone().multiplyScalar(0.1)));
+    for (const d of [o.hub, o.pin]) { d.position.copy(hub); d.quaternion.setFromUnitVectors(V(0, 1, 0), f.w); }
+    const hb = L(s, th, 0.3, OUT, 0), hp = plateC(s, th);
+    placeBar(o.bracket, hb, L(s, th, 0.3, OUT + 0.2, 0));
+    placeRod(o.horn, L(s, th, 0.3, OUT + 0.2, 0), L(s, th, 0.3, OUT + 0.2, -0.26));
+    o.plates.forEach((pl, i) => { pl.position.copy(L(s, th, 0.3, OUT + 0.2, -0.12 - i * 0.045)); pl.quaternion.setFromUnitVectors(V(0, 1, 0), f.w); });
+  }
+
+  // 앉은 자세: 상체 곧게, 허벅지는 벤치 위, 발은 바닥
+  function poseBody(p) {
+    const { B, len } = human;
+    resetBody(V(-0.05, SEAT + 0.085, 0));
+    const sp = wpos(B.spine_01), Ls = wpos(B.neck_01).distanceTo(sp);
+    aim(B.spine_01, B.neck_01, sp.clone().add(V(-Math.sin(0.03) * Ls, Math.cos(0.03) * Ls, 0)));
+    const nk = wpos(B.neck_01);
+    aim(B.neck_01, B.head, nk.clone().add(V(0.02, wpos(B.head).distanceTo(nk), 0)));
+    for (const s of [-1, 1]) {
+      const Tp = wpos(B[s < 0 ? 'thigh_l' : 'thigh_r']);
+      const K = Tp.clone().add(V(len.thigh * Math.cos(-0.06), len.thigh * Math.sin(-0.06), 0.06 * s));
+      const dy = K.y - len.ankleH;
+      const Af = dy < len.shin ? V(K.x + Math.min(0.25, Math.sqrt(len.shin * len.shin - dy * dy)), len.ankleH, K.z + 0.03 * s) : K.clone().add(V(0.05, -len.shin, 0));
+      leg(s, Af, V(1, 0.2, 0.2 * s).normalize());
+    }
+  }
+
+  function poseFull(p) {
+    const th = TH0 + (TH1 - TH0) * p;
+    poseBody(p); applyFist();
+    // 팔꿈치는 살짝 굽혀 뒤·아래를 향함 (어깨에 무리 없는 자세)
+    for (const s of [-1, 1]) { const f = frame(s, th); arm(s, grip(s, th), f.w.clone().negate().add(V(0, -0.3, 0)).normalize()); }
+  }
+
+  // 겹침 검사 (동작 전 구간) — 겹치면 개발자 콘솔에 알림
+  function segDist(p1, p2, q1, q2) {
+    const d1 = p2.clone().sub(p1), d2 = q2.clone().sub(q1), r = p1.clone().sub(q1);
+    const a = d1.dot(d1), e = d2.dot(d2), f = d2.dot(r), c = d1.dot(r), b = d1.dot(d2), den = a * e - b * b;
+    if (a < 1e-9) { const t0 = Math.min(1, Math.max(0, f / e)); return p1.distanceTo(q1.clone().add(d2.multiplyScalar(t0))); }
+    let s1 = den > 1e-9 ? Math.min(1, Math.max(0, (b * f - c * e) / den)) : 0;
+    let t = (b * s1 + f) / e; if (t < 0) { t = 0; s1 = Math.min(1, Math.max(0, -c / a)); } else if (t > 1) { t = 1; s1 = Math.min(1, Math.max(0, (b - c) / a)); }
+    return p1.clone().add(d1.multiplyScalar(s1)).distanceTo(q1.clone().add(d2.multiplyScalar(t)));
+  }
+  function checkOverlap() {
+    const { B } = human, r = { leverTorso: 9, leverArm: 9, platesBody: 9, platesEach: 9, platesFrame: 9, platesSeat: 9, platesFloor: 9 };
+    for (const p of [0, 0.25, 0.5, 0.75, 1]) {
+      const th = TH0 + (TH1 - TH0) * p;
+      poseFull(p);   // 팔까지 실제 동작 자세로
+      const pel = wpos(B.pelvis), s3 = wpos(B.spine_03), nk = wpos(B.neck_01), hd = wpos(B.head);
+      const ring = {};
+      for (const s of [-1, 1]) {
+        const x = s < 0 ? '_l' : '_r';
+        const k1 = L(s, th, 0, OUT, 0), k2 = L(s, th, Lg, OUT, 0);
+        r.leverTorso = Math.min(r.leverTorso, segDist(k1, k2, pel, s3) - 0.03 - 0.17);
+        const sh = wpos(B['upperarm' + x]), el = wpos(B['lowerarm' + x]);
+        r.leverArm = Math.min(r.leverArm, segDist(k1, k2, sh, el) - 0.03 - 0.055);
+        const f = frame(s, th), pc = plateC(s, th); ring[s] = [];
+        for (let i = 0; i < 24; i++) {
+          const t = i / 24 * Math.PI * 2, pt = pc.clone().add(f.u.clone().multiplyScalar(Math.cos(t) * 0.225)).add(f.v.clone().multiplyScalar(Math.sin(t) * 0.225));
+          ring[s].push(pt);
+          r.platesBody = Math.min(r.platesBody, segDist(pt, pt, pel, s3) - 0.17, segDist(pt, pt, s3, nk) - 0.15, pt.distanceTo(hd) - 0.13, segDist(pt, pt, sh, el) - 0.06);
+          r.platesFrame = Math.min(r.platesFrame, segDist(pt, pt, V(-0.62, Y0, 0.5 * s), V(-0.62, 1.62, 0.5 * s)) - T / 2);
+          r.platesSeat = Math.min(r.platesSeat, Math.abs(pt.z) < 0.16 && pt.x > -0.31 && pt.x < 0.51 ? pt.y - SEAT : 9);
+          r.platesFloor = Math.min(r.platesFloor, pt.y);
+        }
+      }
+      for (const a of ring[-1]) for (const b of ring[1]) r.platesEach = Math.min(r.platesEach, a.distanceTo(b) - 0.045);
+    }
+    for (const k in r) if (typeof r[k] === 'number') r[k] = +r[k].toFixed(3);
+    human.latCheck = r;
+    if (Object.values(r).some((v) => v < 0)) console.warn('레터럴 레이즈: 겹치는 부분이 있어요', r);
+  }
+
+  return {
+    muscles: { dside: 1, dfront: 0.5, traps: 0.5, drear: 0.4 },
+    target: V(-0.05, 1.0, 0),
+    logoAt: V(0.75, 0, 0.0),
+    views: { front: V(3.0, 1.35, 0.35), side: V(-0.05, 1.25, 3.4), diag: V(2.3, 1.6, 2.3), back: V(-3.0, 1.55, 0.9) },
+    fit() {
+      const { B, len } = human;
+      poseBody(0);
+      for (const s of [-1, 1]) {
+        S[s] = wpos(B[s < 0 ? 'upperarm_l' : 'upperarm_r']);
+        Raise[s] = V(Math.sin(SCAP), 0, Math.cos(SCAP) * s).normalize();
+        A[s] = Raise[s].clone().cross(Dn).normalize(); if (A[s].x < 0) A[s].negate(); // 회전축(앞쪽)
+      }
+      Lg = (len.upper + len.fore + len.palm) * 0.95;
+      buildLevers();
+      const pts = []; for (let i = 0; i <= 40; i++) pts.push(grip(1, TH0 + (TH1 - TH0) * i / 40).add(V(0.05, 0, 0)));
+      setPath(pts);
+      checkOverlap();
+    },
+    poseMachine(p) { if (!lev[1]) return; const th = TH0 + (TH1 - TH0) * p; for (const s of [-1, 1]) placeLever(s, th); },
+    poseHuman: (p) => poseFull(p)
+  };
+}
+
 export function createHighRow(container) { return createStage(container, highRowRig); }
 export function createTBarRow(container) { return createStage(container, tBarRowRig); }
+export function createLateralRaise(container) { return createStage(container, lateralRaiseRig); }
